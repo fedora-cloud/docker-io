@@ -3,8 +3,8 @@
 %global gopath          %{_datadir}/gocode
 
 Name:           docker-io
-Version:        0.6.2
-Release:        14.devicemapper%{?dist}
+Version:        0.6.3
+Release:        1.devicemapper%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
@@ -93,6 +93,10 @@ exit 0
 %dir %{_sharedstatedir}/docker
 
 %changelog
+* Thu Sep 26 2013 Lokesh Mandvekar <lsm5@redhat.com> 0.6.3-1.devicemapper
+- version bump
+- new version solves docker push issues
+
 * Tue Sep 24 2013 Lokesh Mandvekar <lsm5@redhat.com> 0.6.2-14.devicemapper
 - package requires lxc
 
