@@ -1,0 +1,26 @@
+From 72c019628997def293d66d304595d03952eac2a8 Mon Sep 17 00:00:00 2001
+From: Marek Goldmann <marek.goldmann@gmail.com>
+Date: Fri, 27 Sep 2013 18:39:36 +0200
+Subject: [PATCH] Remove setfcap from lxc.cap.drop to make setxattr() calls
+ working in the containers
+
+---
+ lxc_template.go | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lxc_template.go b/lxc_template.go
+index b34ff85..0e2dfaf 100644
+--- a/lxc_template.go
++++ b/lxc_template.go
+@@ -111,7 +111,7 @@ lxc.mount.entry = {{$realPath}} {{$ROOTFS}}/{{$virtualPath}} none bind,{{ if ind
+ #  (Note: 'lxc.cap.keep' is coming soon and should replace this under the
+ #         security principle 'deny all unless explicitly permitted', see
+ #         http://sourceforge.net/mailarchive/message.php?msg_id=31054627 )
+-lxc.cap.drop = audit_control audit_write mac_admin mac_override mknod setfcap setpcap sys_admin sys_boot sys_module sys_nice sys_pacct sys_rawio sys_resource sys_time sys_tty_config
++lxc.cap.drop = audit_control audit_write mac_admin mac_override mknod setpcap sys_admin sys_boot sys_module sys_nice sys_pacct sys_rawio sys_resource sys_time sys_tty_config
+ {{end}}
+ 
+ # limits
+-- 
+1.8.3.1
+

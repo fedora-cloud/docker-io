@@ -4,12 +4,13 @@
 
 Name:           docker-io
 Version:        0.6.3
-Release:        1.devicemapper%{?dist}
+Release:        2.devicemapper%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
 Patch0:         docker-%{version}-alexl-devmapper.patch
 Patch1:         docker-%{version}-remove-dotcloud-tar.patch
+Patch2:         docker-%{version}-remove-setfcap-from-template.patch
 URL:            http://www.docker.io
 Source0:        https://github.com/dotcloud/docker/archive/v%{version}.tar.gz
 Source1:        docker.service
@@ -38,6 +39,7 @@ servers, OpenStack clusters, public instances, or combinations of the above.
 %setup -q -n docker-%{version}
 %patch0 -p1 -b docker-%{version}-alexl-devmapper.patch
 %patch1 -p1 -b docker-%{version}-remove-dotcloud-tar.patch
+%patch2 -p1 -b docker-%{version}-remove-setfcap-from-template.patch
 
 %build
 mkdir _build
@@ -93,6 +95,10 @@ exit 0
 %dir %{_sharedstatedir}/docker
 
 %changelog
+* Fri Sep 27 2013 Marek Goldmann <mgoldman@redhat.com> - 0.6.3-2.devicemapper
+- Remove setfcap from lxc.cap.drop to make setxattr() calls working in the
+  containers, RHBZ#1012952
+
 * Thu Sep 26 2013 Lokesh Mandvekar <lsm5@redhat.com> 0.6.3-1.devicemapper
 - version bump
 - new version solves docker push issues
