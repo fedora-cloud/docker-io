@@ -4,7 +4,7 @@
 
 Name:           docker-io
 Version:        0.6.3
-Release:        2.devicemapper%{?dist}
+Release:        3.devicemapper%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
@@ -95,6 +95,9 @@ exit 0
 %dir %{_sharedstatedir}/docker
 
 %changelog
+* Thu Oct 03 2013 Lokesh Mandvekar <lsm5@fedoraproject.org> - 0.6.3-3.devicemapper
+- Docker rebuilt with latest kr/pty, first run issue solved
+
 * Fri Sep 27 2013 Marek Goldmann <mgoldman@redhat.com> - 0.6.3-2.devicemapper
 - Remove setfcap from lxc.cap.drop to make setxattr() calls working in the
   containers, RHBZ#1012952
