@@ -4,7 +4,7 @@
 
 Name:           docker-io
 Version:        0.6.3
-Release:        3.devicemapper%{?dist}
+Release:        4.devicemapper%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
@@ -12,6 +12,7 @@ Patch0:         docker-%{version}-alexl-devmapper.patch
 Patch1:         docker-%{version}-remove-dotcloud-tar.patch
 Patch2:         docker-%{version}-remove-setfcap-from-template.patch
 URL:            http://www.docker.io
+ExclusiveArch:  %{ix86} x86_64 %{arm}
 Source0:        https://github.com/dotcloud/docker/archive/v%{version}.tar.gz
 Source1:        docker.service
 BuildRequires:  golang("github.com/gorilla/mux")
@@ -69,19 +70,16 @@ install -p -m 644 contrib/docker.bash %{buildroot}%{_sysconfdir}/bash_completion
 
 %pre
 getent group docker > /dev/null || %{_sbindir}/groupadd -r docker
-getent passwd docker > /dev/null || %{_sbindir}/useradd -r -g docker\
-           -d %{_localstatedir}/lib/docker -s %{_sbindir}/nologin -c\
-           "Docker User" docker
 exit 0
 
 %post
-%systemd_post docker.service
+%systemd_post %{SOURCE1}
 
 %preun
-%systemd_preun docker.service
+%systemd_preun %{SOURCE1}
 
 %postun
-%systemd_postun_with_restart docker.service
+%systemd_postun_with_restart %{SOURCE1}
     
 %files
 %defattr(-,root,root,-)
@@ -95,6 +93,11 @@ exit 0
 %dir %{_sharedstatedir}/docker
 
 %changelog
+* Fri Oct 04 2013 Lokesh Mandvekar <lsm5@fedoraproject.org> - 0.6.3-4.devicemapper
+- docker-io service enables IPv4 and IPv6 forwarding
+- docker user not needed
+- golang not supported on ppc64, docker-io excluded too
+
 * Thu Oct 03 2013 Lokesh Mandvekar <lsm5@fedoraproject.org> - 0.6.3-3.devicemapper
 - Docker rebuilt with latest kr/pty, first run issue solved
 
