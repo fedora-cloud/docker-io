@@ -1,27 +1,34 @@
 %global debug_package   %{nil}
-%global commit          ca5913ff3ec0648d6ad9887abc6cf986fddee1a2
+%global commit          ea5b19cc01134531daf3da982e03b1ab4c27a813
 %global gopath          %{_datadir}/gocode
 
 Name:           docker-io
-Version:        0.6.3
-Release:        4.devicemapper%{?dist}
+Version:        0.7
+Release:        2.rc2%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
-Patch0:         docker-%{version}-alexl-devmapper.patch
-Patch1:         docker-%{version}-remove-dotcloud-tar.patch
-Patch2:         docker-%{version}-remove-setfcap-from-template.patch
+Patch0:         docker-0.7-remove-dotcloud-tar.patch
 URL:            http://www.docker.io
 ExclusiveArch:  %{ix86} x86_64 %{arm}
-Source0:        https://github.com/dotcloud/docker/archive/v%{version}.tar.gz
+Source0:        https://github.com/dotcloud/docker/archive/docker-0.7-rc2.zip
 Source1:        docker.service
+Source2:        docker.xinetd
+BuildRequires:  gcc
 BuildRequires:  golang("github.com/gorilla/mux")
 BuildRequires:  golang("github.com/kr/pty")
 BuildRequires:  golang("code.google.com/p/go.net/websocket")
+BuildRequires:  golang("code.google.com/p/gosqlite/sqlite3")
 BuildRequires:  device-mapper-devel
+BuildRequires:  python-sphinx
 BuildRequires:  python-sphinxcontrib-httpdomain
+BuildRequires:  sqlite-devel
+%if 0%{?fedora} >= 19
 BuildRequires:  pkgconfig(systemd)
 Requires:       systemd-units
+%else
+Requires:       xinetd
+%endif
 Requires:       lxc
 Requires:       tar
 Provides:       lxc-docker
@@ -37,10 +44,9 @@ and tests on a laptop will run at scale, in production*, on VMs, bare-metal
 servers, OpenStack clusters, public instances, or combinations of the above.
 
 %prep
-%setup -q -n docker-%{version}
-%patch0 -p1 -b docker-%{version}-alexl-devmapper.patch
-%patch1 -p1 -b docker-%{version}-remove-dotcloud-tar.patch
-%patch2 -p1 -b docker-%{version}-remove-setfcap-from-template.patch
+%setup -q -n docker-0.7-rc2
+rm -rf vendor
+%patch0 -p1 -b docker-0.7-remove-dotcloud-tar.patch
 
 %build
 mkdir _build
@@ -59,40 +65,68 @@ make -C docs/ man
 %install
 install -d %{buildroot}%{_bindir}
 install -d %{buildroot}%{_mandir}/man1
-install -d %{buildroot}%{_unitdir}
 install -d %{buildroot}%{_sysconfdir}/bash_completion.d
 install -d -m 700 %{buildroot}%{_sharedstatedir}/docker
 install -p -m 755 _build/docker %{buildroot}%{_bindir}
 install -p -m 755 _build/docker-init %{buildroot}%{_bindir}
 install -p -m 644 docs/_build/man/docker.1 %{buildroot}%{_mandir}/man1
-install -p -m 644 %{SOURCE1} %{buildroot}%{_unitdir}
 install -p -m 644 contrib/docker.bash %{buildroot}%{_sysconfdir}/bash_completion.d/
+%if 0%{?fedora} >= 19
+install -d %{buildroot}%{_unitdir}
+install -p -m 644 %{SOURCE1} %{buildroot}%{_unitdir}
+%else
+install -d %{buildroot}%{_sysconfdir}/xinetd.d
+install -p -m 644 %{SOURCE2} %{buildroot}%{_sysconfdir}/xinetd.d
+%endif
 
 %pre
 getent group docker > /dev/null || %{_sbindir}/groupadd -r docker
 exit 0
 
 %post
+%if 0%{?fedora} >= 19
 %systemd_post %{SOURCE1}
+%endif
 
 %preun
+%if 0%{?fedora} >= 19
 %systemd_preun %{SOURCE1}
+%else
+if [ $1 -eq 0 ]; then
+    /sbin/service xinetd condrestart > /dev/null 2>&1
+fi
+%endif
 
 %postun
+%if 0%{?fedora} >= 19
 %systemd_postun_with_restart %{SOURCE1}
-    
+%endif
+
 %files
 %defattr(-,root,root,-)
 %doc AUTHORS CHANGELOG.md CONTRIBUTING.md FIXME LICENSE MAINTAINERS NOTICE README.md 
 %{_mandir}/man1/docker.1.gz
 %{_bindir}/docker
 %{_bindir}/docker-init
+%if 0%{?fedora} >= 19
 %{_unitdir}/docker.service
+%else
+%config(noreplace) %{_sysconfdir}/xinetd.d/docker
+%endif
 %dir %{_sysconfdir}/bash_completion.d
 %{_sysconfdir}/bash_completion.d/docker.bash
 %dir %{_sharedstatedir}/docker
 
 %changelog
+* Mon Oct 07 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7-2.rc2
+- rc branch includes devmapper
+- el6 BZ #1015865 fix included
+
+* Sun Oct 06 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7-1
+- version bump, includes devicemapper
+- epel conditionals included
+- buildrequires sqlite-devel
+
 * Fri Oct 04 2013 Lokesh Mandvekar <lsm5@fedoraproject.org> - 0.6.3-4.devicemapper
 - docker-io service enables IPv4 and IPv6 forwarding
 - docker user not needed

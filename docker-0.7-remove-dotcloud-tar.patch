@@ -1,0 +1,13 @@
+diff --git a/utils/tarsum.go b/utils/tarsum.go
+index 290be24..9cba516 100644
+--- a/utils/tarsum.go
++++ b/utils/tarsum.go
+@@ -5,7 +5,7 @@ import (
+ 	"compress/gzip"
+ 	"crypto/sha256"
+ 	"encoding/hex"
+-	"github.com/dotcloud/tar"
++	"archive/tar"
+ 	"hash"
+ 	"io"
+ 	"sort"

@@ -1,0 +1,11 @@
+# default: off
+# description: Container management service
+service docker
+{
+    disable     =   yes
+    socket_type =   stream
+    protocol    =   tcp
+    wait        =   no
+    server      =   /usr/bin/docker -d
+    type        =   UNLISTED
+}
