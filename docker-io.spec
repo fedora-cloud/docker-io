@@ -8,11 +8,12 @@
 
 Name:           docker-io
 Version:        0.7
-Release:        0.5.rc3%{?dist}
+Release:        0.6.rc3%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
 Patch0:         docker-0.7-remove-dotcloud-tar.patch
+Patch1:         docker-0.7-el6-docs.patch
 URL:            http://www.docker.io
 # only x86_64 for now: https://github.com/dotcloud/docker/issues/136
 ExclusiveArch:  x86_64
@@ -51,6 +52,9 @@ servers, OpenStack clusters, public instances, or combinations of the above.
 %setup -q -n docker-0.7-rc3
 rm -rf vendor
 %patch0 -p1 -b docker-0.7-remove-dotcloud-tar.patch
+%if 0%{?rhel} >= 6
+%patch1 -p1 -b docker-0.7-el6-docs.patch
+%endif
 
 %build
 mkdir _build
@@ -122,6 +126,9 @@ fi
 %dir %{_sharedstatedir}/docker
 
 %changelog
+* Thu Oct 10 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7-0.6.rc3
+- patched for el6 to use sphinx-1.0-build
+
 * Wed Oct 09 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7-0.5.rc3
 - rc3 version bump
 - exclusivearch x86_64
