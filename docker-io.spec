@@ -1,29 +1,33 @@
-%global debug_package   %{nil}
-%global commit          ea5b19cc01134531daf3da982e03b1ab4c27a813
-%global gopath          %{_datadir}/gocode
+%if 0%{?fedora} >= 19 || 0%{?rhel} >= 7
+%bcond_without  systemd
+%endif
+
+#debuginfo not supported with Go
+%global debug_package %{nil}
+%global gopath  %{_datadir}/gocode
 
 Name:           docker-io
 Version:        0.7
-Release:        2.rc2%{?dist}
+Release:        0.5.rc3%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
 Patch0:         docker-0.7-remove-dotcloud-tar.patch
 URL:            http://www.docker.io
-ExclusiveArch:  %{ix86} x86_64 %{arm}
-Source0:        https://github.com/dotcloud/docker/archive/docker-0.7-rc2.zip
+# only x86_64 for now: https://github.com/dotcloud/docker/issues/136
+ExclusiveArch:  x86_64
+Source0:        https://github.com/dotcloud/docker/archive/docker-0.7-rc3.zip
 Source1:        docker.service
 Source2:        docker.xinetd
 BuildRequires:  gcc
 BuildRequires:  golang("github.com/gorilla/mux")
-BuildRequires:  golang("github.com/kr/pty")
+# kr/pty 0-0.11 fixes BZ #1012701 docker first run error
+BuildRequires:  golang("github.com/kr/pty") >= 0-0.11 
 BuildRequires:  golang("code.google.com/p/go.net/websocket")
 BuildRequires:  golang("code.google.com/p/gosqlite/sqlite3")
 BuildRequires:  device-mapper-devel
-BuildRequires:  python-sphinx
 BuildRequires:  python-sphinxcontrib-httpdomain
-BuildRequires:  sqlite-devel
-%if 0%{?fedora} >= 19
+%if %{with systemd}
 BuildRequires:  pkgconfig(systemd)
 Requires:       systemd-units
 %else
@@ -31,7 +35,7 @@ Requires:       xinetd
 %endif
 Requires:       lxc
 Requires:       tar
-Provides:       lxc-docker
+Provides:       lxc-docker = 0.6.3
 
 %description
 Docker is an open-source engine that automates the deployment of any
@@ -44,7 +48,7 @@ and tests on a laptop will run at scale, in production*, on VMs, bare-metal
 servers, OpenStack clusters, public instances, or combinations of the above.
 
 %prep
-%setup -q -n docker-0.7-rc2
+%setup -q -n docker-0.7-rc3
 rm -rf vendor
 %patch0 -p1 -b docker-0.7-remove-dotcloud-tar.patch
 
@@ -71,7 +75,7 @@ install -p -m 755 _build/docker %{buildroot}%{_bindir}
 install -p -m 755 _build/docker-init %{buildroot}%{_bindir}
 install -p -m 644 docs/_build/man/docker.1 %{buildroot}%{_mandir}/man1
 install -p -m 644 contrib/docker.bash %{buildroot}%{_sysconfdir}/bash_completion.d/
-%if 0%{?fedora} >= 19
+%if %{with systemd}
 install -d %{buildroot}%{_unitdir}
 install -p -m 644 %{SOURCE1} %{buildroot}%{_unitdir}
 %else
@@ -84,12 +88,12 @@ getent group docker > /dev/null || %{_sbindir}/groupadd -r docker
 exit 0
 
 %post
-%if 0%{?fedora} >= 19
+%if %{with systemd}
 %systemd_post %{SOURCE1}
 %endif
 
 %preun
-%if 0%{?fedora} >= 19
+%if %{with systemd}
 %systemd_preun %{SOURCE1}
 %else
 if [ $1 -eq 0 ]; then
@@ -98,7 +102,7 @@ fi
 %endif
 
 %postun
-%if 0%{?fedora} >= 19
+%if %{with systemd}
 %systemd_postun_with_restart %{SOURCE1}
 %endif
 
@@ -108,7 +112,7 @@ fi
 %{_mandir}/man1/docker.1.gz
 %{_bindir}/docker
 %{_bindir}/docker-init
-%if 0%{?fedora} >= 19
+%if %{with systemd}
 %{_unitdir}/docker.service
 %else
 %config(noreplace) %{_sysconfdir}/xinetd.d/docker
@@ -118,6 +122,20 @@ fi
 %dir %{_sharedstatedir}/docker
 
 %changelog
+* Wed Oct 09 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7-0.5.rc3
+- rc3 version bump
+- exclusivearch x86_64
+
+* Wed Oct 09 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7-0.4.rc2
+- debuginfo not Go-ready yet, skipped
+
+* Wed Oct 09 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7-0.3.rc2
+- debuginfo package generated
+- buildrequires listed with versions where needed
+- conditionals changed to reflect systemd or not
+- docker commit value not needed
+- versioned provides lxc-docker
+
 * Mon Oct 07 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7-2.rc2
 - rc branch includes devmapper
 - el6 BZ #1015865 fix included
