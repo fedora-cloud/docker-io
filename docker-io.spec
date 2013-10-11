@@ -19,7 +19,7 @@ URL:            http://www.docker.io
 ExclusiveArch:  x86_64
 Source0:        https://github.com/dotcloud/docker/archive/docker-0.7-rc3.zip
 Source1:        docker.service
-Source2:        docker.xinetd
+Source2:        docker
 BuildRequires:  gcc
 BuildRequires:  golang("github.com/gorilla/mux")
 # kr/pty 0-0.11 fixes BZ #1012701 docker first run error
