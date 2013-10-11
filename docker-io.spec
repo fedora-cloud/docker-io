@@ -8,7 +8,7 @@
 
 Name:           docker-io
 Version:        0.7
-Release:        0.6.rc3%{?dist}
+Release:        0.7.rc3%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
@@ -19,7 +19,9 @@ URL:            http://www.docker.io
 ExclusiveArch:  x86_64
 Source0:        https://github.com/dotcloud/docker/archive/docker-0.7-rc3.zip
 Source1:        docker.service
-Source2:        docker
+# though final name for xinetd file is simply 'docker',
+# having .xinetd makes things clear
+Source2:        docker.xinetd
 BuildRequires:  gcc
 BuildRequires:  golang("github.com/gorilla/mux")
 # kr/pty 0-0.11 fixes BZ #1012701 docker first run error
@@ -84,7 +86,7 @@ install -d %{buildroot}%{_unitdir}
 install -p -m 644 %{SOURCE1} %{buildroot}%{_unitdir}
 %else
 install -d %{buildroot}%{_sysconfdir}/xinetd.d
-install -p -m 644 %{SOURCE2} %{buildroot}%{_sysconfdir}/xinetd.d
+install -p -m 644 %{SOURCE2} %{buildroot}%{_sysconfdir}/xinetd.d/docker
 %endif
 
 %pre
@@ -126,6 +128,9 @@ fi
 %dir %{_sharedstatedir}/docker
 
 %changelog
+* Fri Oct 11 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7-0.7.rc3
+- xinetd file renamed to docker.xinetd for clarity
+
 * Thu Oct 10 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7-0.6.rc3
 - patched for el6 to use sphinx-1.0-build
 
