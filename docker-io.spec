@@ -8,7 +8,7 @@
 
 Name:           docker-io
 Version:        0.7
-Release:        0.8.rc3%{?dist}
+Release:        0.9.rc3%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
@@ -37,7 +37,7 @@ Requires:       xinetd
 %endif
 Requires:       lxc
 Requires:       tar
-Provides:       lxc-docker = 0.6.3
+Provides:       lxc-docker = %{version}
 
 %description
 Docker is an open-source engine that automates the deployment of any
@@ -127,6 +127,9 @@ fi
 %dir %{_sharedstatedir}/docker
 
 %changelog
+* Fri Oct 18 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7-0.9.rc3
+- lxc-docker version matches package version
+
 * Fri Oct 18 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7-0.8.rc3
 - double quotes removed from buildrequires as per existing golang rules
 
