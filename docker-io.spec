@@ -8,7 +8,7 @@
 
 Name:           docker-io
 Version:        0.7
-Release:        0.7.rc3%{?dist}
+Release:        0.8.rc3%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
@@ -23,11 +23,10 @@ Source1:        docker.service
 # having .xinetd makes things clear
 Source2:        docker.xinetd
 BuildRequires:  gcc
-BuildRequires:  golang("github.com/gorilla/mux")
-# kr/pty 0-0.11 fixes BZ #1012701 docker first run error
-BuildRequires:  golang("github.com/kr/pty") >= 0-0.11 
-BuildRequires:  golang("code.google.com/p/go.net/websocket")
-BuildRequires:  golang("code.google.com/p/gosqlite/sqlite3")
+BuildRequires:  golang(github.com/gorilla/mux)
+BuildRequires:  golang(github.com/kr/pty)
+BuildRequires:  golang(code.google.com/p/go.net/websocket)
+BuildRequires:  golang(code.google.com/p/gosqlite/sqlite3)
 BuildRequires:  device-mapper-devel
 BuildRequires:  python-sphinxcontrib-httpdomain
 %if %{with systemd}
@@ -128,6 +127,9 @@ fi
 %dir %{_sharedstatedir}/docker
 
 %changelog
+* Fri Oct 18 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7-0.8.rc3
+- double quotes removed from buildrequires as per existing golang rules
+
 * Fri Oct 11 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7-0.7.rc3
 - xinetd file renamed to docker.xinetd for clarity
 
