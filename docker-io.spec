@@ -6,9 +6,12 @@
 %global debug_package %{nil}
 %global gopath  %{_datadir}/gocode
 
+%global commit      3c20a8cdc7b1b323696c5720c23480971f55ccef
+%global shortcommit %(c=%{commit}; echo ${c:0:7})
+
 Name:           docker-io
 Version:        0.7
-Release:        0.9.rc3%{?dist}
+Release:        0.10.rc3%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
@@ -17,7 +20,7 @@ Patch1:         docker-0.7-el6-docs.patch
 URL:            http://www.docker.io
 # only x86_64 for now: https://github.com/dotcloud/docker/issues/136
 ExclusiveArch:  x86_64
-Source0:        https://github.com/dotcloud/docker/archive/docker-0.7-rc3.zip
+Source0:        https://github.com/dotcloud/docker/archive/%{commit}/docker-%{shortcommit}.tar.gz
 Source1:        docker.service
 # though final name for xinetd file is simply 'docker',
 # having .xinetd makes things clear
@@ -50,7 +53,7 @@ and tests on a laptop will run at scale, in production*, on VMs, bare-metal
 servers, OpenStack clusters, public instances, or combinations of the above.
 
 %prep
-%setup -q -n docker-0.7-rc3
+%setup -q -n docker-%{commit}
 rm -rf vendor
 %patch0 -p1 -b docker-0.7-remove-dotcloud-tar.patch
 %if 0%{?rhel} >= 6
@@ -65,7 +68,7 @@ mkdir -p src/github.com/dotcloud
 ln -s $(dirs +1 -l) src/github.com/dotcloud/docker
 export GOPATH=$(pwd):%{gopath}
 go build -v -a github.com/dotcloud/docker/docker
-go build -v -a github.com/dotcloud/docker/docker-init
+go build -v -a github.com/dotcloud/docker/dockerinit
 
 popd
 
@@ -75,11 +78,13 @@ make -C docs/ man
 install -d %{buildroot}%{_bindir}
 install -d %{buildroot}%{_mandir}/man1
 install -d %{buildroot}%{_sysconfdir}/bash_completion.d
+install -d %{buildroot}%{_datadir}/zsh/site-functions
 install -d -m 700 %{buildroot}%{_sharedstatedir}/docker
 install -p -m 755 _build/docker %{buildroot}%{_bindir}
-install -p -m 755 _build/docker-init %{buildroot}%{_bindir}
+install -p -m 755 _build/dockerinit %{buildroot}%{_bindir}
 install -p -m 644 docs/_build/man/docker.1 %{buildroot}%{_mandir}/man1
-install -p -m 644 contrib/docker.bash %{buildroot}%{_sysconfdir}/bash_completion.d/
+install -p -m 644 contrib/completion/bash/docker %{buildroot}%{_sysconfdir}/bash_completion.d/docker.bash
+install -p -m 644 contrib/completion/zsh/_docker %{buildroot}%{_datadir}/zsh/site-functions
 %if %{with systemd}
 install -d %{buildroot}%{_unitdir}
 install -p -m 644 %{SOURCE1} %{buildroot}%{_unitdir}
@@ -116,7 +121,7 @@ fi
 %doc AUTHORS CHANGELOG.md CONTRIBUTING.md FIXME LICENSE MAINTAINERS NOTICE README.md 
 %{_mandir}/man1/docker.1.gz
 %{_bindir}/docker
-%{_bindir}/docker-init
+%{_bindir}/dockerinit
 %if %{with systemd}
 %{_unitdir}/docker.service
 %else
@@ -124,9 +129,15 @@ fi
 %endif
 %dir %{_sysconfdir}/bash_completion.d
 %{_sysconfdir}/bash_completion.d/docker.bash
+%{_datadir}/zsh/site-functions/_docker
 %dir %{_sharedstatedir}/docker
 
 %changelog
+* Sat Oct 19 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7-0.10.rc4
+- rc version bump
+- docker-init -> dockerinit
+- zsh completion script installed to /usr/share/zsh/site-functions
+
 * Fri Oct 18 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7-0.9.rc3
 - lxc-docker version matches package version
 
