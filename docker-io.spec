@@ -11,7 +11,7 @@
 
 Name:           docker-io
 Version:        0.7
-Release:        0.10.rc3%{?dist}
+Release:        0.10.rc4%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
