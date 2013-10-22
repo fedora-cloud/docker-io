@@ -11,7 +11,7 @@
 
 Name:           docker-io
 Version:        0.7
-Release:        0.10.rc4%{?dist}
+Release:        0.11.rc4%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
@@ -67,7 +67,9 @@ pushd _build
 mkdir -p src/github.com/dotcloud
 ln -s $(dirs +1 -l) src/github.com/dotcloud/docker
 export GOPATH=$(pwd):%{gopath}
-go build -v -a github.com/dotcloud/docker/docker
+# passing version information build flags BZ #1017186
+export LDFLAGS="-X main.GITCOMMIT %{shortcommit}/%{release} -X main.VERSION %{version} -w"
+go build -v -a -ldflags "$LDFLAGS" github.com/dotcloud/docker/docker
 go build -v -a github.com/dotcloud/docker/dockerinit
 
 popd
@@ -133,6 +135,9 @@ fi
 %dir %{_sharedstatedir}/docker
 
 %changelog
+* Tue Oct 22 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7-0.11.rc4
+- passing version information for docker build BZ #1017186
+
 * Sat Oct 19 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7-0.10.rc4
 - rc version bump
 - docker-init -> dockerinit
