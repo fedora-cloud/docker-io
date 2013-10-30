@@ -6,12 +6,12 @@
 %global debug_package %{nil}
 %global gopath  %{_datadir}/gocode
 
-%global commit      3c20a8cdc7b1b323696c5720c23480971f55ccef
+%global commit      1fe08e004686b25aaf56bc01194629c0b7e658f9
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:           docker-io
 Version:        0.7
-Release:        0.11.rc4%{?dist}
+Release:        0.12.dm%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
@@ -29,7 +29,6 @@ BuildRequires:  gcc
 BuildRequires:  golang(github.com/gorilla/mux)
 BuildRequires:  golang(github.com/kr/pty)
 BuildRequires:  golang(code.google.com/p/go.net/websocket)
-BuildRequires:  golang(code.google.com/p/gosqlite/sqlite3)
 BuildRequires:  device-mapper-devel
 BuildRequires:  python-sphinxcontrib-httpdomain
 %if %{with systemd}
@@ -70,7 +69,7 @@ export GOPATH=$(pwd):%{gopath}
 # passing version information build flags BZ #1017186
 export LDFLAGS="-X main.GITCOMMIT %{shortcommit}/%{release} -X main.VERSION %{version} -w"
 go build -v -a -ldflags "$LDFLAGS" github.com/dotcloud/docker/docker
-go build -v -a github.com/dotcloud/docker/dockerinit
+go build -v -a -ldflags "$LDFLAGS" github.com/dotcloud/docker/docker-init
 
 popd
 
@@ -83,7 +82,7 @@ install -d %{buildroot}%{_sysconfdir}/bash_completion.d
 install -d %{buildroot}%{_datadir}/zsh/site-functions
 install -d -m 700 %{buildroot}%{_sharedstatedir}/docker
 install -p -m 755 _build/docker %{buildroot}%{_bindir}
-install -p -m 755 _build/dockerinit %{buildroot}%{_bindir}
+install -p -m 755 _build/docker-init %{buildroot}%{_bindir}
 install -p -m 644 docs/_build/man/docker.1 %{buildroot}%{_mandir}/man1
 install -p -m 644 contrib/completion/bash/docker %{buildroot}%{_sysconfdir}/bash_completion.d/docker.bash
 install -p -m 644 contrib/completion/zsh/_docker %{buildroot}%{_datadir}/zsh/site-functions
@@ -123,7 +122,7 @@ fi
 %doc AUTHORS CHANGELOG.md CONTRIBUTING.md FIXME LICENSE MAINTAINERS NOTICE README.md 
 %{_mandir}/man1/docker.1.gz
 %{_bindir}/docker
-%{_bindir}/dockerinit
+%{_bindir}/docker-init
 %if %{with systemd}
 %{_unitdir}/docker.service
 %else
@@ -135,6 +134,10 @@ fi
 %dir %{_sharedstatedir}/docker
 
 %changelog
+* Sat Oct 26 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7-0.12.dm
+- dm branch
+- dockerinit -> docker-init
+
 * Tue Oct 22 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7-0.11.rc4
 - passing version information for docker build BZ #1017186
 
