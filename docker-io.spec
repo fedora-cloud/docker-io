@@ -11,7 +11,7 @@
 
 Name:           docker-io
 Version:        0.7
-Release:        0.12.dm%{?dist}
+Release:        0.13.dm%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
@@ -134,6 +134,11 @@ fi
 %dir %{_sharedstatedir}/docker
 
 %changelog
+* Sat Nov 02 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7-0.13.dm
+- docker.service file sets iptables rules to allow container networking, this
+    is a stopgap approach, relevant pull request here:
+    https://github.com/dotcloud/docker/pull/2527
+
 * Sat Oct 26 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7-0.12.dm
 - dm branch
 - dockerinit -> docker-init
