@@ -6,9 +6,12 @@
 %global debug_package %{nil}
 %global gopath  %{_datadir}/gocode
 
+%global commit      1fe08e004686b25aaf56bc01194629c0b7e658f9
+%global shortcommit %(c=%{commit}; echo ${c:0:7})
+
 Name:           docker-io
 Version:        0.7
-Release:        0.9.rc3%{?dist}
+Release:        0.13.dm%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
@@ -17,7 +20,7 @@ Patch1:         docker-0.7-el6-docs.patch
 URL:            http://www.docker.io
 # only x86_64 for now: https://github.com/dotcloud/docker/issues/136
 ExclusiveArch:  x86_64
-Source0:        https://github.com/dotcloud/docker/archive/docker-0.7-rc3.zip
+Source0:        https://github.com/dotcloud/docker/archive/%{commit}/docker-%{shortcommit}.tar.gz
 Source1:        docker.service
 # though final name for xinetd file is simply 'docker',
 # having .xinetd makes things clear
@@ -26,7 +29,6 @@ BuildRequires:  gcc
 BuildRequires:  golang(github.com/gorilla/mux)
 BuildRequires:  golang(github.com/kr/pty)
 BuildRequires:  golang(code.google.com/p/go.net/websocket)
-BuildRequires:  golang(code.google.com/p/gosqlite/sqlite3)
 BuildRequires:  device-mapper-devel
 BuildRequires:  python-sphinxcontrib-httpdomain
 %if %{with systemd}
@@ -50,7 +52,7 @@ and tests on a laptop will run at scale, in production*, on VMs, bare-metal
 servers, OpenStack clusters, public instances, or combinations of the above.
 
 %prep
-%setup -q -n docker-0.7-rc3
+%setup -q -n docker-%{commit}
 rm -rf vendor
 %patch0 -p1 -b docker-0.7-remove-dotcloud-tar.patch
 %if 0%{?rhel} >= 6
@@ -64,8 +66,10 @@ pushd _build
 mkdir -p src/github.com/dotcloud
 ln -s $(dirs +1 -l) src/github.com/dotcloud/docker
 export GOPATH=$(pwd):%{gopath}
-go build -v -a github.com/dotcloud/docker/docker
-go build -v -a github.com/dotcloud/docker/docker-init
+# passing version information build flags BZ #1017186
+export LDFLAGS="-X main.GITCOMMIT %{shortcommit}/%{release} -X main.VERSION %{version} -w"
+go build -v -a -ldflags "$LDFLAGS" github.com/dotcloud/docker/docker
+go build -v -a -ldflags "$LDFLAGS" github.com/dotcloud/docker/docker-init
 
 popd
 
@@ -75,11 +79,13 @@ make -C docs/ man
 install -d %{buildroot}%{_bindir}
 install -d %{buildroot}%{_mandir}/man1
 install -d %{buildroot}%{_sysconfdir}/bash_completion.d
+install -d %{buildroot}%{_datadir}/zsh/site-functions
 install -d -m 700 %{buildroot}%{_sharedstatedir}/docker
 install -p -m 755 _build/docker %{buildroot}%{_bindir}
 install -p -m 755 _build/docker-init %{buildroot}%{_bindir}
 install -p -m 644 docs/_build/man/docker.1 %{buildroot}%{_mandir}/man1
-install -p -m 644 contrib/docker.bash %{buildroot}%{_sysconfdir}/bash_completion.d/
+install -p -m 644 contrib/completion/bash/docker %{buildroot}%{_sysconfdir}/bash_completion.d/docker.bash
+install -p -m 644 contrib/completion/zsh/_docker %{buildroot}%{_datadir}/zsh/site-functions
 %if %{with systemd}
 install -d %{buildroot}%{_unitdir}
 install -p -m 644 %{SOURCE1} %{buildroot}%{_unitdir}
@@ -124,9 +130,27 @@ fi
 %endif
 %dir %{_sysconfdir}/bash_completion.d
 %{_sysconfdir}/bash_completion.d/docker.bash
+%{_datadir}/zsh/site-functions/_docker
 %dir %{_sharedstatedir}/docker
 
 %changelog
+* Sat Nov 02 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7-0.13.dm
+- docker.service file sets iptables rules to allow container networking, this
+    is a stopgap approach, relevant pull request here:
+    https://github.com/dotcloud/docker/pull/2527
+
+* Sat Oct 26 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7-0.12.dm
+- dm branch
+- dockerinit -> docker-init
+
+* Tue Oct 22 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7-0.11.rc4
+- passing version information for docker build BZ #1017186
+
+* Sat Oct 19 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7-0.10.rc4
+- rc version bump
+- docker-init -> dockerinit
+- zsh completion script installed to /usr/share/zsh/site-functions
+
 * Fri Oct 18 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7-0.9.rc3
 - lxc-docker version matches package version
 
