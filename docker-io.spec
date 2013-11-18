@@ -26,6 +26,7 @@ Source1:        docker.service
 # having .xinetd makes things clear
 Source2:        docker.xinetd
 BuildRequires:  gcc
+BuildRequires:  glibc-static
 BuildRequires:  golang(github.com/gorilla/mux)
 BuildRequires:  golang(github.com/kr/pty)
 BuildRequires:  golang(code.google.com/p/go.net/websocket)
@@ -68,9 +69,11 @@ mkdir -p src/github.com/dotcloud
 ln -s $(dirs +1 -l) src/github.com/dotcloud/docker
 export GOPATH=$(pwd):%{gopath}
 # passing version information build flags BZ #1017186
-export LDFLAGS="-X main.GITCOMMIT %{shortcommit}/%{release} -X main.VERSION %{version} -w"
-go build -v -a -ldflags "$LDFLAGS" github.com/dotcloud/docker/docker
-go build -v -a -ldflags "$LDFLAGS" github.com/dotcloud/docker/docker-init
+LDFLAGS="-X main.GITCOMMIT %{shortcommit}/%{release} -X main.VERSION %{version} -w"
+# tamper with their magic
+LDFLAGS_STATIC="-X github.com/dotcloud/docker/utils.IAMSTATIC true"
+go build -v -a -ldflags "$LDFLAGS $LDFLAGS_STATIC" github.com/dotcloud/docker/docker
+go build -v -a -ldflags "$LDFLAGS $LDFLAGS_STATIC" github.com/dotcloud/docker/dockerinit
 
 popd
 
@@ -78,12 +81,13 @@ make -C docs/ man
 
 %install
 install -d %{buildroot}%{_bindir}
+install -d %{buildroot}%{_libexecdir}/docker
 install -d %{buildroot}%{_mandir}/man1
 install -d %{buildroot}%{_sysconfdir}/bash_completion.d
 install -d %{buildroot}%{_datadir}/zsh/site-functions
 install -d -m 700 %{buildroot}%{_sharedstatedir}/docker
-install -p -m 755 _build/docker %{buildroot}%{_bindir}
-install -p -m 755 _build/docker-init %{buildroot}%{_bindir}
+install -p -m 755 _build/docker %{buildroot}%{_bindir}/docker
+install -p -m 755 _build/dockerinit %{buildroot}%{_libexecdir}/docker
 install -p -m 644 docs/_build/man/docker.1 %{buildroot}%{_mandir}/man1
 install -p -m 644 contrib/completion/bash/docker %{buildroot}%{_sysconfdir}/bash_completion.d/docker.bash
 install -p -m 644 contrib/completion/zsh/_docker %{buildroot}%{_datadir}/zsh/site-functions
@@ -123,7 +127,7 @@ fi
 %doc AUTHORS CHANGELOG.md CONTRIBUTING.md FIXME LICENSE MAINTAINERS NOTICE README.md 
 %{_mandir}/man1/docker.1.gz
 %{_bindir}/docker
-%{_bindir}/docker-init
+%{_libexecdir}/docker
 %if %{with systemd}
 %{_unitdir}/docker.service
 %else
@@ -137,6 +141,8 @@ fi
 %changelog
 * Mon Nov 18 2013 Vincent Batts <vbatts@redhat.com> - 0.7-0.14.rc5
 - update docker source to 457375ea370a2da0df301d35b1aaa8f5964dabfe
+- static magic
+- place dockerinit in a libexec
 
 * Sat Nov 02 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7-0.13.dm
 - docker.service file sets iptables rules to allow container networking, this
