@@ -6,12 +6,12 @@
 %global debug_package %{nil}
 %global gopath  %{_datadir}/gocode
 
-%global commit      1fe08e004686b25aaf56bc01194629c0b7e658f9
+%global commit      457375ea370a2da0df301d35b1aaa8f5964dabfe
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:           docker-io
 Version:        0.7
-Release:        0.13.dm%{?dist}
+Release:        0.14.rc5%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
@@ -29,6 +29,7 @@ BuildRequires:  gcc
 BuildRequires:  golang(github.com/gorilla/mux)
 BuildRequires:  golang(github.com/kr/pty)
 BuildRequires:  golang(code.google.com/p/go.net/websocket)
+BuildRequires:  golang(code.google.com/p/gosqlite/sqlite3)
 BuildRequires:  device-mapper-devel
 BuildRequires:  python-sphinxcontrib-httpdomain
 %if %{with systemd}
@@ -134,6 +135,9 @@ fi
 %dir %{_sharedstatedir}/docker
 
 %changelog
+* Mon Nov 18 2013 Vincent Batts <vbatts@redhat.com> - 0.7-0.14.rc5
+- update docker source to 457375ea370a2da0df301d35b1aaa8f5964dabfe
+
 * Sat Nov 02 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7-0.13.dm
 - docker.service file sets iptables rules to allow container networking, this
     is a stopgap approach, relevant pull request here:
