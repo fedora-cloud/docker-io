@@ -6,7 +6,7 @@
 %global debug_package %{nil}
 %global gopath  %{_datadir}/gocode
 
-%global commit      457375ea370a2da0df301d35b1aaa8f5964dabfe
+%global commit      268e386f6626d6afdc414febc62bcc73be6ceec9
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:           docker-io
@@ -17,6 +17,7 @@ License:        ASL 2.0
 
 Patch0:         docker-0.7-remove-dotcloud-tar.patch
 Patch1:         docker-0.7-el6-docs.patch
+Patch2:         docker-bridge_flag.patch
 URL:            http://www.docker.io
 # only x86_64 for now: https://github.com/dotcloud/docker/issues/136
 ExclusiveArch:  x86_64
@@ -60,20 +61,27 @@ rm -rf vendor
 %if 0%{?rhel} >= 6
 %patch1 -p1 -b docker-0.7-el6-docs.patch
 %endif
+#%patch2 -p1
 
 %build
 mkdir _build
 pushd _build
 
+echo $(pwd)
+
 mkdir -p src/github.com/dotcloud
 ln -s $(dirs +1 -l) src/github.com/dotcloud/docker
 export GOPATH=$(pwd):%{gopath}
 # passing version information build flags BZ #1017186
-LDFLAGS="-X main.GITCOMMIT %{shortcommit}/%{release} -X main.VERSION %{version} -w"
+export LDFLAGS="-X main.GITCOMMIT '%{shortcommit}/%{release}' -X main.VERSION '%{version}' -w"
 # tamper with their magic
-LDFLAGS_STATIC="-X github.com/dotcloud/docker/utils.IAMSTATIC true"
-go build -v -a -ldflags "$LDFLAGS $LDFLAGS_STATIC" github.com/dotcloud/docker/docker
-go build -v -a -ldflags "$LDFLAGS $LDFLAGS_STATIC" github.com/dotcloud/docker/dockerinit
+export LDFLAGS_STATIC="-X github.com/dotcloud/docker/utils.IAMSTATIC true"
+export BUILDFLAGS="-tags netgo"
+go build -v -a -ldflags "$LDFLAGS $LDFLAGS_STATIC" $BUILDFLAGS github.com/dotcloud/docker/docker
+go build -v -a -ldflags \
+  "$LDFLAGS -linkmode external -extldflags '-lpthread -static -Wl,--unresolved-symbols=ignore-in-object-files' $LDFLAGS_STATIC" \
+  $BUILDFLAGS \
+  github.com/dotcloud/docker/dockerinit
 
 popd
 
@@ -139,10 +147,12 @@ fi
 %dir %{_sharedstatedir}/docker
 
 %changelog
-* Mon Nov 18 2013 Vincent Batts <vbatts@redhat.com> - 0.7-0.14.rc5
+* Tue Nov 19 2013 Vincent Batts <vbatts@redhat.com> - 0.7-0.14.rc5
+- update docker source to crosbymichael/0.7-rc5
 - update docker source to 457375ea370a2da0df301d35b1aaa8f5964dabfe
 - static magic
 - place dockerinit in a libexec
+- add sqlite dependency
 
 * Sat Nov 02 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7-0.13.dm
 - docker.service file sets iptables rules to allow container networking, this
