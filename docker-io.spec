@@ -67,8 +67,6 @@ rm -rf vendor
 mkdir _build
 pushd _build
 
-echo $(pwd)
-
 mkdir -p src/github.com/dotcloud
 ln -s $(dirs +1 -l) src/github.com/dotcloud/docker
 export GOPATH=$(pwd):%{gopath}
