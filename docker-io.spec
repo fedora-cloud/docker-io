@@ -6,18 +6,17 @@
 %global debug_package %{nil}
 %global gopath  %{_datadir}/gocode
 
-%global commit      268e386f6626d6afdc414febc62bcc73be6ceec9
+%global commit      9af77302f476c3cef11bd4a1efe6b46f98abe781
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:           docker-io
 Version:        0.7
-Release:        0.14.rc5%{?dist}
+Release:        0.15.rc6%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
 Patch0:         docker-0.7-remove-dotcloud-tar.patch
 Patch1:         docker-0.7-el6-docs.patch
-Patch2:         docker-bridge_flag.patch
 URL:            http://www.docker.io
 # only x86_64 for now: https://github.com/dotcloud/docker/issues/136
 ExclusiveArch:  x86_64
@@ -61,7 +60,6 @@ rm -rf vendor
 %if 0%{?rhel} >= 6
 %patch1 -p1 -b docker-0.7-el6-docs.patch
 %endif
-#%patch2 -p1
 
 %build
 mkdir _build
@@ -147,6 +145,10 @@ fi
 %dir %{_sharedstatedir}/docker
 
 %changelog
+* Wed Nov 20 2013 Vincent Batts <vbatts@redhat.com> - 0.7-0.15.rc6
+- update docker source to crosbymichael/0.7.0-rc6
+- bridge-patch is not needed on this branch
+
 * Tue Nov 19 2013 Vincent Batts <vbatts@redhat.com> - 0.7-0.14.rc5
 - update docker source to crosbymichael/0.7-rc5
 - update docker source to 457375ea370a2da0df301d35b1aaa8f5964dabfe
