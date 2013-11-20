@@ -11,12 +11,13 @@
 
 Name:           docker-io
 Version:        0.7
-Release:        0.15.rc6%{?dist}
+Release:        0.16.rc6%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
 Patch0:         docker-0.7-remove-dotcloud-tar.patch
 Patch1:         docker-0.7-el6-docs.patch
+Patch2:         docker-bridge_flag.patch
 URL:            http://www.docker.io
 # only x86_64 for now: https://github.com/dotcloud/docker/issues/136
 ExclusiveArch:  x86_64
@@ -60,6 +61,7 @@ rm -rf vendor
 %if 0%{?rhel} >= 6
 %patch1 -p1 -b docker-0.7-el6-docs.patch
 %endif
+%patch2 -p1 -b none-bridge
 
 %build
 mkdir _build
@@ -145,6 +147,9 @@ fi
 %dir %{_sharedstatedir}/docker
 
 %changelog
+* Wed Nov 20 2013 Vincent Batts <vbatts@redhat.com> - 0.7-0.16.rc6
+- adding back the none bridge patch
+
 * Wed Nov 20 2013 Vincent Batts <vbatts@redhat.com> - 0.7-0.15.rc6
 - update docker source to crosbymichael/0.7.0-rc6
 - bridge-patch is not needed on this branch
