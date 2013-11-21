@@ -11,7 +11,7 @@
 
 Name:           docker-io
 Version:        0.7
-Release:        0.16.rc6%{?dist}
+Release:        0.17.rc6%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
@@ -133,7 +133,8 @@ fi
 %doc AUTHORS CHANGELOG.md CONTRIBUTING.md FIXME LICENSE MAINTAINERS NOTICE README.md 
 %{_mandir}/man1/docker.1.gz
 %{_bindir}/docker
-%{_libexecdir}/docker
+%dir %{_libexecdir}/docker
+%{_libexecdir}/docker/dockerinit
 %if %{with systemd}
 %{_unitdir}/docker.service
 %else
@@ -145,6 +146,10 @@ fi
 %dir %{_sharedstatedir}/docker
 
 %changelog
+* Wed Nov 20 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7-0.17.rc6
+- removed ExecStartPost lines from docker.service (BZ #1026045)
+- dockerinit listed in files
+
 * Wed Nov 20 2013 Vincent Batts <vbatts@redhat.com> - 0.7-0.16.rc6
 - adding back the none bridge patch
 
