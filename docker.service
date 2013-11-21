@@ -5,8 +5,6 @@ Description=Docker container management daemon
 Type=simple
 ExecStartPre=/usr/sbin/sysctl -w net.ipv4.ip_forward=1 net.ipv6.conf.all.forwarding=1
 ExecStart=/usr/bin/docker -d
-ExecStartPost=/usr/sbin/iptables -I FORWARD -o docker0 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
-ExecStartPost=/usr/sbin/iptables -I FORWARD -i docker0 ! -o docker0 -j ACCEPT
 Restart=on-failure
 
 [Install]
