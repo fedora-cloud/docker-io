@@ -1,3 +1,3 @@
 This repo contains all sources to rpmbuild docker-io.
 
-_Unofficially_ serves as upstream repo for OpenShift docker-io users.
+lsm5/docker-io _unofficially_ serves as upstream repo for OpenShift docker-io users (unless anyone objects :))
