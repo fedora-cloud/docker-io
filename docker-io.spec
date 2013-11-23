@@ -6,12 +6,12 @@
 %global debug_package %{nil}
 %global gopath  %{_datadir}/gocode
 
-%global commit      9af77302f476c3cef11bd4a1efe6b46f98abe781
+%global commit      ea7811c83d913db91948cd4f696cf34b139da855
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:           docker-io
 Version:        0.7
-Release:        0.18.rc6%{?dist}
+Release:        0.19.rc7%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
@@ -21,7 +21,7 @@ Patch2:         docker-bridge_flag.patch
 URL:            http://www.docker.io
 # only x86_64 for now: https://github.com/dotcloud/docker/issues/136
 ExclusiveArch:  x86_64
-Source0:        https://github.com/dotcloud/docker/archive/%{commit}/docker-%{shortcommit}.tar.gz
+Source0:        https://github.com/crosbymichael/docker/archive/%{commit}/docker-%{shortcommit}.tar.gz
 Source1:        docker.service
 # though final name for sysconf/sysvinit files is simply 'docker',
 # having .sysvinit and .sysconfig makes things clear
@@ -153,8 +153,12 @@ exit 0
 %dir %{_sharedstatedir}/docker
 
 %changelog
-* Fri Nov 22 2013 Adam Miller <maxamillion@fedoraproject.org> - 0.7-0.18.rc6
+* Fri Nov 22 2013 Adam Miller <maxamillion@fedoraproject.org> - 0.7-0.19.rc7
 - Remove xinetd entry, added sysvinit
+
+* Fri Nov 22 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7-0.18.rc7
+- rc version bump
+
 * Wed Nov 20 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7-0.17.rc6
 - removed ExecStartPost lines from docker.service (BZ #1026045)
 - dockerinit listed in files
