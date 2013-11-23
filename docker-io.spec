@@ -11,7 +11,7 @@
 
 Name:           docker-io
 Version:        0.7
-Release:        0.18.rc7%{?dist}
+Release:        0.19.rc7%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
@@ -23,9 +23,10 @@ URL:            http://www.docker.io
 ExclusiveArch:  x86_64
 Source0:        https://github.com/crosbymichael/docker/archive/%{commit}/docker-%{shortcommit}.tar.gz
 Source1:        docker.service
-# though final name for xinetd file is simply 'docker',
-# having .xinetd makes things clear
-Source2:        docker.xinetd
+# though final name for sysconf/sysvinit files is simply 'docker',
+# having .sysvinit and .sysconfig makes things clear
+Source2:        docker.sysconfig
+Source3:        docker.sysvinit
 BuildRequires:  gcc
 BuildRequires:  glibc-static
 BuildRequires:  golang(github.com/gorilla/mux)
@@ -38,7 +39,8 @@ BuildRequires:  python-sphinxcontrib-httpdomain
 BuildRequires:  pkgconfig(systemd)
 Requires:       systemd-units
 %else
-Requires:       xinetd
+Requires(post): chkconfig
+Requires(preun): chkconfig
 %endif
 Requires:       lxc
 Requires:       tar
@@ -101,8 +103,10 @@ install -p -m 644 contrib/completion/zsh/_docker %{buildroot}%{_datadir}/zsh/sit
 install -d %{buildroot}%{_unitdir}
 install -p -m 644 %{SOURCE1} %{buildroot}%{_unitdir}
 %else
-install -d %{buildroot}%{_sysconfdir}/xinetd.d
-install -p -m 644 %{SOURCE2} %{buildroot}%{_sysconfdir}/xinetd.d/docker
+install -d %{buildroot}%{_sysconfdir}/sysconfig/
+install -p -m 644 %{SOURCE2} %{buildroot}%{_sysconfdir}/sysconfig/docker
+install -d %{buildroot}%{_initddir}
+install -p -m 755 %{SOURCE3} %{buildroot}%{_initddir}/docker
 %endif
 
 %pre
@@ -112,20 +116,22 @@ exit 0
 %post
 %if %{with systemd}
 %systemd_post %{SOURCE1}
+%else
+# install but don't activate
+/sbin/chkconfig --add docker
 %endif
 
 %preun
 %if %{with systemd}
 %systemd_preun %{SOURCE1}
-%else
-if [ $1 -eq 0 ]; then
-    /sbin/service xinetd condrestart > /dev/null 2>&1
-fi
 %endif
 
 %postun
 %if %{with systemd}
 %systemd_postun_with_restart %{SOURCE1}
+%else
+%{_initrddir}/docker stop >/dev/null 2>&1
+/sbin/chkconfig --del docker
 %endif
 
 %files
@@ -138,7 +144,8 @@ fi
 %if %{with systemd}
 %{_unitdir}/docker.service
 %else
-%config(noreplace) %{_sysconfdir}/xinetd.d/docker
+%config(noreplace) %{_sysconfdir}/sysconfig/docker
+%{_initddir}/docker
 %endif
 %dir %{_sysconfdir}/bash_completion.d
 %{_sysconfdir}/bash_completion.d/docker.bash
@@ -146,6 +153,9 @@ fi
 %dir %{_sharedstatedir}/docker
 
 %changelog
+* Fri Nov 22 2013 Adam Miller <maxamillion@fedoraproject.org> - 0.7-0.19.rc7
+- Remove xinetd entry, added sysvinit
+
 * Fri Nov 22 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7-0.18.rc7
 - rc version bump
 
