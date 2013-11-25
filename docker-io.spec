@@ -2,6 +2,9 @@
 %bcond_without  systemd
 %endif
 
+# modifying the dockerinit binary breaks the SHA1 sum check by docker
+%global __os_install_post %{_rpmconfigdir}/brp-compress
+
 #debuginfo not supported with Go
 %global debug_package %{nil}
 %global gopath  %{_datadir}/gocode
@@ -11,7 +14,7 @@
 
 Name:           docker-io
 Version:        0.7
-Release:        0.19.rc7%{?dist}
+Release:        0.20.rc7%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
@@ -74,14 +77,14 @@ ln -s $(dirs +1 -l) src/github.com/dotcloud/docker
 export GOPATH=$(pwd):%{gopath}
 # passing version information build flags BZ #1017186
 export LDFLAGS="-X main.GITCOMMIT '%{shortcommit}/%{release}' -X main.VERSION '%{version}' -w"
-# tamper with their magic
 export LDFLAGS_STATIC="-X github.com/dotcloud/docker/utils.IAMSTATIC true"
 export BUILDFLAGS="-tags netgo"
-go build -v -a -ldflags "$LDFLAGS $LDFLAGS_STATIC" $BUILDFLAGS github.com/dotcloud/docker/docker
 go build -v -a -ldflags \
   "$LDFLAGS -linkmode external -extldflags '-lpthread -static -Wl,--unresolved-symbols=ignore-in-object-files' $LDFLAGS_STATIC" \
   $BUILDFLAGS \
   github.com/dotcloud/docker/dockerinit
+export DOCKER_INITSHA1="$(sha1sum dockerinit | cut -d' ' -f1)"
+go build -v -a -ldflags "$LDFLAGS -X github.com/dotcloud/docker/utils.INITSHA1 \"$DOCKER_INITSHA1\"" $BUILDFLAGS github.com/dotcloud/docker/docker
 
 popd
 
@@ -153,6 +156,9 @@ exit 0
 %dir %{_sharedstatedir}/docker
 
 %changelog
+* Mon Nov 25 2013 Vincent Batts <vbatts@redhat.com> - 0.7-0.20.rc7
+- correct the build time defines (bz#1026545). Thanks dan-fedora.
+
 * Fri Nov 22 2013 Adam Miller <maxamillion@fedoraproject.org> - 0.7-0.19.rc7
 - Remove xinetd entry, added sysvinit
 
