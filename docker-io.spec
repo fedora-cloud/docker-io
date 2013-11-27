@@ -14,12 +14,13 @@
 
 Name:           docker-io
 Version:        0.7.0
-Release:        1%{?dist}
+Release:        5%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
 Patch0:         docker-0.7-remove-dotcloud-tar.patch
 Patch1:         docker-0.7-el6-docs.patch
+Patch2:         docker-rhel-brctl.patch
 URL:            http://www.docker.io
 # only x86_64 for now: https://github.com/dotcloud/docker/issues/136
 ExclusiveArch:  x86_64
@@ -41,11 +42,20 @@ BuildRequires:  python-sphinxcontrib-httpdomain
 BuildRequires:  pkgconfig(systemd)
 Requires:       systemd-units
 %else
-Requires(post): chkconfig
-Requires(preun): chkconfig
+Requires(post):     chkconfig
+Requires(preun):    chkconfig
+Requires(postun):   initscripts
 %endif
 Requires:       lxc
 Requires:       tar
+# https://bugzilla.redhat.com/show_bug.cgi?id=1035436
+# this won't be needed for rhel7+
+%if 0%{?rhel} <= 7
+Requires:       bridge-utils
+%endif
+# https://bugzilla.redhat.com/show_bug.cgi?id=1034919
+Requires:       libcgroup
+
 Provides:       lxc-docker = %{version}
 
 %description
@@ -64,6 +74,7 @@ rm -rf vendor
 %patch0 -p1 -b docker-0.7-remove-dotcloud-tar.patch
 %if 0%{?rhel} >= 6
 %patch1 -p1 -b docker-0.7-el6-docs.patch
+%patch2 -p1 -b brctl
 %endif
 
 %build
@@ -118,14 +129,18 @@ exit 0
 %preun
 %if %{with systemd}
 %systemd_preun %{SOURCE1}
+%else
+/sbin/service docker stop >/dev/null 2>&1
+/sbin/chkconfig --del docker
 %endif
 
 %postun
 %if %{with systemd}
 %systemd_postun_with_restart %{SOURCE1}
 %else
-%{_initrddir}/docker stop >/dev/null 2>&1
-/sbin/chkconfig --del docker
+if [ "$1" -ge "1" ] ; then
+        /sbin/service docker condrestart >/dev/null 2>&1 || :
+fi
 %endif
 
 %files
@@ -147,6 +162,18 @@ exit 0
 %dir %{_sharedstatedir}/docker
 
 %changelog
+* Wed Nov 27 2013 Adam Miller <maxamillion@fedoraproject.org> - 0.7.0-5
+- Fix up EL6 preun/postun to not fail on postun scripts
+
+* Wed Nov 27 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7.0-4
+- brctl patch for rhel <= 7
+
+* Wed Nov 27 2013 Vincent Batts <vbatts@redhat.com> - 0.7.0-3
+- Patch how the bridge network is set up on RHEL (BZ #1035436)
+
+* Wed Nov 27 2013 Vincent Batts <vbatts@redhat.com> - 0.7.0-2
+- add libcgroup require (BZ #1034919)
+
 * Tue Nov 26 2013 Marek Goldmann <mgoldman@redhat.com> - 0.7.0-1
 - Upstream release 0.7.0
 - Using upstream script to build the binary
