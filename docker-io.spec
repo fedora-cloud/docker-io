@@ -9,22 +9,21 @@
 %global debug_package %{nil}
 %global gopath  %{_datadir}/gocode
 
-%global commit      ea7811c83d913db91948cd4f696cf34b139da855
+%global commit      0d078b65817fc91eba916652b3f087a6c2eef851
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:           docker-io
-Version:        0.7
-Release:        0.20.rc7%{?dist}
+Version:        0.7.0
+Release:        1%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
 Patch0:         docker-0.7-remove-dotcloud-tar.patch
 Patch1:         docker-0.7-el6-docs.patch
-Patch2:         docker-bridge_flag.patch
 URL:            http://www.docker.io
 # only x86_64 for now: https://github.com/dotcloud/docker/issues/136
 ExclusiveArch:  x86_64
-Source0:        https://github.com/crosbymichael/docker/archive/%{commit}/docker-%{shortcommit}.tar.gz
+Source0:        https://github.com/dotcloud/docker/archive/v%{version}.tar.gz
 Source1:        docker.service
 # though final name for sysconf/sysvinit files is simply 'docker',
 # having .sysvinit and .sysconfig makes things clear
@@ -60,33 +59,25 @@ and tests on a laptop will run at scale, in production*, on VMs, bare-metal
 servers, OpenStack clusters, public instances, or combinations of the above.
 
 %prep
-%setup -q -n docker-%{commit}
+%setup -q -n docker-%{version}
 rm -rf vendor
 %patch0 -p1 -b docker-0.7-remove-dotcloud-tar.patch
 %if 0%{?rhel} >= 6
 %patch1 -p1 -b docker-0.7-el6-docs.patch
 %endif
-%patch2 -p1 -b none-bridge
 
 %build
 mkdir _build
+
 pushd _build
-
-mkdir -p src/github.com/dotcloud
-ln -s $(dirs +1 -l) src/github.com/dotcloud/docker
-export GOPATH=$(pwd):%{gopath}
-# passing version information build flags BZ #1017186
-export LDFLAGS="-X main.GITCOMMIT '%{shortcommit}/%{release}' -X main.VERSION '%{version}' -w"
-export LDFLAGS_STATIC="-X github.com/dotcloud/docker/utils.IAMSTATIC true"
-export BUILDFLAGS="-tags netgo"
-go build -v -a -ldflags \
-  "$LDFLAGS -linkmode external -extldflags '-lpthread -static -Wl,--unresolved-symbols=ignore-in-object-files' $LDFLAGS_STATIC" \
-  $BUILDFLAGS \
-  github.com/dotcloud/docker/dockerinit
-export DOCKER_INITSHA1="$(sha1sum dockerinit | cut -d' ' -f1)"
-go build -v -a -ldflags "$LDFLAGS -X github.com/dotcloud/docker/utils.INITSHA1 \"$DOCKER_INITSHA1\"" $BUILDFLAGS github.com/dotcloud/docker/docker
-
+  mkdir -p src/github.com/dotcloud
+  ln -s $(dirs +1 -l) src/github.com/dotcloud/docker
 popd
+
+export DOCKER_GITCOMMIT="%{shortcommit}/%{version}"
+export GOPATH=$(pwd)/_build:%{gopath}
+
+hack/make.sh dynbinary
 
 make -C docs/ man
 
@@ -97,8 +88,8 @@ install -d %{buildroot}%{_mandir}/man1
 install -d %{buildroot}%{_sysconfdir}/bash_completion.d
 install -d %{buildroot}%{_datadir}/zsh/site-functions
 install -d -m 700 %{buildroot}%{_sharedstatedir}/docker
-install -p -m 755 _build/docker %{buildroot}%{_bindir}/docker
-install -p -m 755 _build/dockerinit %{buildroot}%{_libexecdir}/docker
+install -p -m 755 bundles/%{version}/dynbinary/docker-%{version} %{buildroot}%{_bindir}/docker
+install -p -m 755 bundles/%{version}/dynbinary/dockerinit-%{version} %{buildroot}%{_libexecdir}/docker/dockerinit
 install -p -m 644 docs/_build/man/docker.1 %{buildroot}%{_mandir}/man1
 install -p -m 644 contrib/completion/bash/docker %{buildroot}%{_sysconfdir}/bash_completion.d/docker.bash
 install -p -m 644 contrib/completion/zsh/_docker %{buildroot}%{_datadir}/zsh/site-functions
@@ -156,6 +147,10 @@ exit 0
 %dir %{_sharedstatedir}/docker
 
 %changelog
+* Tue Nov 26 2013 Marek Goldmann <mgoldman@redhat.com> - 0.7.0-1
+- Upstream release 0.7.0
+- Using upstream script to build the binary
+
 * Mon Nov 25 2013 Vincent Batts <vbatts@redhat.com> - 0.7-0.20.rc7
 - correct the build time defines (bz#1026545). Thanks dan-fedora.
 
