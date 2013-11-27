@@ -14,7 +14,7 @@
 
 Name:           docker-io
 Version:        0.7.0
-Release:        4%{?dist}
+Release:        5%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
@@ -42,8 +42,9 @@ BuildRequires:  python-sphinxcontrib-httpdomain
 BuildRequires:  pkgconfig(systemd)
 Requires:       systemd-units
 %else
-Requires(post): chkconfig
-Requires(preun): chkconfig
+Requires(post):     chkconfig
+Requires(preun):    chkconfig
+Requires(postun):   initscripts
 %endif
 Requires:       lxc
 Requires:       tar
@@ -130,14 +131,18 @@ exit 0
 %preun
 %if %{with systemd}
 %systemd_preun %{SOURCE1}
+%else
+/sbin/service docker stop >/dev/null 2>&1
+/sbin/chkconfig --del docker
 %endif
 
 %postun
 %if %{with systemd}
 %systemd_postun_with_restart %{SOURCE1}
 %else
-%{_initrddir}/docker stop >/dev/null 2>&1
-/sbin/chkconfig --del docker
+if [ "$1" -ge "1" ] ; then
+        /sbin/service docker condrestart >/dev/null 2>&1 || :
+fi
 %endif
 
 %files
@@ -159,6 +164,9 @@ exit 0
 %dir %{_sharedstatedir}/docker
 
 %changelog
+* Wed Nov 27 2013 Adam Miller <maxamillion@fedoraproject.org> - 0.7.0-5
+- Fix up EL6 preun/postun to not fail on postun scripts
+
 * Wed Nov 27 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7.0-4
 - brctl patch for rhel <= 7
 
