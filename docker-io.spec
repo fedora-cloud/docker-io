@@ -14,12 +14,13 @@
 
 Name:           docker-io
 Version:        0.7.0
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
 Patch0:         docker-0.7-remove-dotcloud-tar.patch
 Patch1:         docker-0.7-el6-docs.patch
+Patch2:         docker-rhel-brctl.patch
 URL:            http://www.docker.io
 # only x86_64 for now: https://github.com/dotcloud/docker/issues/136
 ExclusiveArch:  x86_64
@@ -46,6 +47,12 @@ Requires(preun): chkconfig
 %endif
 Requires:       lxc
 Requires:       tar
+
+# https://bugzilla.redhat.com/show_bug.cgi?id=1035436
+%if 0%{?rhel} >= 6
+Requires:       bridge-utils
+%endif
+
 Provides:       lxc-docker = %{version}
 
 # https://bugzilla.redhat.com/show_bug.cgi?id=1034919
@@ -67,6 +74,7 @@ rm -rf vendor
 %patch0 -p1 -b docker-0.7-remove-dotcloud-tar.patch
 %if 0%{?rhel} >= 6
 %patch1 -p1 -b docker-0.7-el6-docs.patch
+%patch2 -p1 -b brctl
 %endif
 
 %build
@@ -150,6 +158,9 @@ exit 0
 %dir %{_sharedstatedir}/docker
 
 %changelog
+* Wed Nov 27 2013 Vincent Batts <vbatts@redhat.com> - 0.7.0-3
+- Patch how the bridge network is set up on RHEL (BZ #1035436)
+
 * Wed Nov 27 2013 Vincent Batts <vbatts@redhat.com> - 0.7.0-2
 - add libcgroup require (BZ #1034919)
 
