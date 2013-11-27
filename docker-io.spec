@@ -14,7 +14,7 @@
 
 Name:           docker-io
 Version:        0.7.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
@@ -47,6 +47,9 @@ Requires(preun): chkconfig
 Requires:       lxc
 Requires:       tar
 Provides:       lxc-docker = %{version}
+
+# https://bugzilla.redhat.com/show_bug.cgi?id=1034919
+Requires:       libcgroup
 
 %description
 Docker is an open-source engine that automates the deployment of any
@@ -147,6 +150,9 @@ exit 0
 %dir %{_sharedstatedir}/docker
 
 %changelog
+* Wed Nov 27 2013 Vincent Batts <vbatts@redhat.com> - 0.7.0-2
+- add libcgroup require (BZ #1034919)
+
 * Tue Nov 26 2013 Marek Goldmann <mgoldman@redhat.com> - 0.7.0-1
 - Upstream release 0.7.0
 - Using upstream script to build the binary
