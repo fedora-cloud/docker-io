@@ -14,7 +14,7 @@
 
 Name:           docker-io
 Version:        0.7.0
-Release:        3%{?dist}
+Release:        4%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
@@ -49,7 +49,8 @@ Requires:       lxc
 Requires:       tar
 
 # https://bugzilla.redhat.com/show_bug.cgi?id=1035436
-%if 0%{?rhel} >= 6
+# this won't be needed for rhel7+
+%if 0%{?rhel} <= 7
 Requires:       bridge-utils
 %endif
 
@@ -158,6 +159,9 @@ exit 0
 %dir %{_sharedstatedir}/docker
 
 %changelog
+* Wed Nov 27 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7.0-4
+- brctl patch for rhel <= 7
+
 * Wed Nov 27 2013 Vincent Batts <vbatts@redhat.com> - 0.7.0-3
 - Patch how the bridge network is set up on RHEL (BZ #1035436)
 
