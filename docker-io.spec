@@ -14,17 +14,18 @@
 
 Name:           docker-io
 Version:        0.7.0
-Release:        6%{?dist}
+Release:        7%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
 Patch0:         docker-0.7-remove-dotcloud-tar.patch
 Patch1:         docker-0.7-el6-docs.patch
 Patch2:         docker-rhel-brctl.patch
+Patch3:         docker-0.7.0-iptables-fix.patch
 URL:            http://www.docker.io
 # only x86_64 for now: https://github.com/dotcloud/docker/issues/136
 ExclusiveArch:  x86_64
-Source0:        https://github.com/goldmann/docker/archive/%{commit}/docker-%{shortcommit}.tar.gz
+Source0:        https://github.com/dotcloud/docker/archive/v%{version}.tar.gz
 Source1:        docker.service
 # though final name for sysconf/sysvinit files is simply 'docker',
 # having .sysvinit and .sysconfig makes things clear
@@ -69,12 +70,13 @@ and tests on a laptop will run at scale, in production*, on VMs, bare-metal
 servers, OpenStack clusters, public instances, or combinations of the above.
 
 %prep
-%setup -q -n docker-%{commit}
+%setup -q -n docker-%{version}
 rm -rf vendor
 %patch0 -p1 -b docker-0.7-remove-dotcloud-tar.patch
 %if 0%{?rhel} >= 6
 %patch1 -p1 -b docker-0.7-el6-docs.patch
 %patch2 -p1 -b brctl
+%patch3 -p1 -b docker-0.7.0-iptables-fix.patch
 %endif
 
 %build
@@ -99,8 +101,8 @@ install -d %{buildroot}%{_mandir}/man1
 install -d %{buildroot}%{_sysconfdir}/bash_completion.d
 install -d %{buildroot}%{_datadir}/zsh/site-functions
 install -d -m 700 %{buildroot}%{_sharedstatedir}/docker
-install -p -m 755 bundles/%{version}-dev/dynbinary/docker-%{version}-dev %{buildroot}%{_bindir}/docker
-install -p -m 755 bundles/%{version}-dev/dynbinary/dockerinit-%{version}-dev %{buildroot}%{_libexecdir}/docker/dockerinit
+install -p -m 755 bundles/%{version}/dynbinary/docker-%{version} %{buildroot}%{_bindir}/docker
+install -p -m 755 bundles/%{version}/dynbinary/dockerinit-%{version} %{buildroot}%{_libexecdir}/docker/dockerinit
 install -p -m 644 docs/_build/man/docker.1 %{buildroot}%{_mandir}/man1
 install -p -m 644 contrib/completion/bash/docker %{buildroot}%{_sysconfdir}/bash_completion.d/docker.bash
 install -p -m 644 contrib/completion/zsh/_docker %{buildroot}%{_datadir}/zsh/site-functions
@@ -162,6 +164,9 @@ fi
 %dir %{_sharedstatedir}/docker
 
 %changelog
+* Thu Nov 28 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7.0-7
+- use upstream tarball and patch with mgoldman's commit
+
 * Thu Nov 28 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7.0-6
 - using mgoldman's shortcommit value 0ff9bc1 for package (BZ #1033606)
 - https://github.com/dotcloud/docker/pull/2907
