@@ -1,5 +1,7 @@
 [Unit]
 Description=Docker container management daemon
+Requires=firewalld.service
+After=firewalld.service
 
 [Service]
 Type=simple
