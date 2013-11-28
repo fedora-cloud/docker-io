@@ -14,7 +14,7 @@
 
 Name:           docker-io
 Version:        0.7.0
-Release:        7%{?dist}
+Release:        8%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
@@ -164,6 +164,9 @@ fi
 %dir %{_sharedstatedir}/docker
 
 %changelog
+* Thu Nov 28 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7.0-8
+- iptables-fix patch corrected
+
 * Thu Nov 28 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7.0-7
 - use upstream tarball and patch with mgoldman's commit
 
