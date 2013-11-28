@@ -9,12 +9,12 @@
 %global debug_package %{nil}
 %global gopath  %{_datadir}/gocode
 
-%global commit      0d078b65817fc91eba916652b3f087a6c2eef851
+%global commit      0ff9bc1be3ae044107732c605986a0af20220134
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:           docker-io
 Version:        0.7.0
-Release:        5%{?dist}
+Release:        6%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
@@ -24,7 +24,7 @@ Patch2:         docker-rhel-brctl.patch
 URL:            http://www.docker.io
 # only x86_64 for now: https://github.com/dotcloud/docker/issues/136
 ExclusiveArch:  x86_64
-Source0:        https://github.com/dotcloud/docker/archive/v%{version}.tar.gz
+Source0:        https://github.com/goldmann/docker/archive/%{commit}/docker-%{shortcommit}.tar.gz
 Source1:        docker.service
 # though final name for sysconf/sysvinit files is simply 'docker',
 # having .sysvinit and .sysconfig makes things clear
@@ -48,17 +48,15 @@ Requires(postun):   initscripts
 %endif
 Requires:       lxc
 Requires:       tar
-
 # https://bugzilla.redhat.com/show_bug.cgi?id=1035436
 # this won't be needed for rhel7+
 %if 0%{?rhel} <= 7
 Requires:       bridge-utils
 %endif
-
-Provides:       lxc-docker = %{version}
-
 # https://bugzilla.redhat.com/show_bug.cgi?id=1034919
 Requires:       libcgroup
+
+Provides:       lxc-docker = %{version}
 
 %description
 Docker is an open-source engine that automates the deployment of any
@@ -71,7 +69,7 @@ and tests on a laptop will run at scale, in production*, on VMs, bare-metal
 servers, OpenStack clusters, public instances, or combinations of the above.
 
 %prep
-%setup -q -n docker-%{version}
+%setup -q -n docker-%{commit}
 rm -rf vendor
 %patch0 -p1 -b docker-0.7-remove-dotcloud-tar.patch
 %if 0%{?rhel} >= 6
@@ -101,8 +99,8 @@ install -d %{buildroot}%{_mandir}/man1
 install -d %{buildroot}%{_sysconfdir}/bash_completion.d
 install -d %{buildroot}%{_datadir}/zsh/site-functions
 install -d -m 700 %{buildroot}%{_sharedstatedir}/docker
-install -p -m 755 bundles/%{version}/dynbinary/docker-%{version} %{buildroot}%{_bindir}/docker
-install -p -m 755 bundles/%{version}/dynbinary/dockerinit-%{version} %{buildroot}%{_libexecdir}/docker/dockerinit
+install -p -m 755 bundles/%{version}-dev/dynbinary/docker-%{version}-dev %{buildroot}%{_bindir}/docker
+install -p -m 755 bundles/%{version}-dev/dynbinary/dockerinit-%{version}-dev %{buildroot}%{_libexecdir}/docker/dockerinit
 install -p -m 644 docs/_build/man/docker.1 %{buildroot}%{_mandir}/man1
 install -p -m 644 contrib/completion/bash/docker %{buildroot}%{_sysconfdir}/bash_completion.d/docker.bash
 install -p -m 644 contrib/completion/zsh/_docker %{buildroot}%{_datadir}/zsh/site-functions
@@ -164,6 +162,10 @@ fi
 %dir %{_sharedstatedir}/docker
 
 %changelog
+* Thu Nov 28 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7.0-6
+- using mgoldman's shortcommit value 0ff9bc1 for package (BZ #1033606)
+- https://github.com/dotcloud/docker/pull/2907
+
 * Wed Nov 27 2013 Adam Miller <maxamillion@fedoraproject.org> - 0.7.0-5
 - Fix up EL6 preun/postun to not fail on postun scripts
 
