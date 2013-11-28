@@ -14,7 +14,7 @@
 
 Name:           docker-io
 Version:        0.7.0
-Release:        9%{?dist}
+Release:        10%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
@@ -31,6 +31,7 @@ Source1:        docker.service
 # having .sysvinit and .sysconfig makes things clear
 Source2:        docker.sysconfig
 Source3:        docker.sysvinit
+Source4:        80-docker.rules
 BuildRequires:  gcc
 BuildRequires:  glibc-static
 BuildRequires:  golang(github.com/gorilla/mux)
@@ -51,7 +52,7 @@ Requires:       lxc
 Requires:       tar
 # https://bugzilla.redhat.com/show_bug.cgi?id=1035436
 # this won't be needed for rhel7+
-%if 0%{?rhel} <= 7
+%if 0%{?rhel} >= 6
 Requires:       bridge-utils
 %endif
 # https://bugzilla.redhat.com/show_bug.cgi?id=1034919
@@ -76,8 +77,8 @@ rm -rf vendor
 %if 0%{?rhel} >= 6
 %patch1 -p1 -b docker-0.7-el6-docs.patch
 %patch2 -p1 -b brctl
-%patch3 -p1 -b docker-0.7.0-iptables-fix.patch
 %endif
+%patch3 -p1 -b docker-0.7.0-iptables-fix.patch
 
 %build
 mkdir _build
@@ -114,6 +115,11 @@ install -d %{buildroot}%{_sysconfdir}/sysconfig/
 install -p -m 644 %{SOURCE2} %{buildroot}%{_sysconfdir}/sysconfig/docker
 install -d %{buildroot}%{_initddir}
 install -p -m 755 %{SOURCE3} %{buildroot}%{_initddir}/docker
+%endif
+# don't submit release 10 to epel until verified, only fedora for now
+%if 0%{?fedora} >= 19
+install -d %{buildroot}%{_sysconfdir}/udev/rules.d
+install -p -m 755 %{SOURCE4} %{buildroot}%{_sysconfdir}/udev/rules.d
 %endif
 
 %pre
@@ -162,8 +168,16 @@ fi
 %{_sysconfdir}/bash_completion.d/docker.bash
 %{_datadir}/zsh/site-functions/_docker
 %dir %{_sharedstatedir}/docker
+%if 0%{?fedora} >= 19
+%dir %{_sysconfdir}/udev/rules.d
+%{_sysconfdir}/udev/rules.d/80-docker.rules
+%endif
 
 %changelog
+* Thu Nov 28 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7.0-10
+- udev rules added for fedora >= 19 BZ 1034095
+- epel testing pending
+
 * Thu Nov 28 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7.0-9
 - requires and started after firewalld
 
