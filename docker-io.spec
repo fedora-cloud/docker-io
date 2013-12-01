@@ -117,7 +117,7 @@ install -d %{buildroot}%{_initddir}
 install -p -m 755 %{SOURCE3} %{buildroot}%{_initddir}/docker
 %endif
 # not included in epel until verified, only fedora for now
-%if 0%{?fedora} >= 19
+%if 0%{?fedora} >= 18
 install -d %{buildroot}%{_sysconfdir}/udev/rules.d
 install -p -m 755 %{SOURCE4} %{buildroot}%{_sysconfdir}/udev/rules.d
 %endif
@@ -178,7 +178,8 @@ fi
 - systemd for fedora >= 18
 - firewalld in unit file changed from Requires to Wants
 - firewall-cmd --add-masquerade after docker daemon start in unit file
-  (mfojtik@redhat.com)
+  (Michal Fojtik <mfojtik@redhat.com>), continue if not present (Michael Young
+  <m.a.young@durham.ac.uk>)
 
 * Fri Nov 29 2013 Marek Goldmann <mgoldman@redhat.com> - 0.7.0-11
 - Redirect docker log to /var/log/docker (epel only)
