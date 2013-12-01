@@ -1,4 +1,4 @@
-%if 0%{?fedora} >= 19 || 0%{?rhel} >= 7
+%if 0%{?fedora} >= 18 || 0%{?rhel} >= 7
 %bcond_without  systemd
 %endif
 
@@ -14,7 +14,7 @@
 
 Name:           docker-io
 Version:        0.7.0
-Release:        10%{?dist}
+Release:        12%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
@@ -116,11 +116,8 @@ install -p -m 644 %{SOURCE2} %{buildroot}%{_sysconfdir}/sysconfig/docker
 install -d %{buildroot}%{_initddir}
 install -p -m 755 %{SOURCE3} %{buildroot}%{_initddir}/docker
 %endif
-# don't submit release 10 to epel until verified, only fedora for now
-%if 0%{?fedora} >= 19
 install -d %{buildroot}%{_sysconfdir}/udev/rules.d
 install -p -m 755 %{SOURCE4} %{buildroot}%{_sysconfdir}/udev/rules.d
-%endif
 
 %pre
 getent group docker > /dev/null || %{_sbindir}/groupadd -r docker
@@ -168,12 +165,26 @@ fi
 %{_sysconfdir}/bash_completion.d/docker.bash
 %{_datadir}/zsh/site-functions/_docker
 %dir %{_sharedstatedir}/docker
-%if 0%{?fedora} >= 19
 %dir %{_sysconfdir}/udev/rules.d
 %{_sysconfdir}/udev/rules.d/80-docker.rules
-%endif
 
 %changelog
+* Sat Nov 30 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7.0-12
+- systemd for fedora >= 18
+- firewalld in unit file changed from Requires to Wants
+- firewall-cmd --add-masquerade after docker daemon start in unit file
+  (Michal Fojtik <mfojtik@redhat.com>), continue if not present (Michael Young
+  <m.a.young@durham.ac.uk>)
+- 80-docker.rules included for epel too, ENV variables need to be changed for
+  udisks1
+
+* Fri Nov 29 2013 Marek Goldmann <mgoldman@redhat.com> - 0.7.0-11
+- Redirect docker log to /var/log/docker (epel only)
+- Removed the '-b none' parameter from sysconfig, it's unnecessary since
+  we create the bridge now automatically (epel only)
+- Make sure we have the cgconfig service started before we start docker,
+    RHBZ#1034919 (epel only)
+
 * Thu Nov 28 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7.0-10
 - udev rules added for fedora >= 19 BZ 1034095
 - epel testing pending
