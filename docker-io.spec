@@ -116,11 +116,8 @@ install -p -m 644 %{SOURCE2} %{buildroot}%{_sysconfdir}/sysconfig/docker
 install -d %{buildroot}%{_initddir}
 install -p -m 755 %{SOURCE3} %{buildroot}%{_initddir}/docker
 %endif
-# not included in epel until verified, only fedora for now
-%if 0%{?fedora} >= 18
 install -d %{buildroot}%{_sysconfdir}/udev/rules.d
 install -p -m 755 %{SOURCE4} %{buildroot}%{_sysconfdir}/udev/rules.d
-%endif
 
 %pre
 getent group docker > /dev/null || %{_sbindir}/groupadd -r docker
@@ -168,10 +165,8 @@ fi
 %{_sysconfdir}/bash_completion.d/docker.bash
 %{_datadir}/zsh/site-functions/_docker
 %dir %{_sharedstatedir}/docker
-%if 0%{?fedora} >= 19
 %dir %{_sysconfdir}/udev/rules.d
 %{_sysconfdir}/udev/rules.d/80-docker.rules
-%endif
 
 %changelog
 * Sat Nov 30 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7.0-12
@@ -180,6 +175,8 @@ fi
 - firewall-cmd --add-masquerade after docker daemon start in unit file
   (Michal Fojtik <mfojtik@redhat.com>), continue if not present (Michael Young
   <m.a.young@durham.ac.uk>)
+- 80-docker.rules included for epel too, ENV variables need to be changed for
+  udisks1
 
 * Fri Nov 29 2013 Marek Goldmann <mgoldman@redhat.com> - 0.7.0-11
 - Redirect docker log to /var/log/docker (epel only)
