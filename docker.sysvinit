@@ -9,7 +9,7 @@
 
 ### BEGIN INIT INFO
 # Provides:       docker
-# Required-Start: $network 
+# Required-Start: $network cgconfig
 # Required-Stop:
 # Should-Start:
 # Should-Stop:
@@ -26,10 +26,16 @@ exec="/usr/bin/docker"
 prog="docker"
 pidfile="/var/run/$prog.pid"
 lockfile="/var/lock/subsys/$prog"
+logfile="/var/log/$prog"
 
 [ -e /etc/sysconfig/$prog ] && . /etc/sysconfig/$prog
 
 prestart() {
+    service cgconfig status > /dev/null
+
+    if [[ $? != 0 ]]; then
+        service cgconfig start
+    fi
 
     preexec="/sbin/sysctl"
     [ -x $preexec ] || exit 6
