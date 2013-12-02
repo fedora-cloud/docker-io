@@ -14,7 +14,7 @@
 
 Name:           docker-io
 Version:        0.7.0
-Release:        12%{?dist}
+Release:        14%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
@@ -169,6 +169,13 @@ fi
 %{_sysconfdir}/udev/rules.d/80-docker.rules
 
 %changelog
+* Mon Dec 02 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7.0-14
+- sysvinit patch corrected (epel only)
+- 80-docker.rules unified for udisks1 and udisks2
+
+* Mon Dec 02 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7.0-13
+- removed firewall-cmd --add-masquerade
+
 * Sat Nov 30 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7.0-12
 - systemd for fedora >= 18
 - firewalld in unit file changed from Requires to Wants
