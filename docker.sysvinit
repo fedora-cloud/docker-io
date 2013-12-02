@@ -50,7 +50,8 @@ start() {
     if ! [ -f $pidfile ]; then
         prestart
         printf "Starting $prog:\t"
-        $exec -d $other_args 1>/dev/null 2>&1 &
+        echo "\n$(date)\n" >> $logfile
+        $exec -d $other_args &>> $logfile &
         pid=$!
         touch $lockfile
         success
