@@ -9,19 +9,17 @@
 %global debug_package %{nil}
 %global gopath  %{_datadir}/gocode
 
-%global commit      0ff9bc1be3ae044107732c605986a0af20220134
+%global commit      e39d35dedad1db952c30958303902b4c96e1f406
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:           docker-io
-Version:        0.7.0
-Release:        14%{?dist}
+Version:        0.7.1
+Release:        1%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
-Patch0:         docker-0.7-remove-dotcloud-tar.patch
+Patch0:         docker-0.7.1-loop-defines.patch
 Patch1:         docker-0.7-el6-docs.patch
-Patch2:         docker-rhel-brctl.patch
-Patch3:         docker-0.7.0-iptables-fix.patch
 URL:            http://www.docker.io
 # only x86_64 for now: https://github.com/dotcloud/docker/issues/136
 ExclusiveArch:  x86_64
@@ -73,12 +71,10 @@ servers, OpenStack clusters, public instances, or combinations of the above.
 %prep
 %setup -q -n docker-%{version}
 rm -rf vendor
-%patch0 -p1 -b docker-0.7-remove-dotcloud-tar.patch
+%patch0 -p1 -b loop-defines
 %if 0%{?rhel} >= 6
 %patch1 -p1 -b docker-0.7-el6-docs.patch
-%patch2 -p1 -b brctl
 %endif
-%patch3 -p1 -b docker-0.7.0-iptables-fix.patch
 
 %build
 mkdir _build
@@ -169,6 +165,9 @@ fi
 %{_sysconfdir}/udev/rules.d/80-docker.rules
 
 %changelog
+* Fri Dec 06 2013 Vincent Batts <vbatts@redhat.com> - 0.7.1-1
+- upstream release of v0.7.1
+
 * Mon Dec 02 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7.0-14
 - sysvinit patch corrected (epel only)
 - 80-docker.rules unified for udisks1 and udisks2
