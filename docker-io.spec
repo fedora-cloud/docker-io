@@ -9,17 +9,16 @@
 %global debug_package %{nil}
 %global gopath  %{_datadir}/gocode
 
-%global commit      e39d35dedad1db952c30958303902b4c96e1f406
+%global commit      28b162eeb48002e1824a1b43bbc864e93af8e26b
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:           docker-io
-Version:        0.7.1
+Version:        0.7.2
 Release:        1%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
-Patch0:         docker-0.7.1-loop-defines.patch
-Patch1:         docker-0.7-el6-docs.patch
+Patch0:         docker-0.7-el6-docs.patch
 URL:            http://www.docker.io
 # only x86_64 for now: https://github.com/dotcloud/docker/issues/136
 ExclusiveArch:  x86_64
@@ -71,9 +70,8 @@ servers, OpenStack clusters, public instances, or combinations of the above.
 %prep
 %setup -q -n docker-%{version}
 rm -rf vendor
-%patch0 -p1 -b loop-defines
 %if 0%{?rhel} >= 6
-%patch1 -p1 -b docker-0.7-el6-docs.patch
+%patch0 -p1 -b docker-0.7-el6-docs.patch
 %endif
 
 %build
@@ -165,6 +163,9 @@ fi
 %{_sysconfdir}/udev/rules.d/80-docker.rules
 
 %changelog
+* Wed Dec 18 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7.2-1
+- upstream release bump to v0.7.2
+
 * Fri Dec 06 2013 Vincent Batts <vbatts@redhat.com> - 0.7.1-1
 - upstream release of v0.7.1
 
