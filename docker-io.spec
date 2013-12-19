@@ -14,7 +14,7 @@
 
 Name:           docker-io
 Version:        0.7.2
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
@@ -48,6 +48,9 @@ Requires(postun):   initscripts
 %endif
 Requires:       lxc
 Requires:       tar
+# need xz to work with ubuntu images
+# https://bugzilla.redhat.com/show_bug.cgi?id=1045220
+Requires:       xz
 # https://bugzilla.redhat.com/show_bug.cgi?id=1035436
 # this won't be needed for rhel7+
 %if 0%{?rhel} >= 6
@@ -164,6 +167,9 @@ fi
 %{_sysconfdir}/udev/rules.d/80-docker.rules
 
 %changelog
+* Thu Dec 19 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7.2-2
+- require xz to work with ubuntu images (BZ #1045220)
+
 * Wed Dec 18 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7.2-1
 - upstream release bump to v0.7.2
 
