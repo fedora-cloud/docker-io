@@ -13,8 +13,8 @@
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:           docker-io
-Version:        0.7.2
-Release:        2%{?dist}
+Version:        0.7.3
+Release:        1%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
@@ -167,6 +167,9 @@ fi
 %{_sysconfdir}/udev/rules.d/80-docker.rules
 
 %changelog
+* Sat Jan 04 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.7.3-1
+- upstream release bump to v0.7.3
+
 * Thu Dec 19 2013 Lokesh Mandvekar <lsm5@redhat.com> - 0.7.2-2
 - require xz to work with ubuntu images (BZ #1045220)
 
