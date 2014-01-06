@@ -14,7 +14,7 @@
 
 Name:           docker-io
 Version:        0.7.3
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
@@ -167,6 +167,9 @@ fi
 %{_sysconfdir}/udev/rules.d/80-docker.rules
 
 %changelog
+* Mon Jan 06 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.7.3-3
+- udev rules typo fixed (BZ 1048775)
+
 * Sat Jan 04 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.7.3-2
 - missed commit value in release 1, updated now
 - upstream release monitoring (BZ 1048441)
