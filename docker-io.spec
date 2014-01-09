@@ -9,12 +9,12 @@
 %global debug_package %{nil}
 %global gopath  %{_datadir}/gocode
 
-%global commit      8502ad4ba7b5410eb55f3517a801b33f61b1f625
+%global commit      010d74ec2f3dfefea5cafa602bce5cdeac3a0c19
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:           docker-io
-Version:        0.7.3
-Release:        3%{?dist}
+Version:        0.7.4
+Release:        1%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
@@ -28,7 +28,6 @@ Source1:        docker.service
 # having .sysvinit and .sysconfig makes things clear
 Source2:        docker.sysconfig
 Source3:        docker.sysvinit
-Source4:        80-docker.rules
 BuildRequires:  gcc
 BuildRequires:  glibc-static
 BuildRequires:  golang(github.com/gorilla/mux)
@@ -115,7 +114,7 @@ install -d %{buildroot}%{_initddir}
 install -p -m 755 %{SOURCE3} %{buildroot}%{_initddir}/docker
 %endif
 install -d %{buildroot}%{_sysconfdir}/udev/rules.d
-install -p -m 755 %{SOURCE4} %{buildroot}%{_sysconfdir}/udev/rules.d
+install -p -m 755 contrib/udev/80-docker.rules %{buildroot}%{_sysconfdir}/udev/rules.d
 
 %pre
 getent group docker > /dev/null || %{_sbindir}/groupadd -r docker
@@ -167,6 +166,11 @@ fi
 %{_sysconfdir}/udev/rules.d/80-docker.rules
 
 %changelog
+* Thu Jan 09 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.7.4-1
+- upstream version bump to 0.7.4 (BZ #1049793)
+- udev rules file from upstream contrib
+- unit file firewalld not used, description changes
+
 * Mon Jan 06 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.7.3-3
 - udev rules typo fixed (BZ 1048775)
 
