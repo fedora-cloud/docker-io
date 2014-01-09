@@ -9,11 +9,11 @@
 %global debug_package %{nil}
 %global gopath  %{_datadir}/gocode
 
-%global commit      010d74ec2f3dfefea5cafa602bce5cdeac3a0c19
+%global commit      c348c04fdfb00e013be9db15d37728e04fb94b76
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:           docker-io
-Version:        0.7.4
+Version:        0.7.5
 Release:        1%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
@@ -166,6 +166,9 @@ fi
 %{_sysconfdir}/udev/rules.d/80-docker.rules
 
 %changelog
+* Thu Jan 09 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.7.5-1
+- upstream version bump to 0.7.5
+
 * Thu Jan 09 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.7.4-1
 - upstream version bump to 0.7.4 (BZ #1049793)
 - udev rules file from upstream contrib
