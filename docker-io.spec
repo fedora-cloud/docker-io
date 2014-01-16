@@ -9,11 +9,11 @@
 %global debug_package %{nil}
 %global gopath  %{_datadir}/gocode
 
-%global commit      c348c04fdfb00e013be9db15d37728e04fb94b76
+%global commit      bc3b2ec0622f50879ae96f042056b6bd2e0b4fba
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:           docker-io
-Version:        0.7.5
+Version:        0.7.6
 Release:        1%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
@@ -30,6 +30,9 @@ Source2:        docker.sysconfig
 Source3:        docker.sysvinit
 BuildRequires:  gcc
 BuildRequires:  glibc-static
+# ensure build uses golang 1.2 and above
+# https://github.com/dotcloud/docker/issues/3191
+BuildRequires:  golang >= 1.2
 BuildRequires:  golang(github.com/gorilla/mux)
 BuildRequires:  golang(github.com/kr/pty)
 BuildRequires:  golang(code.google.com/p/go.net/websocket)
@@ -166,6 +169,10 @@ fi
 %{_sysconfdir}/udev/rules.d/80-docker.rules
 
 %changelog
+* Thu Jan 16 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.7.6-1
+- upstream version bump v0.7.6
+- built with golang >= 1.2
+
 * Thu Jan 09 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.7.5-1
 - upstream version bump to 0.7.5
 
