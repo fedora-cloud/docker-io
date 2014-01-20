@@ -14,11 +14,12 @@
 
 Name:           docker-io
 Version:        0.7.6
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
 Patch0:         docker-0.7-el6-docs.patch
+Patch1:         devicemapper-discard-freespace.patch
 URL:            http://www.docker.io
 # only x86_64 for now: https://github.com/dotcloud/docker/issues/136
 ExclusiveArch:  x86_64
@@ -55,7 +56,7 @@ Requires:       tar
 Requires:       xz
 # https://bugzilla.redhat.com/show_bug.cgi?id=1035436
 # this won't be needed for rhel7+
-%if 0%{?rhel} >= 6
+%if 0%{?rhel} >= 6 && 0%{?rhel} < 7
 Requires:       bridge-utils
 %endif
 # https://bugzilla.redhat.com/show_bug.cgi?id=1034919
@@ -77,8 +78,11 @@ servers, OpenStack clusters, public instances, or combinations of the above.
 %setup -q -n docker-%{version}
 rm -rf vendor
 %if 0%{?rhel} >= 6
-%patch0 -p1 -b docker-0.7-el6-docs.patch
+%patch0 -p1 -b docker-0.7-el6-docs
 %endif
+# discard free space after deleting image
+# https://bugzilla.redhat.com/show_bug.cgi?id=1055645
+%patch1 -p1 -b devicemapper-discard-freespace
 
 %build
 mkdir _build
@@ -169,6 +173,10 @@ fi
 %{_sysconfdir}/udev/rules.d/80-docker.rules
 
 %changelog
+* Mon Jan 20 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.7.6-2
+- bridge-utils only for rhel < 7
+- discard freespace when image is removed
+
 * Thu Jan 16 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.7.6-1
 - upstream version bump v0.7.6
 - built with golang >= 1.2
