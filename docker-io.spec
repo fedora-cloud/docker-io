@@ -14,7 +14,7 @@
 
 Name:           docker-io
 Version:        0.7.6
-Release:        3%{?dist}
+Release:        4%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
@@ -167,6 +167,9 @@ fi
 %{_sysconfdir}/udev/rules.d/80-docker.rules
 
 %changelog
+* Wed Jan 22 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.7.6-4
+- correct typos in manpage
+
 * Wed Jan 22 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.7.6-3
 - install fedora customized manpage instead of upstream provided version
 - get rid of python-sphinx* dependencies
