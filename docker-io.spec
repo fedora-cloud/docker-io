@@ -14,12 +14,11 @@
 
 Name:           docker-io
 Version:        0.7.6
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
-Patch0:         docker-0.7-el6-docs.patch
-Patch1:         devicemapper-discard-freespace.patch
+Patch0:         devicemapper-discard-freespace.patch
 URL:            http://www.docker.io
 # only x86_64 for now: https://github.com/dotcloud/docker/issues/136
 ExclusiveArch:  x86_64
@@ -29,6 +28,7 @@ Source1:        docker.service
 # having .sysvinit and .sysconfig makes things clear
 Source2:        docker.sysconfig
 Source3:        docker.sysvinit
+Source4:        docker.1
 BuildRequires:  gcc
 BuildRequires:  glibc-static
 # ensure build uses golang 1.2 and above
@@ -40,7 +40,6 @@ BuildRequires:  golang(code.google.com/p/go.net/websocket)
 BuildRequires:  golang(code.google.com/p/gosqlite/sqlite3)
 BuildRequires:  golang(github.com/syndtr/gocapability/capability)
 BuildRequires:  device-mapper-devel
-BuildRequires:  python-sphinxcontrib-httpdomain
 %if %{with systemd}
 BuildRequires:  pkgconfig(systemd)
 Requires:       systemd-units
@@ -77,12 +76,9 @@ servers, OpenStack clusters, public instances, or combinations of the above.
 %prep
 %setup -q -n docker-%{version}
 rm -rf vendor
-%if 0%{?rhel} >= 6
-%patch0 -p1 -b docker-0.7-el6-docs
-%endif
 # discard free space after deleting image
 # https://bugzilla.redhat.com/show_bug.cgi?id=1055645
-%patch1 -p1 -b devicemapper-discard-freespace
+%patch0 -p1 -b devicemapper-discard-freespace
 
 %build
 mkdir _build
@@ -97,8 +93,6 @@ export GOPATH=$(pwd)/_build:%{gopath}
 
 hack/make.sh dynbinary
 
-make -C docs/ man
-
 %install
 install -d %{buildroot}%{_bindir}
 install -d %{buildroot}%{_libexecdir}/docker
@@ -108,7 +102,7 @@ install -d %{buildroot}%{_datadir}/zsh/site-functions
 install -d -m 700 %{buildroot}%{_sharedstatedir}/docker
 install -p -m 755 bundles/%{version}/dynbinary/docker-%{version} %{buildroot}%{_bindir}/docker
 install -p -m 755 bundles/%{version}/dynbinary/dockerinit-%{version} %{buildroot}%{_libexecdir}/docker/dockerinit
-install -p -m 644 docs/_build/man/docker.1 %{buildroot}%{_mandir}/man1
+install -p -m 644 %{SOURCE4} %{buildroot}%{_mandir}/man1
 install -p -m 644 contrib/completion/bash/docker %{buildroot}%{_sysconfdir}/bash_completion.d/docker.bash
 install -p -m 644 contrib/completion/zsh/_docker %{buildroot}%{_datadir}/zsh/site-functions
 %if %{with systemd}
@@ -173,6 +167,10 @@ fi
 %{_sysconfdir}/udev/rules.d/80-docker.rules
 
 %changelog
+* Wed Jan 22 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.7.6-3
+- install fedora customized manpage instead of upstream provided version
+- get rid of python-sphinx* dependencies
+
 * Mon Jan 20 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.7.6-2
 - bridge-utils only for rhel < 7
 - discard freespace when image is removed
