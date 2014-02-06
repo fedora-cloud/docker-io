@@ -9,26 +9,25 @@
 %global debug_package %{nil}
 %global gopath  %{_datadir}/gocode
 
-%global commit      bc3b2ec0622f50879ae96f042056b6bd2e0b4fba
+%global commit      cc3a8c8d8ec57e15b7b7316797132d770408ab1a
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:           docker-io
-Version:        0.7.6
-Release:        4%{?dist}
+Version:        0.8.0
+Release:        1%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
-Patch0:         devicemapper-discard-freespace.patch
+Patch0:         ignore-btrfs-for-rhel6.patch
 URL:            http://www.docker.io
 # only x86_64 for now: https://github.com/dotcloud/docker/issues/136
 ExclusiveArch:  x86_64
 Source0:        https://github.com/dotcloud/docker/archive/v%{version}.tar.gz
-Source1:        docker.service
 # though final name for sysconf/sysvinit files is simply 'docker',
 # having .sysvinit and .sysconfig makes things clear
-Source2:        docker.sysconfig
-Source3:        docker.sysvinit
-Source4:        docker.1
+Source1:        docker.sysconfig
+Source2:        docker.sysvinit
+Source3:        docker.1
 BuildRequires:  gcc
 BuildRequires:  glibc-static
 # ensure build uses golang 1.2 and above
@@ -40,6 +39,10 @@ BuildRequires:  golang(code.google.com/p/go.net/websocket)
 BuildRequires:  golang(code.google.com/p/gosqlite/sqlite3)
 BuildRequires:  golang(github.com/syndtr/gocapability/capability)
 BuildRequires:  device-mapper-devel
+#btrfs not available for rhel6
+%if 0%{?fedora} || 0%{?rhel} > 7
+BuildRequires:  btrfs-progs-devel
+%endif
 %if %{with systemd}
 BuildRequires:  pkgconfig(systemd)
 Requires:       systemd-units
@@ -76,9 +79,9 @@ servers, OpenStack clusters, public instances, or combinations of the above.
 %prep
 %setup -q -n docker-%{version}
 rm -rf vendor
-# discard free space after deleting image
-# https://bugzilla.redhat.com/show_bug.cgi?id=1055645
-%patch0 -p1 -b devicemapper-discard-freespace
+%if 0%{?rhel} >= 6 && 0%{?rhel} < 7
+%patch0 -p1 -b ignore-btrfs-for-rhel6
+%endif
 
 %build
 mkdir _build
@@ -86,6 +89,7 @@ mkdir _build
 pushd _build
   mkdir -p src/github.com/dotcloud
   ln -s $(dirs +1 -l) src/github.com/dotcloud/docker
+
 popd
 
 export DOCKER_GITCOMMIT="%{shortcommit}/%{version}"
@@ -102,17 +106,17 @@ install -d %{buildroot}%{_datadir}/zsh/site-functions
 install -d -m 700 %{buildroot}%{_sharedstatedir}/docker
 install -p -m 755 bundles/%{version}/dynbinary/docker-%{version} %{buildroot}%{_bindir}/docker
 install -p -m 755 bundles/%{version}/dynbinary/dockerinit-%{version} %{buildroot}%{_libexecdir}/docker/dockerinit
-install -p -m 644 %{SOURCE4} %{buildroot}%{_mandir}/man1
+install -p -m 644 %{SOURCE3} %{buildroot}%{_mandir}/man1
 install -p -m 644 contrib/completion/bash/docker %{buildroot}%{_sysconfdir}/bash_completion.d/docker.bash
 install -p -m 644 contrib/completion/zsh/_docker %{buildroot}%{_datadir}/zsh/site-functions
 %if %{with systemd}
 install -d %{buildroot}%{_unitdir}
-install -p -m 644 %{SOURCE1} %{buildroot}%{_unitdir}
+install -p -m 644 contrib/init/systemd/docker.service %{buildroot}%{_unitdir}
 %else
 install -d %{buildroot}%{_sysconfdir}/sysconfig/
-install -p -m 644 %{SOURCE2} %{buildroot}%{_sysconfdir}/sysconfig/docker
+install -p -m 644 %{SOURCE1} %{buildroot}%{_sysconfdir}/sysconfig/docker
 install -d %{buildroot}%{_initddir}
-install -p -m 755 %{SOURCE3} %{buildroot}%{_initddir}/docker
+install -p -m 755 %{SOURCE2} %{buildroot}%{_initddir}/docker
 %endif
 install -d %{buildroot}%{_sysconfdir}/udev/rules.d
 install -p -m 755 contrib/udev/80-docker.rules %{buildroot}%{_sysconfdir}/udev/rules.d
@@ -123,7 +127,7 @@ exit 0
 
 %post
 %if %{with systemd}
-%systemd_post %{SOURCE1}
+%systemd_post docker
 %else
 # install but don't activate
 /sbin/chkconfig --add docker
@@ -131,7 +135,7 @@ exit 0
 
 %preun
 %if %{with systemd}
-%systemd_preun %{SOURCE1}
+%systemd_preun docker
 %else
 /sbin/service docker stop >/dev/null 2>&1
 /sbin/chkconfig --del docker
@@ -139,7 +143,7 @@ exit 0
 
 %postun
 %if %{with systemd}
-%systemd_postun_with_restart %{SOURCE1}
+%systemd_postun_with_restart docker
 %else
 if [ "$1" -ge "1" ] ; then
         /sbin/service docker condrestart >/dev/null 2>&1 || :
@@ -167,12 +171,9 @@ fi
 %{_sysconfdir}/udev/rules.d/80-docker.rules
 
 %changelog
-* Wed Jan 22 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.7.6-4
-- correct typos in manpage
-
-* Wed Jan 22 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.7.6-3
-- install fedora customized manpage instead of upstream provided version
-- get rid of python-sphinx* dependencies
+* Wed Feb 05 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.8.0-1
+- upstream version bump
+- don't use btrfs for rhel6 and clones (yet)
 
 * Mon Jan 20 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.7.6-2
 - bridge-utils only for rhel < 7
