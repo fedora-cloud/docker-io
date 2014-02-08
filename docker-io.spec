@@ -14,11 +14,11 @@
 
 Name:           docker-io
 Version:        0.8.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
-Patch0:         ignore-btrfs-for-rhel6.patch
+Patch0:         ignore-btrfs-for-rhel.patch
 URL:            http://www.docker.io
 # only x86_64 for now: https://github.com/dotcloud/docker/issues/136
 ExclusiveArch:  x86_64
@@ -39,8 +39,8 @@ BuildRequires:  golang(code.google.com/p/go.net/websocket)
 BuildRequires:  golang(code.google.com/p/gosqlite/sqlite3)
 BuildRequires:  golang(github.com/syndtr/gocapability/capability)
 BuildRequires:  device-mapper-devel
-#btrfs not available for rhel6
-%if 0%{?fedora} || 0%{?rhel} > 7
+# btrfs not available for rhel yet
+%if 0%{?fedora}
 BuildRequires:  btrfs-progs-devel
 %endif
 %if %{with systemd}
@@ -79,8 +79,8 @@ servers, OpenStack clusters, public instances, or combinations of the above.
 %prep
 %setup -q -n docker-%{version}
 rm -rf vendor
-%if 0%{?rhel} >= 6 && 0%{?rhel} < 7
-%patch0 -p1 -b ignore-btrfs-for-rhel6
+%if 0%{?rhel}
+%patch0 -p1 -b ignore-btrfs-for-rhel
 %endif
 
 %build
@@ -89,26 +89,42 @@ mkdir _build
 pushd _build
   mkdir -p src/github.com/dotcloud
   ln -s $(dirs +1 -l) src/github.com/dotcloud/docker
-
 popd
 
 export DOCKER_GITCOMMIT="%{shortcommit}/%{version}"
 export GOPATH=$(pwd)/_build:%{gopath}
 
 hack/make.sh dynbinary
+cp contrib/syntax/vim/LICENSE LICENSE-vim-syntax
+cp contrib/syntax/vim/README.md README-vim-syntax.md
 
 %install
+# install binary
 install -d %{buildroot}%{_bindir}
-install -d %{buildroot}%{_libexecdir}/docker
-install -d %{buildroot}%{_mandir}/man1
-install -d %{buildroot}%{_sysconfdir}/bash_completion.d
-install -d %{buildroot}%{_datadir}/zsh/site-functions
-install -d -m 700 %{buildroot}%{_sharedstatedir}/docker
 install -p -m 755 bundles/%{version}/dynbinary/docker-%{version} %{buildroot}%{_bindir}/docker
+# install dockerinit
+install -d %{buildroot}%{_libexecdir}/docker
 install -p -m 755 bundles/%{version}/dynbinary/dockerinit-%{version} %{buildroot}%{_libexecdir}/docker/dockerinit
+# install manpage
+install -d %{buildroot}%{_mandir}/man1
 install -p -m 644 %{SOURCE3} %{buildroot}%{_mandir}/man1
+# install bash completion
+install -d %{buildroot}%{_sysconfdir}/bash_completion.d
 install -p -m 644 contrib/completion/bash/docker %{buildroot}%{_sysconfdir}/bash_completion.d/docker.bash
+# install zsh completion
+install -d %{buildroot}%{_datadir}/zsh/site-functions
 install -p -m 644 contrib/completion/zsh/_docker %{buildroot}%{_datadir}/zsh/site-functions
+# install vim syntax highlighting
+install -d %{buildroot}%{_datadir}/vim/vimfiles/{doc,ftdetect,syntax}
+install -p -m 644 contrib/syntax/vim/doc/dockerfile.txt %{buildroot}%{_datadir}/vim/vimfiles/doc
+install -p -m 644 contrib/syntax/vim/ftdetect/dockerfile.vim %{buildroot}%{_datadir}/vim/vimfiles/ftdetect
+install -p -m 644 contrib/syntax/vim/syntax/dockerfile.vim %{buildroot}%{_datadir}/vim/vimfiles/syntax
+# install udev rules
+install -d %{buildroot}%{_sysconfdir}/udev/rules.d
+install -p -m 755 contrib/udev/80-docker.rules %{buildroot}%{_sysconfdir}/udev/rules.d
+# install storage dir
+install -d -m 700 %{buildroot}%{_sharedstatedir}/docker
+# install systemd/init scripts
 %if %{with systemd}
 install -d %{buildroot}%{_unitdir}
 install -p -m 644 contrib/init/systemd/docker.service %{buildroot}%{_unitdir}
@@ -118,8 +134,6 @@ install -p -m 644 %{SOURCE1} %{buildroot}%{_sysconfdir}/sysconfig/docker
 install -d %{buildroot}%{_initddir}
 install -p -m 755 %{SOURCE2} %{buildroot}%{_initddir}/docker
 %endif
-install -d %{buildroot}%{_sysconfdir}/udev/rules.d
-install -p -m 755 contrib/udev/80-docker.rules %{buildroot}%{_sysconfdir}/udev/rules.d
 
 %pre
 getent group docker > /dev/null || %{_sbindir}/groupadd -r docker
@@ -153,6 +167,7 @@ fi
 %files
 %defattr(-,root,root,-)
 %doc AUTHORS CHANGELOG.md CONTRIBUTING.md FIXME LICENSE MAINTAINERS NOTICE README.md 
+%doc LICENSE-vim-syntax README-vim-syntax.md
 %{_mandir}/man1/docker.1.gz
 %{_bindir}/docker
 %dir %{_libexecdir}/docker
@@ -169,8 +184,18 @@ fi
 %dir %{_sharedstatedir}/docker
 %dir %{_sysconfdir}/udev/rules.d
 %{_sysconfdir}/udev/rules.d/80-docker.rules
+%dir %{_datadir}/vim/vimfiles/doc
+%{_datadir}/vim/vimfiles/doc/dockerfile.txt
+%dir %{_datadir}/vim/vimfiles/ftdetect
+%{_datadir}/vim/vimfiles/ftdetect/dockerfile.vim
+%dir %{_datadir}/vim/vimfiles/syntax
+%{_datadir}/vim/vimfiles/syntax/dockerfile.vim
 
 %changelog
+* Sat Feb 08 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.8.0-2
+- ignore btrfs for rhel7 and clones for now
+- include vim syntax highlighting from contrib/syntax/vim
+
 * Wed Feb 05 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.8.0-1
 - upstream version bump
 - don't use btrfs for rhel6 and clones (yet)
