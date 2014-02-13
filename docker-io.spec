@@ -14,7 +14,7 @@
 
 Name:           docker-io
 Version:        0.8.0
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
@@ -192,6 +192,10 @@ fi
 %{_datadir}/vim/vimfiles/syntax/dockerfile.vim
 
 %changelog
+* Thu Feb 13 2014 Adam Miller <maxamillion@fedoraproject.org> - 0.8.0-3
+- Remove unneeded sysctl settings in initscript
+  https://github.com/dotcloud/docker/pull/4125
+
 * Sat Feb 08 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.8.0-2
 - ignore btrfs for rhel7 and clones for now
 - include vim syntax highlighting from contrib/syntax/vim
