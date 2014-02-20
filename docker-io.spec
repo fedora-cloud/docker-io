@@ -9,30 +9,29 @@
 %global debug_package %{nil}
 %global gopath  %{_datadir}/gocode
 
-%global commit      cc3a8c8d8ec57e15b7b7316797132d770408ab1a
+%global commit      a1598d1e1c157388f3b07415729de28f4d205e49
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:           docker-io
-Version:        0.8.0
-Release:        3%{?dist}
+Version:        0.8.1
+Release:        1%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
 Patch0:         ignore-btrfs-for-rhel.patch
+Patch1:         remove-vendored-tar.patch
 URL:            http://www.docker.io
 # only x86_64 for now: https://github.com/dotcloud/docker/issues/136
 ExclusiveArch:  x86_64
 Source0:        https://github.com/dotcloud/docker/archive/v%{version}.tar.gz
 # though final name for sysconf/sysvinit files is simply 'docker',
 # having .sysvinit and .sysconfig makes things clear
-Source1:        docker.sysconfig
-Source2:        docker.sysvinit
-Source3:        docker.1
+Source1:        docker.1
 BuildRequires:  gcc
 BuildRequires:  glibc-static
-# ensure build uses golang 1.2 and above
-# https://github.com/dotcloud/docker/issues/3191
-BuildRequires:  golang >= 1.2
+# ensure build uses golang 1.2-7 and above
+# http://code.google.com/p/go/source/detail?r=a15f344a9efa35ef168c8feaa92a15a1cdc93db5
+BuildRequires:  golang >= 1.2-7
 BuildRequires:  golang(github.com/gorilla/mux)
 BuildRequires:  golang(github.com/kr/pty)
 BuildRequires:  golang(code.google.com/p/go.net/websocket)
@@ -82,6 +81,7 @@ rm -rf vendor
 %if 0%{?rhel}
 %patch0 -p1 -b ignore-btrfs-for-rhel
 %endif
+%patch1 -p1 -b remove-vendored-tar
 
 %build
 mkdir _build
@@ -107,7 +107,7 @@ install -d %{buildroot}%{_libexecdir}/docker
 install -p -m 755 bundles/%{version}/dynbinary/dockerinit-%{version} %{buildroot}%{_libexecdir}/docker/dockerinit
 # install manpage
 install -d %{buildroot}%{_mandir}/man1
-install -p -m 644 %{SOURCE3} %{buildroot}%{_mandir}/man1
+install -p -m 644 %{SOURCE1} %{buildroot}%{_mandir}/man1
 # install bash completion
 install -d %{buildroot}%{_sysconfdir}/bash_completion.d
 install -p -m 644 contrib/completion/bash/docker %{buildroot}%{_sysconfdir}/bash_completion.d/docker.bash
@@ -130,9 +130,9 @@ install -d %{buildroot}%{_unitdir}
 install -p -m 644 contrib/init/systemd/docker.service %{buildroot}%{_unitdir}
 %else
 install -d %{buildroot}%{_sysconfdir}/sysconfig/
-install -p -m 644 %{SOURCE1} %{buildroot}%{_sysconfdir}/sysconfig/docker
+install -p -m 644 contrib/init/sysvinit-redhat/docker.sysconfig %{buildroot}%{_sysconfdir}/sysconfig/docker
 install -d %{buildroot}%{_initddir}
-install -p -m 755 %{SOURCE2} %{buildroot}%{_initddir}/docker
+install -p -m 755 contrib/init/sysvinit-redhat/docker %{buildroot}%{_initddir}/docker
 %endif
 
 %pre
@@ -192,6 +192,11 @@ fi
 %{_datadir}/vim/vimfiles/syntax/dockerfile.vim
 
 %changelog
+* Wed Feb 19 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.8.1-1
+- Bug 1066841 - upstream version bump to v0.8.1
+- use sysvinit files from upstream contrib
+- BR golang >= 1.2-7
+
 * Thu Feb 13 2014 Adam Miller <maxamillion@fedoraproject.org> - 0.8.0-3
 - Remove unneeded sysctl settings in initscript
   https://github.com/dotcloud/docker/pull/4125
