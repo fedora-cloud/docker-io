@@ -9,17 +9,17 @@
 %global debug_package %{nil}
 %global gopath  %{_datadir}/gocode
 
-%global commit      a1598d1e1c157388f3b07415729de28f4d205e49
+%global commit      2b3fdf2344fee3affc44c93a034ce894af4d6193
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:           docker-io
-Version:        0.8.1
+Version:        0.9.0
 Release:        1%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
 Patch0:         ignore-btrfs-for-rhel.patch
-Patch1:         remove-vendored-tar.patch
+Patch1:         upstream-patched-archive-tar.patch
 URL:            http://www.docker.io
 # only x86_64 for now: https://github.com/dotcloud/docker/issues/136
 ExclusiveArch:  x86_64
@@ -81,7 +81,7 @@ rm -rf vendor
 %if 0%{?rhel}
 %patch0 -p1 -b ignore-btrfs-for-rhel
 %endif
-%patch1 -p1 -b remove-vendored-tar
+%patch1 -p1 -b upstream-patched-archive-tar
 
 %build
 mkdir _build
@@ -192,6 +192,9 @@ fi
 %{_datadir}/vim/vimfiles/syntax/dockerfile.vim
 
 %changelog
+* Tue Mar 11 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.9.0-1
+- BZ 1074880 - upstream version bump to v0.9.0
+
 * Wed Feb 19 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.8.1-1
 - Bug 1066841 - upstream version bump to v0.8.1
 - use sysvinit files from upstream contrib
