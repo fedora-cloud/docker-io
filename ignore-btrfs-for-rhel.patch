@@ -1,16 +1,3 @@
-From 4502ce66c679c19d1e4c78eda417063ec87b0656 Mon Sep 17 00:00:00 2001
-From: Lokesh Mandvekar <lsm5@redhat.com>
-Date: Wed, 5 Feb 2014 14:29:41 -0500
-Subject: [PATCH] ignore btrfs for rhel6
-
----
- graphdriver/btrfs/btrfs.go             | 213 ---------------------------------
- graphdriver/btrfs/dummy_unsupported.go |   3 -
- runtime.go                             |   1 -
- 3 files changed, 217 deletions(-)
- delete mode 100644 graphdriver/btrfs/btrfs.go
- delete mode 100644 graphdriver/btrfs/dummy_unsupported.go
-
 diff --git a/graphdriver/btrfs/btrfs.go b/graphdriver/btrfs/btrfs.go
 deleted file mode 100644
 index 592e058..0000000
@@ -240,17 +227,14 @@ index 6c44615..0000000
 -
 -package btrfs
 diff --git a/runtime.go b/runtime.go
-index 7e4ae79..b8f315d 100644
+index 84f11e8..41fdccd 100644
 --- a/runtime.go
 +++ b/runtime.go
-@@ -10,7 +10,6 @@ import (
- 	"github.com/dotcloud/docker/execdriver/lxc"
+@@ -11,7 +11,6 @@ import (
+ 	"github.com/dotcloud/docker/execdriver/native"
  	"github.com/dotcloud/docker/graphdriver"
  	"github.com/dotcloud/docker/graphdriver/aufs"
 -	_ "github.com/dotcloud/docker/graphdriver/btrfs"
  	_ "github.com/dotcloud/docker/graphdriver/devmapper"
  	_ "github.com/dotcloud/docker/graphdriver/vfs"
  	_ "github.com/dotcloud/docker/networkdriver/lxc"
--- 
-1.8.5.3
-
