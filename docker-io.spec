@@ -14,7 +14,7 @@
 
 Name:           docker-io
 Version:        0.9.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
@@ -50,7 +50,6 @@ Requires(post):     chkconfig
 Requires(preun):    chkconfig
 Requires(postun):   initscripts
 %endif
-Requires:       lxc
 Requires:       tar
 # need xz to work with ubuntu images
 # https://bugzilla.redhat.com/show_bug.cgi?id=1045220
@@ -192,6 +191,10 @@ fi
 %{_datadir}/vim/vimfiles/syntax/dockerfile.vim
 
 %changelog
+* Tue Mar 11 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.9.0-2
+- lxc removed (optional)
+  http://blog.docker.io/2014/03/docker-0-9-introducing-execution-drivers-and-libcontainer/
+
 * Tue Mar 11 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.9.0-1
 - BZ 1074880 - upstream version bump to v0.9.0
 
