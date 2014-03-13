@@ -14,12 +14,14 @@
 
 Name:           docker-io
 Version:        0.9.0
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
 Patch0:         ignore-btrfs-for-rhel.patch
 Patch1:         upstream-patched-archive-tar.patch
+
+Patch90:        docker-0.9-el6-lxc.patch
 URL:            http://www.docker.io
 # only x86_64 for now: https://github.com/dotcloud/docker/issues/136
 ExclusiveArch:  x86_64
@@ -50,7 +52,6 @@ Requires(post):     chkconfig
 Requires(preun):    chkconfig
 Requires(postun):   initscripts
 %endif
-Requires:       tar
 # need xz to work with ubuntu images
 # https://bugzilla.redhat.com/show_bug.cgi?id=1045220
 Requires:       xz
@@ -58,9 +59,12 @@ Requires:       xz
 # this won't be needed for rhel7+
 %if 0%{?rhel} >= 6 && 0%{?rhel} < 7
 Requires:       bridge-utils
-%endif
+Requires:       lxc
+
 # https://bugzilla.redhat.com/show_bug.cgi?id=1034919
+# No longer needed in Fedora because of libcontainer
 Requires:       libcgroup
+%endif
 
 Provides:       lxc-docker = %{version}
 
@@ -79,6 +83,7 @@ servers, OpenStack clusters, public instances, or combinations of the above.
 rm -rf vendor
 %if 0%{?rhel}
 %patch0 -p1 -b ignore-btrfs-for-rhel
+%patch90 -p1 -b docker-0.9-el6-lxc
 %endif
 %patch1 -p1 -b upstream-patched-archive-tar
 
@@ -191,6 +196,11 @@ fi
 %{_datadir}/vim/vimfiles/syntax/dockerfile.vim
 
 %changelog
+* Thu Mar 13 2014 Adam Miller <maxamillion@fedoraproject.org> - 0.9.0-3
+- Add lxc requirement for EPEL6 and patch init script to use lxc driver
+- Remove tar dep, no longer needed
+- Require libcgroup only for EPEL6
+
 * Tue Mar 11 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.9.0-2
 - lxc removed (optional)
   http://blog.docker.io/2014/03/docker-0-9-introducing-execution-drivers-and-libcontainer/

@@ -1,0 +1,13 @@
+diff --git a/contrib/init/sysvinit-redhat/docker b/contrib/init/sysvinit-redhat/docker
+index 2b75c69..ca3c7ef 100755
+--- a/contrib/init/sysvinit-redhat/docker
++++ b/contrib/init/sysvinit-redhat/docker
+@@ -46,7 +46,7 @@ start() {
+         prestart
+         printf "Starting $prog:\t"
+         echo "\n$(date)\n" >> $logfile
+-        $exec -d $other_args &>> $logfile &
++        $exec -d -e lxc $other_args &>> $logfile &
+         pid=$!
+         touch $lockfile
+         success
