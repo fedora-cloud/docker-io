@@ -9,12 +9,12 @@
 %global debug_package %{nil}
 %global gopath  %{_datadir}/gocode
 
-%global commit      2b3fdf2344fee3affc44c93a034ce894af4d6193
+%global commit      867b2a90c228f62cdcd44907ceef279a2d8f1ac5
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:           docker-io
-Version:        0.9.0
-Release:        3%{?dist}
+Version:        0.9.1
+Release:        1%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
@@ -196,6 +196,9 @@ fi
 %{_datadir}/vim/vimfiles/syntax/dockerfile.vim
 
 %changelog
+* Thu Mar 27 2014 Lokesh Mandvekar - 0.9.1-1
+- BZ 1080799 - upstream version bump
+
 * Thu Mar 13 2014 Adam Miller <maxamillion@fedoraproject.org> - 0.9.0-3
 - Add lxc requirement for EPEL6 and patch init script to use lxc driver
 - Remove tar dep, no longer needed
