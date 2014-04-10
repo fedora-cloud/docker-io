@@ -13,7 +13,7 @@
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:           docker-io
-Version:        0.9.1
+Version:        0.10.0
 Release:        1%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
@@ -36,6 +36,8 @@ BuildRequires:  glibc-static
 BuildRequires:  golang >= 1.2-7
 BuildRequires:  golang(github.com/gorilla/mux)
 BuildRequires:  golang(github.com/kr/pty)
+BuildRequires:  golang(github.com/godbus/dbus)
+BuildRequires:  golang(github.com/coreos/go-systemd)
 BuildRequires:  golang(code.google.com/p/go.net/websocket)
 BuildRequires:  golang(code.google.com/p/gosqlite/sqlite3)
 BuildRequires:  golang(github.com/syndtr/gocapability/capability)
@@ -196,6 +198,9 @@ fi
 %{_datadir}/vim/vimfiles/syntax/dockerfile.vim
 
 %changelog
+* Wed Apr 09 2014 Bobby Powers <bobbypowers@gmail.com> - 0.10.0-1
+- Upstream version bump
+
 * Thu Mar 27 2014 Lokesh Mandvekar - 0.9.1-1
 - BZ 1080799 - upstream version bump
 
