@@ -28,7 +28,6 @@ ExclusiveArch:  x86_64
 Source0:        https://github.com/dotcloud/docker/archive/v%{version}.tar.gz
 # though final name for sysconf/sysvinit files is simply 'docker',
 # having .sysvinit and .sysconfig makes things clear
-Source1:        docker.1
 BuildRequires:  gcc
 BuildRequires:  glibc-static
 # ensure build uses golang 1.2-7 and above
@@ -37,7 +36,7 @@ BuildRequires:  golang >= 1.2-7
 BuildRequires:  golang(github.com/gorilla/mux)
 BuildRequires:  golang(github.com/kr/pty)
 BuildRequires:  golang(github.com/godbus/dbus)
-BuildRequires:  golang(github.com/coreos/go-systemd)
+BuildRequires:  golang(github.com/coreos/go-systemd) >= 0-0.4
 BuildRequires:  golang(code.google.com/p/go.net/websocket)
 BuildRequires:  golang(code.google.com/p/gosqlite/sqlite3)
 BuildRequires:  golang(github.com/syndtr/gocapability/capability)
@@ -113,7 +112,7 @@ install -d %{buildroot}%{_libexecdir}/docker
 install -p -m 755 bundles/%{version}/dynbinary/dockerinit-%{version} %{buildroot}%{_libexecdir}/docker/dockerinit
 # install manpage
 install -d %{buildroot}%{_mandir}/man1
-install -p -m 644 %{SOURCE1} %{buildroot}%{_mandir}/man1
+install -p -m 644 contrib/man/man1/docker*.1 %{buildroot}%{_mandir}/man1
 # install bash completion
 install -d %{buildroot}%{_sysconfdir}/bash_completion.d
 install -p -m 644 contrib/completion/bash/docker %{buildroot}%{_sysconfdir}/bash_completion.d/docker.bash
@@ -174,7 +173,7 @@ fi
 %defattr(-,root,root,-)
 %doc AUTHORS CHANGELOG.md CONTRIBUTING.md FIXME LICENSE MAINTAINERS NOTICE README.md 
 %doc LICENSE-vim-syntax README-vim-syntax.md
-%{_mandir}/man1/docker.1.gz
+%{_mandir}/man1/docker*.1.gz
 %{_bindir}/docker
 %dir %{_libexecdir}/docker
 %{_libexecdir}/docker/dockerinit
@@ -198,10 +197,13 @@ fi
 %{_datadir}/vim/vimfiles/syntax/dockerfile.vim
 
 %changelog
+* Mon Apr 14 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.10.0-1
+- include manpages from contrib
+
 * Wed Apr 09 2014 Bobby Powers <bobbypowers@gmail.com> - 0.10.0-1
 - Upstream version bump
 
-* Thu Mar 27 2014 Lokesh Mandvekar - 0.9.1-1
+* Thu Mar 27 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.9.1-1
 - BZ 1080799 - upstream version bump
 
 * Thu Mar 13 2014 Adam Miller <maxamillion@fedoraproject.org> - 0.9.0-3
