@@ -9,12 +9,12 @@
 %global debug_package %{nil}
 %global gopath  %{_datadir}/gocode
 
-%global commit      867b2a90c228f62cdcd44907ceef279a2d8f1ac5
+%global commit      dc9c28f51d669d6b09e81c2381f800f1a33bb659
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:           docker-io
 Version:        0.10.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
@@ -197,6 +197,10 @@ fi
 %{_datadir}/vim/vimfiles/syntax/dockerfile.vim
 
 %changelog
+* Mon Apr 14 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.10.0-2
+- regenerate btrfs removal patch
+- update commit value
+
 * Mon Apr 14 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.10.0-1
 - include manpages from contrib
 
