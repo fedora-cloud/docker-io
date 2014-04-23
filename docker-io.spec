@@ -14,7 +14,7 @@
 
 Name:           docker-io
 Version:        0.10.0
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
@@ -68,6 +68,11 @@ Requires:       libcgroup
 %endif
 
 Provides:       lxc-docker = %{version}
+
+# permitted by https://fedorahosted.org/fpc/ticket/341#comment:7
+# In F22, the whole package should be renamed to be just "docker" and
+# this changed to "Provides: docker-io".
+Provides:       docker
 
 %description
 Docker is an open-source engine that automates the deployment of any
@@ -197,6 +202,9 @@ fi
 %{_datadir}/vim/vimfiles/syntax/dockerfile.vim
 
 %changelog
+* Wed Apr 23 2014 Matthew Miller <mattdm@fedoraproject,org> - 0.10.0-3
+- "Provides: docker" as per FPC exception
+
 * Mon Apr 14 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.10.0-2
 - regenerate btrfs removal patch
 - update commit value
