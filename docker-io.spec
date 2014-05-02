@@ -9,25 +9,26 @@
 %global debug_package %{nil}
 %global gopath  %{_datadir}/gocode
 
-%global commit      dc9c28f51d669d6b09e81c2381f800f1a33bb659
+%global commit      79993599658b4e8ed6764ffc07b6fc747e98cc1f
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:           docker-io
 Version:        0.10.0
-Release:        3%{?dist}
+Release:        4%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
-Patch0:         ignore-btrfs-for-rhel.patch
-Patch1:         upstream-patched-archive-tar.patch
-
-Patch90:        docker-0.9-el6-lxc.patch
+Patch0:     remove-vendored-tar.patch
+Patch1:     remove-btrfs-for-rhel.patch
 URL:            http://www.docker.io
 # only x86_64 for now: https://github.com/dotcloud/docker/issues/136
 ExclusiveArch:  x86_64
-Source0:        https://github.com/dotcloud/docker/archive/v%{version}.tar.gz
+#Current upstream https://github.com/lsm5/docker/tree/2014-05-01-2
+Source0:        https://github.com/lsm5/docker/archive/%{commit}/docker-%{shortcommit}.tar.gz
 # though final name for sysconf/sysvinit files is simply 'docker',
 # having .sysvinit and .sysconfig makes things clear
+Source1:        docker.service
+Source2:        docker-man.tar.gz
 BuildRequires:  gcc
 BuildRequires:  glibc-static
 # ensure build uses golang 1.2-7 and above
@@ -35,11 +36,11 @@ BuildRequires:  glibc-static
 BuildRequires:  golang >= 1.2-7
 BuildRequires:  golang(github.com/gorilla/mux)
 BuildRequires:  golang(github.com/kr/pty)
-BuildRequires:  golang(github.com/godbus/dbus)
-BuildRequires:  golang(github.com/coreos/go-systemd) >= 0-0.4
 BuildRequires:  golang(code.google.com/p/go.net/websocket)
 BuildRequires:  golang(code.google.com/p/gosqlite/sqlite3)
 BuildRequires:  golang(github.com/syndtr/gocapability/capability)
+BuildRequires:  golang(github.com/godbus/dbus)
+BuildRequires:  golang(github.com/coreos/go-systemd/activation)
 BuildRequires:  device-mapper-devel
 # btrfs not available for rhel yet
 %if 0%{?fedora}
@@ -60,19 +61,9 @@ Requires:       xz
 # this won't be needed for rhel7+
 %if 0%{?rhel} >= 6 && 0%{?rhel} < 7
 Requires:       bridge-utils
-Requires:       lxc
-
-# https://bugzilla.redhat.com/show_bug.cgi?id=1034919
-# No longer needed in Fedora because of libcontainer
-Requires:       libcgroup
 %endif
 
 Provides:       lxc-docker = %{version}
-
-# permitted by https://fedorahosted.org/fpc/ticket/341#comment:7
-# In F22, the whole package should be renamed to be just "docker" and
-# this changed to "Provides: docker-io".
-Provides:       docker
 
 %description
 Docker is an open-source engine that automates the deployment of any
@@ -85,13 +76,13 @@ and tests on a laptop will run at scale, in production*, on VMs, bare-metal
 servers, OpenStack clusters, public instances, or combinations of the above.
 
 %prep
-%setup -q -n docker-%{version}
+%setup -q -n docker-%{commit}
 rm -rf vendor
+%patch0 -p1 -b remove-vendored-tar
 %if 0%{?rhel}
-%patch0 -p1 -b ignore-btrfs-for-rhel
-%patch90 -p1 -b docker-0.9-el6-lxc
+%patch1 -p1 -b remove-btrfs-for-rhel
 %endif
-%patch1 -p1 -b upstream-patched-archive-tar
+tar zxf %{SOURCE2} 
 
 %build
 mkdir _build
@@ -102,6 +93,7 @@ pushd _build
 popd
 
 export DOCKER_GITCOMMIT="%{shortcommit}/%{version}"
+export DOCKER_BUILDTAGS='selinux'
 export GOPATH=$(pwd)/_build:%{gopath}
 
 hack/make.sh dynbinary
@@ -111,13 +103,13 @@ cp contrib/syntax/vim/README.md README-vim-syntax.md
 %install
 # install binary
 install -d %{buildroot}%{_bindir}
-install -p -m 755 bundles/%{version}/dynbinary/docker-%{version} %{buildroot}%{_bindir}/docker
+install -p -m 755 bundles/%{version}-dev/dynbinary/docker-%{version}-dev %{buildroot}%{_bindir}/docker
 # install dockerinit
 install -d %{buildroot}%{_libexecdir}/docker
-install -p -m 755 bundles/%{version}/dynbinary/dockerinit-%{version} %{buildroot}%{_libexecdir}/docker/dockerinit
-# install manpage
+install -p -m 755 bundles/%{version}-dev/dynbinary/dockerinit-%{version}-dev %{buildroot}%{_libexecdir}/docker/dockerinit
+# install manpages
 install -d %{buildroot}%{_mandir}/man1
-install -p -m 644 contrib/man/man1/docker*.1 %{buildroot}%{_mandir}/man1
+install -p -m 644 man1/* %{buildroot}%{_mandir}/man1
 # install bash completion
 install -d %{buildroot}%{_sysconfdir}/bash_completion.d
 install -p -m 644 contrib/completion/bash/docker %{buildroot}%{_sysconfdir}/bash_completion.d/docker.bash
@@ -137,7 +129,8 @@ install -d -m 700 %{buildroot}%{_sharedstatedir}/docker
 # install systemd/init scripts
 %if %{with systemd}
 install -d %{buildroot}%{_unitdir}
-install -p -m 644 contrib/init/systemd/docker.service %{buildroot}%{_unitdir}
+install -p -m 644 %{SOURCE1} %{buildroot}%{_unitdir}
+install -p -m 644 contrib/init/systemd/socket-activation/docker.socket %{buildroot}%{_unitdir}
 %else
 install -d %{buildroot}%{_sysconfdir}/sysconfig/
 install -p -m 644 contrib/init/sysvinit-redhat/docker.sysconfig %{buildroot}%{_sysconfdir}/sysconfig/docker
@@ -178,12 +171,13 @@ fi
 %defattr(-,root,root,-)
 %doc AUTHORS CHANGELOG.md CONTRIBUTING.md FIXME LICENSE MAINTAINERS NOTICE README.md 
 %doc LICENSE-vim-syntax README-vim-syntax.md
-%{_mandir}/man1/docker*.1.gz
+%{_mandir}/man1/*
 %{_bindir}/docker
 %dir %{_libexecdir}/docker
 %{_libexecdir}/docker/dockerinit
 %if %{with systemd}
 %{_unitdir}/docker.service
+%{_unitdir}/docker.socket
 %else
 %config(noreplace) %{_sysconfdir}/sysconfig/docker
 %{_initddir}/docker
@@ -202,33 +196,63 @@ fi
 %{_datadir}/vim/vimfiles/syntax/dockerfile.vim
 
 %changelog
-* Wed Apr 23 2014 Matthew Miller <mattdm@fedoraproject,org> - 0.10.0-3
-- "Provides: docker" as per FPC exception
+* Thu May 01 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.10.0-4
+- enable selinux in unitfile
 
-* Mon Apr 14 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.10.0-2
-- regenerate btrfs removal patch
-- update commit value
+* Thu May 01 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.10.0-3
+- branch https://github.com/lsm5/docker/commits/2014-05-01-2
 
-* Mon Apr 14 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.10.0-1
-- include manpages from contrib
+* Thu May 01 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.10.0-2
+- branch https://github.com/lsm5/docker/tree/2014-05-01
 
-* Wed Apr 09 2014 Bobby Powers <bobbypowers@gmail.com> - 0.10.0-1
-- Upstream version bump
+* Fri Apr 25 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.10.0-1
+- rebased on 0.10.0
+- branch used: https://github.com/lsm5/docker/tree/2014-04-25
+- manpages packaged separately (pandoc not available on RHEL-7)
 
-* Thu Mar 27 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.9.1-1
-- BZ 1080799 - upstream version bump
+* Tue Apr 08 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.9.1-4.collider
+- manpages merged, some more patches from alex
 
-* Thu Mar 13 2014 Adam Miller <maxamillion@fedoraproject.org> - 0.9.0-3
-- Add lxc requirement for EPEL6 and patch init script to use lxc driver
-- Remove tar dep, no longer needed
-- Require libcgroup only for EPEL6
+* Thu Apr 03 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.9.1-3.collider
+- fix --volumes-from mount failure, include docker-images/info/tag manpages
 
-* Tue Mar 11 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.9.0-2
-- lxc removed (optional)
-  http://blog.docker.io/2014/03/docker-0-9-introducing-execution-drivers-and-libcontainer/
+* Tue Apr 01 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.9.1-2.collider
+- solve deadlock issue
+
+* Mon Mar 31 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.9.1-1.collider
+- branch 2014-03-28, include additional docker manpages from whenry
+
+* Thu Mar 27 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.9.0-7.collider
+- env file support (vbatts)
+
+* Mon Mar 17 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.9.0-6.collider
+- dwalsh's selinux patch rewritten
+- point to my docker repo as source0 (contains all patches already)
+- don't require tar and libcgroup
+
+* Fri Mar 14 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.9.0-5.collider
+- add kraman's container-pid.patch
+
+* Fri Mar 14 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.9.0-4.collider
+- require docker.socket in unitfile
+
+* Thu Mar 13 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.9.0-3.collider
+- use systemd socket activation
+
+* Wed Mar 12 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.9.0-2.collider
+- add collider tag to release field
 
 * Tue Mar 11 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.9.0-1
-- BZ 1074880 - upstream version bump to v0.9.0
+- upstream version bump to 0.9.0
+
+* Mon Mar 10 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.8.1-3
+- add alexl's patches upto af9bb2e3d37fcddd5e041d6ae45055f649e2fbd4
+- add guelfey/go.dbus to BR
+
+* Sun Mar 09 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.8.1-2
+- use upstream commit 3ace9512bdf5c935a716ee1851d3e636e7962fac
+- add dwalsh's patches for selinux, emacs-gitignore, listen_pid and
+remount /var/lib/docker as --private
 
 * Wed Feb 19 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.8.1-1
 - Bug 1066841 - upstream version bump to v0.8.1
