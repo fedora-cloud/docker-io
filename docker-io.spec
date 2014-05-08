@@ -9,12 +9,12 @@
 %global debug_package %{nil}
 %global gopath  %{_datadir}/gocode
 
-%global commit      dc9c28f51d669d6b09e81c2381f800f1a33bb659
+%global commit      fb99f992c081a1d433c97c99ffb46d12693eeb76
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:           docker-io
-Version:        0.10.0
-Release:        2%{?dist}
+Version:        0.11.1
+Release:        1%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
@@ -30,9 +30,11 @@ Source0:        https://github.com/dotcloud/docker/archive/v%{version}.tar.gz
 # having .sysvinit and .sysconfig makes things clear
 BuildRequires:  gcc
 BuildRequires:  glibc-static
+
 # ensure build uses golang 1.2-7 and above
 # http://code.google.com/p/go/source/detail?r=a15f344a9efa35ef168c8feaa92a15a1cdc93db5
 BuildRequires:  golang >= 1.2-7
+
 BuildRequires:  golang(github.com/gorilla/mux)
 BuildRequires:  golang(github.com/kr/pty)
 BuildRequires:  golang(github.com/godbus/dbus)
@@ -41,21 +43,29 @@ BuildRequires:  golang(code.google.com/p/go.net/websocket)
 BuildRequires:  golang(code.google.com/p/gosqlite/sqlite3)
 BuildRequires:  golang(github.com/syndtr/gocapability/capability)
 BuildRequires:  device-mapper-devel
+
 # btrfs not available for rhel yet
 %if 0%{?fedora}
 BuildRequires:  btrfs-progs-devel
 %endif
+
 %if %{with systemd}
 BuildRequires:  pkgconfig(systemd)
+
+# Build upstream docs with pandoc
+BuildRequires:  pandoc
+
 Requires:       systemd-units
 %else
 Requires(post):     chkconfig
 Requires(preun):    chkconfig
 Requires(postun):   initscripts
 %endif
+
 # need xz to work with ubuntu images
 # https://bugzilla.redhat.com/show_bug.cgi?id=1045220
 Requires:       xz
+
 # https://bugzilla.redhat.com/show_bug.cgi?id=1035436
 # this won't be needed for rhel7+
 %if 0%{?rhel} >= 6 && 0%{?rhel} < 7
@@ -100,6 +110,7 @@ export DOCKER_GITCOMMIT="%{shortcommit}/%{version}"
 export GOPATH=$(pwd)/_build:%{gopath}
 
 hack/make.sh dynbinary
+contrib/man/md/md2man-all.sh
 cp contrib/syntax/vim/LICENSE LICENSE-vim-syntax
 cp contrib/syntax/vim/README.md README-vim-syntax.md
 
@@ -197,6 +208,10 @@ fi
 %{_datadir}/vim/vimfiles/syntax/dockerfile.vim
 
 %changelog
+* Thu May 08 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.11.1-1
+- Bug 1095616 - upstream bump to 0.11.1
+- manpages via pandoc
+
 * Mon Apr 14 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.10.0-2
 - regenerate btrfs removal patch
 - update commit value
