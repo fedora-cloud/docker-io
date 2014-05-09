@@ -86,7 +86,7 @@ rm -rf vendor
 %patch0 -p1 -b ignore-btrfs-for-rhel
 %patch90 -p1 -b docker-0.9-el6-lxc
 %endif
-%patch1 -p1 -b upstream-patched-archive-tar
+%patch1 -p1 -F 5 -b upstream-patched-archive-tar
 
 %build
 mkdir _build
