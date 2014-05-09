@@ -159,7 +159,7 @@ fi
 %{_datadir}/vim/vimfiles/syntax/dockerfile.vim
 
 %changelog
-* Fri May 09 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.10.0-2
+* Fri May 09 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.10.0-3
 - remove fedora/rhel conditionals (not built)
 
 * Mon Apr 14 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.10.0-2
