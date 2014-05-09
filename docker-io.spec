@@ -9,8 +9,8 @@
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:           docker-io
-Version:        0.10.0
-Release:        3%{?dist}
+Version:        0.11.1
+Release:        1%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
@@ -69,7 +69,7 @@ servers, OpenStack clusters, public instances, or combinations of the above.
 rm -rf vendor
 %patch0 -p1 -b ignore-btrfs-for-rhel
 %patch90 -p1 -b docker-0.9-el6-lxc
-%patch1 -p1 -b upstream-patched-archive-tar
+%patch1 -p1 -F 2 -b upstream-patched-archive-tar
 
 %build
 mkdir _build
@@ -159,6 +159,9 @@ fi
 %{_datadir}/vim/vimfiles/syntax/dockerfile.vim
 
 %changelog
+* Fri May 09 2014 Stephen Price <steeef@gmail.com> - 0.11.1-1
+- Upstream version bump
+
 * Fri May 09 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.10.0-3
 - remove fedora/rhel conditionals (not built)
 
