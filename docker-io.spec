@@ -1,7 +1,3 @@
-%if 0%{?fedora} >= 18 || 0%{?rhel} >= 7
-%bcond_without  systemd
-%endif
-
 # modifying the dockerinit binary breaks the SHA1 sum check by docker
 %global __os_install_post %{_rpmconfigdir}/brp-compress
 
@@ -14,7 +10,7 @@
 
 Name:           docker-io
 Version:        0.10.0
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
@@ -41,31 +37,20 @@ BuildRequires:  golang(code.google.com/p/go.net/websocket)
 BuildRequires:  golang(code.google.com/p/gosqlite/sqlite3)
 BuildRequires:  golang(github.com/syndtr/gocapability/capability)
 BuildRequires:  device-mapper-devel
-# btrfs not available for rhel yet
-%if 0%{?fedora}
-BuildRequires:  btrfs-progs-devel
-%endif
-%if %{with systemd}
-BuildRequires:  pkgconfig(systemd)
-Requires:       systemd-units
-%else
 Requires(post):     chkconfig
 Requires(preun):    chkconfig
 Requires(postun):   initscripts
-%endif
 # need xz to work with ubuntu images
 # https://bugzilla.redhat.com/show_bug.cgi?id=1045220
 Requires:       xz
 # https://bugzilla.redhat.com/show_bug.cgi?id=1035436
 # this won't be needed for rhel7+
-%if 0%{?rhel} >= 6 && 0%{?rhel} < 7
 Requires:       bridge-utils
 Requires:       lxc
 
 # https://bugzilla.redhat.com/show_bug.cgi?id=1034919
 # No longer needed in Fedora because of libcontainer
 Requires:       libcgroup
-%endif
 
 Provides:       lxc-docker = %{version}
 
@@ -82,10 +67,8 @@ servers, OpenStack clusters, public instances, or combinations of the above.
 %prep
 %setup -q -n docker-%{version}
 rm -rf vendor
-%if 0%{?rhel}
 %patch0 -p1 -b ignore-btrfs-for-rhel
 %patch90 -p1 -b docker-0.9-el6-lxc
-%endif
 %patch1 -p1 -b upstream-patched-archive-tar
 
 %build
@@ -129,45 +112,28 @@ install -d %{buildroot}%{_sysconfdir}/udev/rules.d
 install -p -m 755 contrib/udev/80-docker.rules %{buildroot}%{_sysconfdir}/udev/rules.d
 # install storage dir
 install -d -m 700 %{buildroot}%{_sharedstatedir}/docker
-# install systemd/init scripts
-%if %{with systemd}
-install -d %{buildroot}%{_unitdir}
-install -p -m 644 contrib/init/systemd/docker.service %{buildroot}%{_unitdir}
-%else
+# install init scripts
 install -d %{buildroot}%{_sysconfdir}/sysconfig/
 install -p -m 644 contrib/init/sysvinit-redhat/docker.sysconfig %{buildroot}%{_sysconfdir}/sysconfig/docker
 install -d %{buildroot}%{_initddir}
 install -p -m 755 contrib/init/sysvinit-redhat/docker %{buildroot}%{_initddir}/docker
-%endif
 
 %pre
 getent group docker > /dev/null || %{_sbindir}/groupadd -r docker
 exit 0
 
 %post
-%if %{with systemd}
-%systemd_post docker
-%else
 # install but don't activate
 /sbin/chkconfig --add docker
-%endif
 
 %preun
-%if %{with systemd}
-%systemd_preun docker
-%else
 /sbin/service docker stop >/dev/null 2>&1
 /sbin/chkconfig --del docker
-%endif
 
 %postun
-%if %{with systemd}
-%systemd_postun_with_restart docker
-%else
 if [ "$1" -ge "1" ] ; then
         /sbin/service docker condrestart >/dev/null 2>&1 || :
 fi
-%endif
 
 %files
 %defattr(-,root,root,-)
@@ -177,12 +143,8 @@ fi
 %{_bindir}/docker
 %dir %{_libexecdir}/docker
 %{_libexecdir}/docker/dockerinit
-%if %{with systemd}
-%{_unitdir}/docker.service
-%else
 %config(noreplace) %{_sysconfdir}/sysconfig/docker
 %{_initddir}/docker
-%endif
 %dir %{_sysconfdir}/bash_completion.d
 %{_sysconfdir}/bash_completion.d/docker.bash
 %{_datadir}/zsh/site-functions/_docker
@@ -197,6 +159,9 @@ fi
 %{_datadir}/vim/vimfiles/syntax/dockerfile.vim
 
 %changelog
+* Fri May 09 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.10.0-2
+- remove fedora/rhel conditionals (not built)
+
 * Mon Apr 14 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.10.0-2
 - regenerate btrfs removal patch
 - update commit value
