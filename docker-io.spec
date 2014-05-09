@@ -13,8 +13,8 @@
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:           docker-io
-Version:        0.10.0
-Release:        2%{?dist}
+Version:        0.11.1
+Release:        1%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
@@ -197,6 +197,9 @@ fi
 %{_datadir}/vim/vimfiles/syntax/dockerfile.vim
 
 %changelog
+* Fri May 09 2014 Stephen Price <steeef@gmail.com> - 0.11.1-1
+- Upstream version bump
+
 * Mon Apr 14 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.10.0-2
 - regenerate btrfs removal patch
 - update commit value
