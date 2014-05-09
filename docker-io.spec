@@ -140,7 +140,7 @@ exit 0
 %{_datadir}/vim/vimfiles/syntax/dockerfile.vim
 
 %changelog
-* Fri May 08 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.11.1-2
+* Fri May 09 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.11.1-2
 - get rid of conditionals, separate out spec for each branch
 
 * Thu May 08 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.11.1-1
