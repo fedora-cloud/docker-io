@@ -5,12 +5,12 @@
 %global debug_package %{nil}
 %global gopath  %{_datadir}/gocode
 
-%global commit      dc9c28f51d669d6b09e81c2381f800f1a33bb659
+%global commit      fb99f992c081a1d433c97c99ffb46d12693eeb76
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:           docker-io
-Version:        0.10.0
-Release:        3%{?dist}
+Version:        0.11.1
+Release:        1%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
@@ -69,7 +69,7 @@ servers, OpenStack clusters, public instances, or combinations of the above.
 rm -rf vendor
 %patch0 -p1 -b ignore-btrfs-for-rhel
 %patch90 -p1 -b docker-0.9-el6-lxc
-%patch1 -p1 -b upstream-patched-archive-tar
+%patch1 -p1 -F 2 -b upstream-patched-archive-tar
 
 %build
 mkdir _build
@@ -95,7 +95,7 @@ install -d %{buildroot}%{_libexecdir}/docker
 install -p -m 755 bundles/%{version}/dynbinary/dockerinit-%{version} %{buildroot}%{_libexecdir}/docker/dockerinit
 # install manpage
 install -d %{buildroot}%{_mandir}/man1
-install -p -m 644 contrib/man/man1/docker*.1 %{buildroot}%{_mandir}/man1
+install -p -m 644 contrib/man/old-man/docker*.1 %{buildroot}%{_mandir}/man1
 # install bash completion
 install -d %{buildroot}%{_sysconfdir}/bash_completion.d
 install -p -m 644 contrib/completion/bash/docker %{buildroot}%{_sysconfdir}/bash_completion.d/docker.bash
@@ -159,6 +159,10 @@ fi
 %{_datadir}/vim/vimfiles/syntax/dockerfile.vim
 
 %changelog
+* Fri May 09 2014 Stephen Price <steeef@gmail.com> - 0.11.1-1
+- Upstream version bump
+- Fix man path
+
 * Fri May 09 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.10.0-3
 - remove fedora/rhel conditionals (not built)
 
