@@ -9,7 +9,7 @@
 %global debug_package %{nil}
 %global gopath  %{_datadir}/gocode
 
-%global commit      dc9c28f51d669d6b09e81c2381f800f1a33bb659
+%global commit      fb99f992c081a1d433c97c99ffb46d12693eeb76
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:           docker-io
