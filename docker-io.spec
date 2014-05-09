@@ -10,7 +10,7 @@
 
 Name:           docker-io
 Version:        0.11.1
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 Patch0:         ignore-btrfs-for-rhel.patch
@@ -19,6 +19,7 @@ URL:            http://www.docker.io
 # only x86_64 for now: https://github.com/dotcloud/docker/issues/136
 ExclusiveArch:  x86_64
 Source0:        https://github.com/dotcloud/docker/archive/v%{version}.tar.gz
+Source1:        docker.service
 # though final name for sysconf/sysvinit files is simply 'docker',
 # having .sysvinit and .sysconfig makes things clear
 BuildRequires:  gcc
@@ -67,6 +68,7 @@ pushd _build
 popd
 
 export DOCKER_GITCOMMIT="%{shortcommit}/%{version}"
+export DOCKER_BUILDTAGS='selinux'
 export GOPATH=$(pwd)/_build:%{gopath}
 
 hack/make.sh dynbinary
@@ -102,7 +104,8 @@ install -p -m 755 contrib/udev/80-docker.rules %{buildroot}%{_sysconfdir}/udev/r
 install -d -m 700 %{buildroot}%{_sharedstatedir}/docker
 # install systemd/init scripts
 install -d %{buildroot}%{_unitdir}
-install -p -m 644 contrib/init/systemd/docker.service %{buildroot}%{_unitdir}
+#install -p -m 644 contrib/init/systemd/docker.service %{buildroot}%{_unitdir}
+install -p -m 644 %{SOURCE1} %{buildroot}%{_unitdir}
 
 %pre
 getent group docker > /dev/null || %{_sbindir}/groupadd -r docker
@@ -140,6 +143,10 @@ exit 0
 %{_datadir}/vim/vimfiles/syntax/dockerfile.vim
 
 %changelog
+* Fri May 09 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.11.1-3
+- add selinux buildtag
+- enable selinux in unitfile
+
 * Fri May 09 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.11.1-2
 - get rid of conditionals, separate out spec for each branch
 
