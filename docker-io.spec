@@ -10,7 +10,7 @@
 
 Name:           docker-io
 Version:        0.11.1
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
@@ -153,6 +153,9 @@ exit 0
 %{_datadir}/vim/vimfiles/syntax/dockerfile.vim
 
 %changelog
+* Fri May 09 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.11.1-3
+- keep NVR consistent with rawhide
+
 * Fri May 09 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.11.1-2
 - get rid of conditionals
 - enable selinux in build and unitfile
