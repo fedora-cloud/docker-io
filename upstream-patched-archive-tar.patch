@@ -68,8 +68,8 @@ index 1777391..5cfe4c2 100644
 --- a/graph/tags_unit_test.go
 +++ b/graph/tags_unit_test.go
 @@ -6,7 +6,7 @@ import (
- 	"github.com/dotcloud/docker/runtime/graphdriver"
- 	_ "github.com/dotcloud/docker/runtime/graphdriver/vfs" // import the vfs driver so it is used in the tests
+ 	_ "github.com/dotcloud/docker/daemon/graphdriver/vfs" // import the vfs driver so it is used in the tests
+ 	"github.com/dotcloud/docker/image"
  	"github.com/dotcloud/docker/utils"
 -	"github.com/dotcloud/docker/vendor/src/code.google.com/p/go/src/pkg/archive/tar"
 +	"archive/tar"
@@ -81,8 +81,8 @@ index 26441a2..a313382 100644
 --- a/integration/api_test.go
 +++ b/integration/api_test.go
 @@ -21,7 +21,7 @@ import (
+ 	"github.com/dotcloud/docker/image"
  	"github.com/dotcloud/docker/runconfig"
- 	"github.com/dotcloud/docker/runtime"
  	"github.com/dotcloud/docker/utils"
 -	"github.com/dotcloud/docker/vendor/src/code.google.com/p/go/src/pkg/archive/tar"
 +	"archive/tar"
