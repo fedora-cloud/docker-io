@@ -5,27 +5,29 @@
 %global debug_package %{nil}
 %global gopath  %{_datadir}/gocode
 
-%global commit      dc9c28f51d669d6b09e81c2381f800f1a33bb659
+%global commit      fb99f992c081a1d433c97c99ffb46d12693eeb76
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:           docker-io
-Version:        0.10.0
+Version:        0.11.1
 Release:        3%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
 Patch0:         ignore-btrfs-for-rhel.patch
 Patch1:         upstream-patched-archive-tar.patch
-
 Patch90:        docker-0.9-el6-lxc.patch
+
 URL:            http://www.docker.io
 # only x86_64 for now: https://github.com/dotcloud/docker/issues/136
 ExclusiveArch:  x86_64
 Source0:        https://github.com/dotcloud/docker/archive/v%{version}.tar.gz
+Source1:        docker.sysconfig
 # though final name for sysconf/sysvinit files is simply 'docker',
 # having .sysvinit and .sysconfig makes things clear
 BuildRequires:  gcc
 BuildRequires:  glibc-static
+BuildRequires:  pandoc
 # ensure build uses golang 1.2-7 and above
 # http://code.google.com/p/go/source/detail?r=a15f344a9efa35ef168c8feaa92a15a1cdc93db5
 BuildRequires:  golang >= 1.2-7
@@ -69,7 +71,8 @@ servers, OpenStack clusters, public instances, or combinations of the above.
 rm -rf vendor
 %patch0 -p1 -b ignore-btrfs-for-rhel
 %patch90 -p1 -b docker-0.9-el6-lxc
-%patch1 -p1 -b upstream-patched-archive-tar
+%patch1 -p1 -F 2 -b upstream-patched-archive-tar
+cp -p %SOURCE1 contrib/init/sysvinit-redhat/docker.sysconfig
 
 %build
 mkdir _build
@@ -80,11 +83,15 @@ pushd _build
 popd
 
 export DOCKER_GITCOMMIT="%{shortcommit}/%{version}"
+export DOCKER_BUILDTAGS='selinux'
 export GOPATH=$(pwd)/_build:%{gopath}
 
 hack/make.sh dynbinary
 cp contrib/syntax/vim/LICENSE LICENSE-vim-syntax
 cp contrib/syntax/vim/README.md README-vim-syntax.md
+
+#make man pages
+contrib/man/md/md2man-all.sh
 
 %install
 # install binary
@@ -159,6 +166,19 @@ fi
 %{_datadir}/vim/vimfiles/syntax/dockerfile.vim
 
 %changelog
+* Tue May 13 2014 Stephen Price <steeef@gmail.com> - 0.11.1-3
+- add selinux to sysconfig
+
+* Tue May 13 2014 Stephen Price <steeef@gmail.com> - 0.11.1-2
+- add lxc patch back
+- use md2man-all.sh to generate man pages
+- add selinux
+
+* Mon May 12 2014 Stephen Price <steeef@gmail.com> - 0.11.1-1
+- Upstream version bump
+- Update changed paths
+- Remove lxc patch
+
 * Fri May 09 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.10.0-3
 - remove fedora/rhel conditionals (not built)
 
