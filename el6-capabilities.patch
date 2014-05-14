@@ -1,0 +1,41 @@
+From a8b720e191e149cb9abf4230c0c5fd410282400d Mon Sep 17 00:00:00 2001
+From: Vincent Batts <vbatts@redhat.com>
+Date: Wed, 14 May 2014 13:54:51 -0400
+Subject: [PATCH] capabilites on RHEL6: quick fix for letting 0.11.1 work on
+ rhel6
+
+See also https://github.com/dotcloud/docker/issues/5661
+
+Docker-DCO-1.1-Signed-off-by: Vincent Batts <vbatts@redhat.com> (github: vbatts)
+---
+ daemon/execdriver/lxc/init.go | 1 -
+ pkg/libcontainer/types.go     | 1 -
+ 2 files changed, 2 deletions(-)
+
+diff --git a/daemon/execdriver/lxc/init.go b/daemon/execdriver/lxc/init.go
+index e21e717..acebbd8 100644
+--- a/daemon/execdriver/lxc/init.go
++++ b/daemon/execdriver/lxc/init.go
+@@ -150,7 +150,6 @@ func setupCapabilities(args *execdriver.InitArgs) error {
+ 		capability.CAP_MAC_OVERRIDE,
+ 		capability.CAP_MAC_ADMIN,
+ 		capability.CAP_NET_ADMIN,
+-		capability.CAP_SYSLOG,
+ 	}
+ 
+ 	c, err := capability.NewPid(os.Getpid())
+diff --git a/pkg/libcontainer/types.go b/pkg/libcontainer/types.go
+index 8f056c8..97b9cba 100644
+--- a/pkg/libcontainer/types.go
++++ b/pkg/libcontainer/types.go
+@@ -54,7 +54,6 @@ var (
+ 		{Key: "MAC_OVERRIDE", Value: capability.CAP_MAC_OVERRIDE},
+ 		{Key: "MAC_ADMIN", Value: capability.CAP_MAC_ADMIN},
+ 		{Key: "NET_ADMIN", Value: capability.CAP_NET_ADMIN},
+-		{Key: "SYSLOG", Value: capability.CAP_SYSLOG},
+ 	}
+ )
+ 
+-- 
+1.9.3
+
