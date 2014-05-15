@@ -10,11 +10,10 @@
 
 Name:           docker-io
 Version:        0.11.1
-Release:        3%{?dist}
+Release:        4%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
-Patch0:         ignore-btrfs-for-rhel.patch
 Patch1:         upstream-patched-archive-tar.patch
 
 URL:            http://www.docker.io
@@ -35,8 +34,7 @@ BuildRequires:  golang(code.google.com/p/go.net/websocket)
 BuildRequires:  golang(code.google.com/p/gosqlite/sqlite3)
 BuildRequires:  golang(github.com/syndtr/gocapability/capability)
 BuildRequires:  device-mapper-devel
-# btrfs not available for rhel yet
-#BuildRequires:  btrfs-progs-devel
+BuildRequires:  btrfs-progs-devel
 BuildRequires:  pkgconfig(systemd)
 
 # Build upstream docs with pandoc
@@ -62,7 +60,6 @@ servers, OpenStack clusters, public instances, or combinations of the above.
 %prep
 %setup -q -n docker-%{version}
 rm -rf vendor
-%patch0 -p1 -b ignore-btrfs-for-rhel
 %patch1 -p1 -b upstream-patched-archive-tar
 
 %build
@@ -149,6 +146,9 @@ exit 0
 %{_datadir}/vim/vimfiles/syntax/dockerfile.vim
 
 %changelog
+* Wed May 14 2014 John Seybold <jwseybold@gmail.com> - 0.11.1-4
+- enable btrfs for rhel 7
+
 * Mon May 12 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.11.1-3
 - enable selinux
 - delete rhel/fedora conditionals
