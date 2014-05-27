@@ -1,2 +1,6 @@
 *.tar.gz
 *.zip
+BUILD/*
+BUILDROOT/*
+SRPMS/*
+RPMS/*

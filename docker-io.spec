@@ -10,11 +10,12 @@
 
 Name:           docker-io
 Version:        0.11.1
-Release:        3%{?dist}
+Release:        4%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
-Patch0:         ignore-btrfs-for-rhel.patch
 Patch1:         upstream-patched-archive-tar.patch
+Patch2:         write-to-proc.patch
+Patch3:         cgroup.patch
 URL:            http://www.docker.io
 # only x86_64 for now: https://github.com/dotcloud/docker/issues/136
 ExclusiveArch:  x86_64
@@ -58,6 +59,8 @@ servers, OpenStack clusters, public instances, or combinations of the above.
 %setup -q -n docker-%{version}
 rm -rf vendor
 %patch1 -p1 -b upstream-patched-archive-tar
+%patch2 -p1 -b write-to-proc
+%patch3 -p1 -b cgroup
 
 %build
 mkdir _build
@@ -143,6 +146,9 @@ exit 0
 %{_datadir}/vim/vimfiles/syntax/dockerfile.vim
 
 %changelog
+* Tue May 27 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.11.1-4
+- patches for BZ 1088125, 1096375
+
 * Fri May 09 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.11.1-3
 - add selinux buildtag
 - enable selinux in unitfile
