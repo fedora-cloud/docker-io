@@ -10,7 +10,7 @@
 
 Name:           docker-io
 Version:        0.11.1
-Release:        4%{?dist}
+Release:        5%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 Patch1:         upstream-patched-archive-tar.patch
@@ -109,6 +109,9 @@ install -d -m 700 %{buildroot}%{_sharedstatedir}/docker
 install -d %{buildroot}%{_unitdir}
 #install -p -m 644 contrib/init/systemd/docker.service %{buildroot}%{_unitdir}
 install -p -m 644 %{SOURCE1} %{buildroot}%{_unitdir}
+# for additional args
+install -d %{buildroot}%{_sysconfdir}/sysconfig/
+install -p -m 644 contrib/init/sysvinit-redhat/docker.sysconfig %{buildroot}%{_sysconfdir}/sysconfig/docker
 
 %pre
 getent group docker > /dev/null || %{_sbindir}/groupadd -r docker
@@ -132,6 +135,7 @@ exit 0
 %dir %{_libexecdir}/docker
 %{_libexecdir}/docker/dockerinit
 %{_unitdir}/docker.service
+%{_sysconfdir}/sysconfig/docker
 %dir %{_sysconfdir}/bash_completion.d
 %{_sysconfdir}/bash_completion.d/docker.bash
 %{_datadir}/zsh/site-functions/_docker
@@ -146,6 +150,9 @@ exit 0
 %{_datadir}/vim/vimfiles/syntax/dockerfile.vim
 
 %changelog
+* Thu May 29 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.11.1-5
+- Bug 1084232 - add /etc/sysconfig/docker for additional args
+
 * Tue May 27 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.11.1-4
 - patches for BZ 1088125, 1096375
 

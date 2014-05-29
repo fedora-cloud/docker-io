@@ -4,6 +4,7 @@ Documentation=http://docs.docker.io
 After=network.target
 
 [Service]
+EnvironmentFile=/etc/sysconfig/docker
 ExecStart=/usr/bin/docker -d --selinux-enabled
 Restart=on-failure
 LimitNOFILE=1048576
