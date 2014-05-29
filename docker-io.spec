@@ -10,7 +10,7 @@
 
 Name:           docker-io
 Version:        0.11.1
-Release:        8%{?dist}
+Release:        9%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 Patch1:         upstream-patched-archive-tar.patch
@@ -157,6 +157,9 @@ exit 0
 %{_datadir}/vim/vimfiles/syntax/dockerfile.vim
 
 %changelog
+* Thu May 29 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.11.1-9
+- BZ: change systemd service type to 'notify'
+
 * Thu May 29 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.11.1-8
 - use systemd socket-activation version
 
