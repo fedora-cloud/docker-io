@@ -10,7 +10,7 @@
 
 Name:           docker-io
 Version:        0.11.1
-Release:        6%{?dist}
+Release:        7%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 Patch1:         upstream-patched-archive-tar.patch
@@ -45,6 +45,10 @@ Requires:       systemd-units
 # https://bugzilla.redhat.com/show_bug.cgi?id=1045220
 Requires:       xz
 Provides:       lxc-docker = %{version}
+# permitted by https://fedorahosted.org/fpc/ticket/341#comment:7
+# In F22, the whole package should be renamed to be just "docker" and
+# this changed to "Provides: docker-io".
+Provides:       docker
 
 %description
 Docker is an open-source engine that automates the deployment of any
@@ -151,6 +155,10 @@ exit 0
 %{_datadir}/vim/vimfiles/syntax/dockerfile.vim
 
 %changelog
+* Thu May 29 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.11.1-7
+- add "Provides: docker" as per FPC exception (Matthew Miller
+        <mattdm@fedoraproject.org>)
+
 * Thu May 29 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.11.1-6
 - don't use docker.sysconfig meant for sysvinit (just to avoid confusion)
 
