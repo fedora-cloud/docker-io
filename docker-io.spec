@@ -10,26 +10,25 @@
 
 Name:           docker-io
 Version:        0.11.1
-Release:        3%{?dist}
+Release:        7%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
-
 Patch1:         upstream-patched-archive-tar.patch
-
+Patch2:         write-to-proc.patch
+Patch3:         cgroup.patch
 URL:            http://www.docker.io
 # only x86_64 for now: https://github.com/dotcloud/docker/issues/136
 ExclusiveArch:  x86_64
 Source0:        https://github.com/dotcloud/docker/archive/v%{version}.tar.gz
 Source1:        docker.service
+Source2:        docker.sysconfig
 # though final name for sysconf/sysvinit files is simply 'docker',
 # having .sysvinit and .sysconfig makes things clear
 BuildRequires:  gcc
 BuildRequires:  glibc-static
-
 # ensure build uses golang 1.2-7 and above
 # http://code.google.com/p/go/source/detail?r=a15f344a9efa35ef168c8feaa92a15a1cdc93db5
 BuildRequires:  golang >= 1.2-7
-
 BuildRequires:  golang(github.com/gorilla/mux)
 BuildRequires:  golang(github.com/kr/pty)
 BuildRequires:  golang(github.com/godbus/dbus)
@@ -38,21 +37,18 @@ BuildRequires:  golang(code.google.com/p/go.net/websocket)
 BuildRequires:  golang(code.google.com/p/gosqlite/sqlite3)
 BuildRequires:  golang(github.com/syndtr/gocapability/capability)
 BuildRequires:  device-mapper-devel
-
 BuildRequires:  btrfs-progs-devel
-
 BuildRequires:  pkgconfig(systemd)
-
-# Build upstream docs with pandoc
 BuildRequires:  pandoc
-
 Requires:       systemd-units
-
 # need xz to work with ubuntu images
 # https://bugzilla.redhat.com/show_bug.cgi?id=1045220
 Requires:       xz
-
 Provides:       lxc-docker = %{version}
+# permitted by https://fedorahosted.org/fpc/ticket/341#comment:7
+# In F22, the whole package should be renamed to be just "docker" and
+# this changed to "Provides: docker-io".
+Provides:       docker
 
 %description
 Docker is an open-source engine that automates the deployment of any
@@ -68,6 +64,8 @@ servers, OpenStack clusters, public instances, or combinations of the above.
 %setup -q -n docker-%{version}
 rm -rf vendor
 %patch1 -p1 -b upstream-patched-archive-tar
+%patch2 -p1 -b write-to-proc
+%patch3 -p1 -b cgroup
 
 %build
 mkdir _build
@@ -112,10 +110,13 @@ install -d %{buildroot}%{_sysconfdir}/udev/rules.d
 install -p -m 755 contrib/udev/80-docker.rules %{buildroot}%{_sysconfdir}/udev/rules.d
 # install storage dir
 install -d -m 700 %{buildroot}%{_sharedstatedir}/docker
-# install unitfile
+# install systemd/init scripts
 install -d %{buildroot}%{_unitdir}
 #install -p -m 644 contrib/init/systemd/docker.service %{buildroot}%{_unitdir}
 install -p -m 644 %{SOURCE1} %{buildroot}%{_unitdir}
+# for additional args
+install -d %{buildroot}%{_sysconfdir}/sysconfig/
+install -p -m 644 %{SOURCE2} %{buildroot}%{_sysconfdir}/sysconfig/docker
 
 %pre
 getent group docker > /dev/null || %{_sbindir}/groupadd -r docker
@@ -139,6 +140,7 @@ exit 0
 %dir %{_libexecdir}/docker
 %{_libexecdir}/docker/dockerinit
 %{_unitdir}/docker.service
+%{_sysconfdir}/sysconfig/docker
 %dir %{_sysconfdir}/bash_completion.d
 %{_sysconfdir}/bash_completion.d/docker.bash
 %{_datadir}/zsh/site-functions/_docker
@@ -153,12 +155,25 @@ exit 0
 %{_datadir}/vim/vimfiles/syntax/dockerfile.vim
 
 %changelog
+* Thu May 29 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.11.1-7
+- add "Provides: docker" as per FPC exception (Matthew Miller
+        <mattdm@fedoraproject.org>)
+
+* Thu May 29 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.11.1-6
+- don't use docker.sysconfig meant for sysvinit (just to avoid confusion)
+
+* Thu May 29 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.11.1-5
+- Bug 1084232 - add /etc/sysconfig/docker for additional args
+
+* Tue May 27 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.11.1-4
+- patches for BZ 1088125, 1096375
+
 * Fri May 09 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.11.1-3
-- keep NVR consistent with rawhide
+- add selinux buildtag
+- enable selinux in unitfile
 
 * Fri May 09 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.11.1-2
-- get rid of conditionals
-- enable selinux in build and unitfile
+- get rid of conditionals, separate out spec for each branch
 
 * Thu May 08 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.11.1-1
 - Bug 1095616 - upstream bump to 0.11.1
