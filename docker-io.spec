@@ -10,7 +10,7 @@
 
 Name:           docker-io
 Version:        0.11.1
-Release:        7%{?dist}
+Release:        8%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 Patch1:         upstream-patched-archive-tar.patch
@@ -114,6 +114,7 @@ install -d -m 700 %{buildroot}%{_sharedstatedir}/docker
 install -d %{buildroot}%{_unitdir}
 #install -p -m 644 contrib/init/systemd/docker.service %{buildroot}%{_unitdir}
 install -p -m 644 %{SOURCE1} %{buildroot}%{_unitdir}
+install -p -m 644 contrib/init/systemd/socket-activation/docker.socket %{buildroot}%{_unitdir}
 # for additional args
 install -d %{buildroot}%{_sysconfdir}/sysconfig/
 install -p -m 644 %{SOURCE2} %{buildroot}%{_sysconfdir}/sysconfig/docker
@@ -140,6 +141,7 @@ exit 0
 %dir %{_libexecdir}/docker
 %{_libexecdir}/docker/dockerinit
 %{_unitdir}/docker.service
+%{_unitdir}/docker.socket
 %{_sysconfdir}/sysconfig/docker
 %dir %{_sysconfdir}/bash_completion.d
 %{_sysconfdir}/bash_completion.d/docker.bash
@@ -155,6 +157,9 @@ exit 0
 %{_datadir}/vim/vimfiles/syntax/dockerfile.vim
 
 %changelog
+* Thu May 29 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.11.1-8
+- use systemd socket-activation version
+
 * Thu May 29 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.11.1-7
 - add "Provides: docker" as per FPC exception (Matthew Miller
         <mattdm@fedoraproject.org>)
