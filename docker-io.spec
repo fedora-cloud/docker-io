@@ -10,14 +10,13 @@
 
 Name:           docker-io
 Version:        0.11.1
-Release:        4%{?dist}
+Release:        5%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 
 Patch0:         ignore-btrfs-for-rhel.patch
 Patch1:         upstream-patched-archive-tar.patch
 Patch2:         el6-capabilities.patch
-Patch90:        docker-0.9-el6-lxc.patch
 
 URL:            http://www.docker.io
 # only x86_64 for now: https://github.com/dotcloud/docker/issues/136
@@ -71,7 +70,6 @@ servers, OpenStack clusters, public instances, or combinations of the above.
 %setup -q -n docker-%{version}
 rm -rf vendor
 %patch0 -p1 -b ignore-btrfs-for-rhel
-%patch90 -p1 -b docker-0.9-el6-lxc
 %patch1 -p1 -F 2 -b upstream-patched-archive-tar
 %patch2 -p1 -b el6-capabilities
 cp -p %{SOURCE1} contrib/init/sysvinit-redhat/docker.sysconfig
@@ -168,6 +166,9 @@ fi
 %{_datadir}/vim/vimfiles/syntax/dockerfile.vim
 
 %changelog
+* Fri May 30 2014 Vincent Batts <vbatts@redhat.com> - 0.11.1-5
+- switch back to the native execdriver, not lxc. bz1103323
+
 * Wed May 14 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.11.1-4
 - el6 capabilities fix from Vincent Batts <vbatts@redhat.com>
  https://github.com/vbatts/docker/commit/a8b720e191e149cb9abf4230c0c5fd410282400d
