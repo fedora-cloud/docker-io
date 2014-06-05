@@ -10,7 +10,7 @@
 
 Name:           docker-io
 Version:        0.11.1
-Release:        10%{?dist}
+Release:        11%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 Patch1:         upstream-patched-archive-tar.patch
@@ -157,6 +157,9 @@ exit 0
 %{_datadir}/vim/vimfiles/syntax/dockerfile.vim
 
 %changelog
+* Thu Jun 05 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.11.1-11
+- unitfile should Require socket file (revert change in release 10)
+
 * Fri May 30 2014 Lokesh Mandvekar <lsm5@redhat.com> - 0.11.1-10
 - do not require docker.socket in unitfile
 
