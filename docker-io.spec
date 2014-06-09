@@ -5,11 +5,11 @@
 %global debug_package %{nil}
 %global gopath  %{_datadir}/gocode
 
-%global commit      14680bf724161785d164fd99de36e3eb03a823ef
+%global commit      63fe64c471e7d76be96a625350468dfc65c06c31
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:           docker-io
-Version:        0.12.0
+Version:        1.0.0
 Release:        1%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
@@ -155,6 +155,9 @@ exit 0
 %{_datadir}/vim/vimfiles/syntax/dockerfile.vim
 
 %changelog
+* Mon Jun 09 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.0.0-1
+- upstream version bump to v1.0.0
+
 * Mon Jun 09 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 0.12.0-1
 - RHBZ#1105789 Upstream bump to 0.12.0
 
