@@ -5,17 +5,15 @@
 %global debug_package %{nil}
 %global gopath  %{_datadir}/gocode
 
-%global commit      fb99f992c081a1d433c97c99ffb46d12693eeb76
+%global commit      14680bf724161785d164fd99de36e3eb03a823ef
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:           docker-io
-Version:        0.11.1
-Release:        12%{?dist}
+Version:        0.12.0
+Release:        1%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 Patch1:         upstream-patched-archive-tar.patch
-Patch2:         write-to-proc.patch
-Patch3:         cgroup.patch
 URL:            http://www.docker.io
 # only x86_64 for now: https://github.com/dotcloud/docker/issues/136
 ExclusiveArch:  x86_64
@@ -29,10 +27,12 @@ BuildRequires:  glibc-static
 # ensure build uses golang 1.2-7 and above
 # http://code.google.com/p/go/source/detail?r=a15f344a9efa35ef168c8feaa92a15a1cdc93db5
 BuildRequires:  golang >= 1.2-7
-BuildRequires:  golang(github.com/gorilla/mux)
-BuildRequires:  golang(github.com/kr/pty)
+# for gorilla/mux and kr/pty https://github.com/dotcloud/docker/pull/5950
+BuildRequires:  golang(github.com/gorilla/mux) >= 0-0.13
+BuildRequires:  golang(github.com/kr/pty) >= 0-0.19
 BuildRequires:  golang(github.com/godbus/dbus)
-BuildRequires:  golang(github.com/coreos/go-systemd) >= 0-0.4
+# for coreos/go-systemd https://github.com/dotcloud/docker/pull/5981
+BuildRequires:  golang(github.com/coreos/go-systemd) >= 2-1
 BuildRequires:  golang(code.google.com/p/go.net/websocket)
 BuildRequires:  golang(code.google.com/p/gosqlite/sqlite3)
 BuildRequires:  golang(github.com/syndtr/gocapability/capability)
@@ -64,8 +64,6 @@ servers, OpenStack clusters, public instances, or combinations of the above.
 %setup -q -n docker-%{version}
 rm -rf vendor
 %patch1 -p1 -b upstream-patched-archive-tar
-%patch2 -p1 -b write-to-proc
-%patch3 -p1 -b cgroup
 
 %build
 mkdir _build
@@ -157,6 +155,9 @@ exit 0
 %{_datadir}/vim/vimfiles/syntax/dockerfile.vim
 
 %changelog
+* Mon Jun 09 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 0.12.0-1
+- RHBZ#1105789 Upstream bump to 0.12.0
+
 * Sat Jun 07 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.11.1-12
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_21_Mass_Rebuild
 
