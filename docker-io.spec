@@ -5,19 +5,15 @@
 %global debug_package %{nil}
 %global gopath  %{_datadir}/gocode
 
-%global commit      fb99f992c081a1d433c97c99ffb46d12693eeb76
+%global commit      63fe64c471e7d76be96a625350468dfc65c06c31
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:           docker-io
-Version:        0.11.1
-Release:        5%{?dist}
+Version:        1.0.0
+Release:        1%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
-
-Patch0:         ignore-btrfs-for-rhel.patch
 Patch1:         upstream-patched-archive-tar.patch
-Patch2:         el6-capabilities.patch
-
 URL:            http://www.docker.io
 # only x86_64 for now: https://github.com/dotcloud/docker/issues/136
 ExclusiveArch:  x86_64
@@ -69,9 +65,7 @@ servers, OpenStack clusters, public instances, or combinations of the above.
 %prep
 %setup -q -n docker-%{version}
 rm -rf vendor
-%patch0 -p1 -b ignore-btrfs-for-rhel
 %patch1 -p1 -F 2 -b upstream-patched-archive-tar
-%patch2 -p1 -b el6-capabilities
 cp -p %{SOURCE1} contrib/init/sysvinit-redhat/docker.sysconfig
 
 %build
@@ -166,6 +160,9 @@ fi
 %{_datadir}/vim/vimfiles/syntax/dockerfile.vim
 
 %changelog
+* Mon Jun 09 2014 Lokesh Mandvekar <lsm5@fedoraprojet.org> - 1.0.0-1
+- upstream version bump to v1.0.0
+
 * Fri May 30 2014 Vincent Batts <vbatts@redhat.com> - 0.11.1-5
 - switch back to the native execdriver, not lxc. bz1103323
 

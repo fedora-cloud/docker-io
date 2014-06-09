@@ -1,60 +1,215 @@
-diff --git a/archive/archive.go b/archive/archive.go
-index 2fac18e..634e9c1 100644
---- a/archive/archive.go
-+++ b/archive/archive.go
-@@ -8,7 +8,7 @@ import (
- 	"fmt"
- 	"github.com/dotcloud/docker/pkg/system"
- 	"github.com/dotcloud/docker/utils"
--	"github.com/dotcloud/docker/vendor/src/code.google.com/p/go/src/pkg/archive/tar"
-+	"archive/tar"
- 	"io"
- 	"io/ioutil"
- 	"os"
-diff --git a/archive/archive_test.go b/archive/archive_test.go
-index 4126601..ca5a80c 100644
---- a/archive/archive_test.go
-+++ b/archive/archive_test.go
-@@ -3,7 +3,7 @@ package archive
- import (
- 	"bytes"
- 	"fmt"
--	"github.com/dotcloud/docker/vendor/src/code.google.com/p/go/src/pkg/archive/tar"
-+	"archive/tar"
- 	"io"
- 	"io/ioutil"
- 	"os"
-diff --git a/archive/changes.go b/archive/changes.go
-index 723e4a7..51baa22 100644
---- a/archive/changes.go
-+++ b/archive/changes.go
-@@ -5,7 +5,7 @@ import (
- 	"fmt"
- 	"github.com/dotcloud/docker/pkg/system"
- 	"github.com/dotcloud/docker/utils"
--	"github.com/dotcloud/docker/vendor/src/code.google.com/p/go/src/pkg/archive/tar"
-+	"archive/tar"
- 	"io"
- 	"os"
- 	"path/filepath"
-diff --git a/archive/diff.go b/archive/diff.go
-index e20e4b1..a67b48a 100644
---- a/archive/diff.go
-+++ b/archive/diff.go
-@@ -2,7 +2,7 @@ package archive
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='en'>
+<head>
+<title>docker-io.git - docker-io</title>
+<meta name='generator' content='cgit v0.10.1'/>
+<meta name='robots' content='index, nofollow'/>
+<link rel='stylesheet' type='text/css' href='/cgit-data/cgit.css'/>
+<link rel='shortcut icon' href='/favicon.ico'/>
+<link rel='alternate' title='Atom feed' href='http://pkgs.fedoraproject.org/cgit/docker-io.git/atom/upstream-patched-archive-tar.patch?h=master' type='application/atom+xml'/>
+</head>
+<body>
+<div id='cgit'><table id='header'>
+<tr>
+<td class='logo' rowspan='2'><a href='/cgit/'><img src='/cgit-data/cgit.png' alt='cgit logo'/></a></td>
+<td class='main'><a href='/cgit/'>index</a> : <a title='docker-io.git' href='/cgit/docker-io.git/'>docker-io.git</a></td><td class='form'><form method='get' action=''>
+<select name='h' onchange='this.form.submit();'>
+<option value='el6'>el6</option>
+<option value='epel7'>epel7</option>
+<option value='f18'>f18</option>
+<option value='f19'>f19</option>
+<option value='f20'>f20</option>
+<option value='master' selected='selected'>master</option>
+</select> <input type='submit' name='' value='switch'/></form></td></tr>
+<tr><td class='sub'>docker-io</td><td class='sub right'>Jon Ciesla</td></tr></table>
+<table class='tabs'><tr><td>
+<a href='/cgit/docker-io.git/'>summary</a><a href='/cgit/docker-io.git/refs/'>refs</a><a href='/cgit/docker-io.git/log/upstream-patched-archive-tar.patch'>log</a><a class='active' href='/cgit/docker-io.git/tree/upstream-patched-archive-tar.patch'>tree</a><a href='/cgit/docker-io.git/commit/upstream-patched-archive-tar.patch'>commit</a><a href='/cgit/docker-io.git/diff/upstream-patched-archive-tar.patch'>diff</a><a href='/cgit/docker-io.git/stats/upstream-patched-archive-tar.patch'>stats</a></td><td class='form'><form class='right' method='get' action='/cgit/docker-io.git/log/upstream-patched-archive-tar.patch'>
+<select name='qt'>
+<option value='grep'>log msg</option>
+<option value='author'>author</option>
+<option value='committer'>committer</option>
+<option value='range'>range</option>
+</select>
+<input class='txt' type='text' size='10' name='q' value=''/>
+<input type='submit' value='search'/>
+</form>
+</td></tr></table>
+<div class='path'>path: <a href='/cgit/docker-io.git/tree/'>root</a>/<a href='/cgit/docker-io.git/tree/upstream-patched-archive-tar.patch'>upstream-patched-archive-tar.patch</a></div><div class='content'>blob: 061656accc019b35a57da1c1559f778a5c5f4069 (<a href='/cgit/docker-io.git/plain/upstream-patched-archive-tar.patch'>plain</a>)
+<table summary='blob content' class='blob'>
+<tr><td class='linenumbers'><pre><a id='n1' href='#n1'>1</a>
+<a id='n2' href='#n2'>2</a>
+<a id='n3' href='#n3'>3</a>
+<a id='n4' href='#n4'>4</a>
+<a id='n5' href='#n5'>5</a>
+<a id='n6' href='#n6'>6</a>
+<a id='n7' href='#n7'>7</a>
+<a id='n8' href='#n8'>8</a>
+<a id='n9' href='#n9'>9</a>
+<a id='n10' href='#n10'>10</a>
+<a id='n11' href='#n11'>11</a>
+<a id='n12' href='#n12'>12</a>
+<a id='n13' href='#n13'>13</a>
+<a id='n14' href='#n14'>14</a>
+<a id='n15' href='#n15'>15</a>
+<a id='n16' href='#n16'>16</a>
+<a id='n17' href='#n17'>17</a>
+<a id='n18' href='#n18'>18</a>
+<a id='n19' href='#n19'>19</a>
+<a id='n20' href='#n20'>20</a>
+<a id='n21' href='#n21'>21</a>
+<a id='n22' href='#n22'>22</a>
+<a id='n23' href='#n23'>23</a>
+<a id='n24' href='#n24'>24</a>
+<a id='n25' href='#n25'>25</a>
+<a id='n26' href='#n26'>26</a>
+<a id='n27' href='#n27'>27</a>
+<a id='n28' href='#n28'>28</a>
+<a id='n29' href='#n29'>29</a>
+<a id='n30' href='#n30'>30</a>
+<a id='n31' href='#n31'>31</a>
+<a id='n32' href='#n32'>32</a>
+<a id='n33' href='#n33'>33</a>
+<a id='n34' href='#n34'>34</a>
+<a id='n35' href='#n35'>35</a>
+<a id='n36' href='#n36'>36</a>
+<a id='n37' href='#n37'>37</a>
+<a id='n38' href='#n38'>38</a>
+<a id='n39' href='#n39'>39</a>
+<a id='n40' href='#n40'>40</a>
+<a id='n41' href='#n41'>41</a>
+<a id='n42' href='#n42'>42</a>
+<a id='n43' href='#n43'>43</a>
+<a id='n44' href='#n44'>44</a>
+<a id='n45' href='#n45'>45</a>
+<a id='n46' href='#n46'>46</a>
+<a id='n47' href='#n47'>47</a>
+<a id='n48' href='#n48'>48</a>
+<a id='n49' href='#n49'>49</a>
+<a id='n50' href='#n50'>50</a>
+<a id='n51' href='#n51'>51</a>
+<a id='n52' href='#n52'>52</a>
+<a id='n53' href='#n53'>53</a>
+<a id='n54' href='#n54'>54</a>
+<a id='n55' href='#n55'>55</a>
+<a id='n56' href='#n56'>56</a>
+<a id='n57' href='#n57'>57</a>
+<a id='n58' href='#n58'>58</a>
+<a id='n59' href='#n59'>59</a>
+<a id='n60' href='#n60'>60</a>
+<a id='n61' href='#n61'>61</a>
+<a id='n62' href='#n62'>62</a>
+<a id='n63' href='#n63'>63</a>
+<a id='n64' href='#n64'>64</a>
+<a id='n65' href='#n65'>65</a>
+<a id='n66' href='#n66'>66</a>
+<a id='n67' href='#n67'>67</a>
+<a id='n68' href='#n68'>68</a>
+<a id='n69' href='#n69'>69</a>
+<a id='n70' href='#n70'>70</a>
+<a id='n71' href='#n71'>71</a>
+<a id='n72' href='#n72'>72</a>
+<a id='n73' href='#n73'>73</a>
+<a id='n74' href='#n74'>74</a>
+<a id='n75' href='#n75'>75</a>
+<a id='n76' href='#n76'>76</a>
+<a id='n77' href='#n77'>77</a>
+<a id='n78' href='#n78'>78</a>
+<a id='n79' href='#n79'>79</a>
+<a id='n80' href='#n80'>80</a>
+<a id='n81' href='#n81'>81</a>
+<a id='n82' href='#n82'>82</a>
+<a id='n83' href='#n83'>83</a>
+<a id='n84' href='#n84'>84</a>
+<a id='n85' href='#n85'>85</a>
+<a id='n86' href='#n86'>86</a>
+<a id='n87' href='#n87'>87</a>
+<a id='n88' href='#n88'>88</a>
+<a id='n89' href='#n89'>89</a>
+<a id='n90' href='#n90'>90</a>
+<a id='n91' href='#n91'>91</a>
+<a id='n92' href='#n92'>92</a>
+<a id='n93' href='#n93'>93</a>
+<a id='n94' href='#n94'>94</a>
+<a id='n95' href='#n95'>95</a>
+<a id='n96' href='#n96'>96</a>
+<a id='n97' href='#n97'>97</a>
+<a id='n98' href='#n98'>98</a>
+<a id='n99' href='#n99'>99</a>
+<a id='n100' href='#n100'>100</a>
+<a id='n101' href='#n101'>101</a>
+<a id='n102' href='#n102'>102</a>
+<a id='n103' href='#n103'>103</a>
+<a id='n104' href='#n104'>104</a>
+<a id='n105' href='#n105'>105</a>
+<a id='n106' href='#n106'>106</a>
+<a id='n107' href='#n107'>107</a>
+<a id='n108' href='#n108'>108</a>
+<a id='n109' href='#n109'>109</a>
+<a id='n110' href='#n110'>110</a>
+<a id='n111' href='#n111'>111</a>
+<a id='n112' href='#n112'>112</a>
+<a id='n113' href='#n113'>113</a>
+<a id='n114' href='#n114'>114</a>
+<a id='n115' href='#n115'>115</a>
+<a id='n116' href='#n116'>116</a>
+<a id='n117' href='#n117'>117</a>
+<a id='n118' href='#n118'>118</a>
+<a id='n119' href='#n119'>119</a>
+<a id='n120' href='#n120'>120</a>
+</pre></td>
+<td class='lines'><pre><code>diff -uNr docker-0.12.0/archive/archive.go docker-0.12.0-1/archive/archive.go
+--- docker-0.12.0/archive/archive.go	2014-06-05 20:59:19.000000000 -0400
++++ docker-0.12.0-1/archive/archive.go	2014-06-08 17:10:37.537530082 -0400
+@@ -18,7 +18,7 @@
  
- import (
- 	"fmt"
+ 	"github.com/dotcloud/docker/pkg/system"
+ 	"github.com/dotcloud/docker/utils"
 -	"github.com/dotcloud/docker/vendor/src/code.google.com/p/go/src/pkg/archive/tar"
 +	"archive/tar"
- 	"io"
- 	"io/ioutil"
- 	"os"
-diff --git a/archive/wrap.go b/archive/wrap.go
-index 03ea508..0abe320 100644
---- a/archive/wrap.go
-+++ b/archive/wrap.go
-@@ -2,7 +2,7 @@ package archive
+ )
+ 
+ type (
+diff -uNr docker-0.12.0/archive/archive_test.go docker-0.12.0-1/archive/archive_test.go
+--- docker-0.12.0/archive/archive_test.go	2014-06-05 20:59:19.000000000 -0400
++++ docker-0.12.0-1/archive/archive_test.go	2014-06-08 17:09:47.983603103 -0400
+@@ -11,7 +11,7 @@
+ 	"testing"
+ 	"time"
+ 
+-	"github.com/dotcloud/docker/vendor/src/code.google.com/p/go/src/pkg/archive/tar"
++	"archive/tar"
+ )
+ 
+ func TestCmdStreamLargeStderr(t *testing.T) {
+diff -uNr docker-0.12.0/archive/changes.go docker-0.12.0-1/archive/changes.go
+--- docker-0.12.0/archive/changes.go	2014-06-05 20:59:19.000000000 -0400
++++ docker-0.12.0-1/archive/changes.go	2014-06-08 17:10:27.932544229 -0400
+@@ -12,7 +12,7 @@
+ 
+ 	"github.com/dotcloud/docker/pkg/system"
+ 	"github.com/dotcloud/docker/utils"
+-	"github.com/dotcloud/docker/vendor/src/code.google.com/p/go/src/pkg/archive/tar"
++	"archive/tar"
+ )
+ 
+ type ChangeType int
+diff -uNr docker-0.12.0/archive/diff.go docker-0.12.0-1/archive/diff.go
+--- docker-0.12.0/archive/diff.go	2014-06-05 20:59:19.000000000 -0400
++++ docker-0.12.0-1/archive/diff.go	2014-06-08 17:10:20.248555556 -0400
+@@ -9,7 +9,7 @@
+ 	"strings"
+ 	"syscall"
+ 
+-	"github.com/dotcloud/docker/vendor/src/code.google.com/p/go/src/pkg/archive/tar"
++	"archive/tar"
+ )
+ 
+ // Linux device nodes are a bit weird due to backwards compat with 16 bit device nodes.
+diff -uNr docker-0.12.0/archive/wrap.go docker-0.12.0-1/archive/wrap.go
+--- docker-0.12.0/archive/wrap.go	2014-06-05 20:59:19.000000000 -0400
++++ docker-0.12.0-1/archive/wrap.go	2014-06-08 17:10:11.704568146 -0400
+@@ -2,7 +2,7 @@
  
  import (
  	"bytes"
@@ -63,50 +218,46 @@ index 03ea508..0abe320 100644
  	"io/ioutil"
  )
  
-diff --git a/graph/tags_unit_test.go b/graph/tags_unit_test.go
-index 1777391..5cfe4c2 100644
---- a/graph/tags_unit_test.go
-+++ b/graph/tags_unit_test.go
-@@ -6,7 +6,7 @@ import (
- 	"github.com/dotcloud/docker/runtime/graphdriver"
- 	_ "github.com/dotcloud/docker/runtime/graphdriver/vfs" // import the vfs driver so it is used in the tests
+diff -uNr docker-0.12.0/graph/tags_unit_test.go docker-0.12.0-1/graph/tags_unit_test.go
+--- docker-0.12.0/graph/tags_unit_test.go	2014-06-05 20:59:19.000000000 -0400
++++ docker-0.12.0-1/graph/tags_unit_test.go	2014-06-08 17:10:48.989513208 -0400
+@@ -6,7 +6,7 @@
+ 	_ "github.com/dotcloud/docker/daemon/graphdriver/vfs" // import the vfs driver so it is used in the tests
+ 	"github.com/dotcloud/docker/image"
  	"github.com/dotcloud/docker/utils"
 -	"github.com/dotcloud/docker/vendor/src/code.google.com/p/go/src/pkg/archive/tar"
 +	"archive/tar"
  	"io"
  	"os"
  	"path"
-diff --git a/integration/api_test.go b/integration/api_test.go
-index 26441a2..a313382 100644
---- a/integration/api_test.go
-+++ b/integration/api_test.go
-@@ -21,7 +21,7 @@ import (
+diff -uNr docker-0.12.0/integration/api_test.go docker-0.12.0-1/integration/api_test.go
+--- docker-0.12.0/integration/api_test.go	2014-06-05 20:59:19.000000000 -0400
++++ docker-0.12.0-1/integration/api_test.go	2014-06-08 17:10:58.148499687 -0400
+@@ -21,7 +21,7 @@
+ 	"github.com/dotcloud/docker/image"
  	"github.com/dotcloud/docker/runconfig"
- 	"github.com/dotcloud/docker/runtime"
  	"github.com/dotcloud/docker/utils"
 -	"github.com/dotcloud/docker/vendor/src/code.google.com/p/go/src/pkg/archive/tar"
 +	"archive/tar"
  )
  
  func TestGetEvents(t *testing.T) {
-diff --git a/integration/utils_test.go b/integration/utils_test.go
-index 8ad6ccb..5b16f2a 100644
---- a/integration/utils_test.go
-+++ b/integration/utils_test.go
-@@ -3,7 +3,7 @@ package docker
- import (
- 	"bytes"
- 	"fmt"
+diff -uNr docker-0.12.0/integration/utils_test.go docker-0.12.0-1/integration/utils_test.go
+--- docker-0.12.0/integration/utils_test.go	2014-06-05 20:59:19.000000000 -0400
++++ docker-0.12.0-1/integration/utils_test.go	2014-06-08 17:11:10.725481190 -0400
+@@ -13,7 +13,7 @@
+ 	"testing"
+ 	"time"
+ 
 -	"github.com/dotcloud/docker/vendor/src/code.google.com/p/go/src/pkg/archive/tar"
 +	"archive/tar"
- 	"io"
- 	"io/ioutil"
- 	"net/http"
-diff --git a/utils/tarsum.go b/utils/tarsum.go
-index 67e94aa..5132194 100644
---- a/utils/tarsum.go
-+++ b/utils/tarsum.go
-@@ -5,7 +5,7 @@ import (
+ 
+ 	"github.com/dotcloud/docker/builtins"
+ 	"github.com/dotcloud/docker/daemon"
+diff -uNr docker-0.12.0/utils/tarsum.go docker-0.12.0-1/utils/tarsum.go
+--- docker-0.12.0/utils/tarsum.go	2014-06-05 20:59:19.000000000 -0400
++++ docker-0.12.0-1/utils/tarsum.go	2014-06-08 17:11:19.678468002 -0400
+@@ -5,7 +5,7 @@
  	"compress/gzip"
  	"crypto/sha256"
  	"encoding/hex"
@@ -115,3 +266,21 @@ index 67e94aa..5132194 100644
  	"hash"
  	"io"
  	"sort"
+diff -uNr docker-0.12.0/utils/tarsum_test.go docker-0.12.0-1/utils/tarsum_test.go
+--- docker-0.12.0/utils/tarsum_test.go	2014-06-05 20:59:19.000000000 -0400
++++ docker-0.12.0-1/utils/tarsum_test.go	2014-06-08 17:11:43.703432620 -0400
+@@ -4,7 +4,7 @@
+ 	"bytes"
+ 	"crypto/rand"
+ 	"fmt"
+-	"github.com/dotcloud/docker/vendor/src/code.google.com/p/go/src/pkg/archive/tar"
++	"archive/tar"
+ 	"io"
+ 	"io/ioutil"
+ 	"os"
+</code></pre></td></tr></table>
+</div> <!-- class=content -->
+<div class='footer'>generated  by cgit v0.10.1 at 2014-06-09 15:36:25 (GMT)</div>
+</div> <!-- id=cgit -->
+</body>
+</html>
