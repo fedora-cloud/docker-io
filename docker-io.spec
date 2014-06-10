@@ -27,10 +27,12 @@ BuildRequires:  pandoc
 # ensure build uses golang 1.2-7 and above
 # http://code.google.com/p/go/source/detail?r=a15f344a9efa35ef168c8feaa92a15a1cdc93db5
 BuildRequires:  golang >= 1.2-7
-BuildRequires:  golang(github.com/gorilla/mux)
-BuildRequires:  golang(github.com/kr/pty)
+# for gorilla/mux and kr/pty https://github.com/dotcloud/docker/pull/5950
+BuildRequires:  golang(github.com/gorilla/mux) >= 0-0.13
+BuildRequires:  golang(github.com/kr/pty) >= 0-0.19
 BuildRequires:  golang(github.com/godbus/dbus)
-BuildRequires:  golang(github.com/coreos/go-systemd) >= 0-0.4
+# for coreos/go-systemd https://github.com/dotcloud/docker/pull/5981
+BuildRequires:  golang(github.com/coreos/go-systemd) >= 2-1
 BuildRequires:  golang(code.google.com/p/go.net/websocket)
 BuildRequires:  golang(code.google.com/p/gosqlite/sqlite3)
 BuildRequires:  golang(github.com/syndtr/gocapability/capability)
@@ -160,7 +162,7 @@ fi
 %{_datadir}/vim/vimfiles/syntax/dockerfile.vim
 
 %changelog
-* Mon Jun 09 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.0.0-1
+* Tue Jun 10 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.0.0-1
 - upstream version bump to v1.0.0
 
 * Fri May 30 2014 Vincent Batts <vbatts@redhat.com> - 0.11.1-5
