@@ -1,0 +1,18 @@
+diff -Nrup docker-1.0.0.orig/pkg/libcontainer/namespaces/nsenter.go docker-1.0.0/pkg/libcontainer/namespaces/nsenter.go
+--- docker-1.0.0.orig/pkg/libcontainer/namespaces/nsenter.go	2014-06-14 18:32:15.982317235 +0800
++++ docker-1.0.0/pkg/libcontainer/namespaces/nsenter.go	2014-06-14 18:33:35.631962462 +0800
+@@ -12,9 +12,14 @@ package namespaces
+ #include <sys/stat.h>
+ #include <sys/types.h>
+ #include <unistd.h>
++#include <sys/syscall.h>
+ 
+ static const kBufSize = 256;
+ 
++int setns(int fd, int nstype) {
++	return syscall(__NR_setns, fd, nstype);
++}
++
+ void get_args(int *argc, char ***argv) {
+ 	// Read argv
+ 	int fd = open("/proc/self/cmdline", O_RDONLY);

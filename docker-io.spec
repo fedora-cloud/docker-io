@@ -10,10 +10,11 @@
 
 Name:           docker-io
 Version:        1.0.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 Patch1:         upstream-patched-archive-tar.patch
+Patch2:         disable-btrfs-and-provide-setns.patch
 URL:            http://www.docker.io
 # only x86_64 for now: https://github.com/dotcloud/docker/issues/136
 ExclusiveArch:  x86_64
@@ -68,6 +69,7 @@ servers, OpenStack clusters, public instances, or combinations of the above.
 %setup -q -n docker-%{version}
 rm -rf vendor
 %patch1 -p1 -F 2 -b upstream-patched-archive-tar
+%patch2 -p1 -F 2 -b disable-btrfs-and-provide-setns
 cp -p %{SOURCE1} contrib/init/sysvinit-redhat/docker.sysconfig
 
 %build
@@ -81,6 +83,7 @@ popd
 export DOCKER_GITCOMMIT="%{shortcommit}/%{version}"
 export DOCKER_BUILDTAGS='selinux'
 export GOPATH=$(pwd)/_build:%{gopath}
+export DOCKER_BUILDTAGS='exclude_graphdriver_btrfs'
 
 hack/make.sh dynbinary
 cp contrib/syntax/vim/LICENSE LICENSE-vim-syntax
@@ -162,6 +165,9 @@ fi
 %{_datadir}/vim/vimfiles/syntax/dockerfile.vim
 
 %changelog
+* Sat Jun 14 2014 Hushan Jia <hushan@zelin.io> - 1.0.0-2
+- fix for build on epel6
+
 * Tue Jun 10 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.0.0-1
 - upstream version bump to v1.0.0
 
