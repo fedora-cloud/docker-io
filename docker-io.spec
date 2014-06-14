@@ -15,6 +15,7 @@ Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 Patch1:         upstream-patched-archive-tar.patch
 Patch2:         disable-btrfs-and-provide-setns.patch
+Patch3:         finalize-namespace.patch
 URL:            http://www.docker.io
 # only x86_64 for now: https://github.com/dotcloud/docker/issues/136
 ExclusiveArch:  x86_64
@@ -36,7 +37,8 @@ BuildRequires:  golang(github.com/godbus/dbus)
 BuildRequires:  golang(github.com/coreos/go-systemd) >= 2-1
 BuildRequires:  golang(code.google.com/p/go.net/websocket)
 BuildRequires:  golang(code.google.com/p/gosqlite/sqlite3)
-BuildRequires:  golang(github.com/syndtr/gocapability/capability)
+# RHBZ#1109039 use syndtr/gocapability >= 0-0.7
+BuildRequires:  golang(github.com/syndtr/gocapability/capability) >= 0-0.7
 BuildRequires:  device-mapper-devel
 Requires(post):     chkconfig
 Requires(preun):    chkconfig
@@ -71,6 +73,7 @@ rm -rf vendor
 %patch1 -p1 -F 2 -b upstream-patched-archive-tar
 %patch2 -p1 -F 2 -b disable-btrfs-and-provide-setns
 cp -p %{SOURCE1} contrib/init/sysvinit-redhat/docker.sysconfig
+%patch3 -p1 -b finalize-namespace
 
 %build
 mkdir _build
@@ -102,6 +105,8 @@ install -p -m 755 bundles/%{version}/dynbinary/dockerinit-%{version} %{buildroot
 # install manpage
 install -d %{buildroot}%{_mandir}/man1
 install -p -m 644 contrib/man/man1/docker*.1 %{buildroot}%{_mandir}/man1
+install -d %{buildroot}%{_mandir}/man5
+install -p -m 644 contrib/man/man5/Dockerfile.5 %{buildroot}%{_mandir}/man5
 # install bash completion
 install -d %{buildroot}%{_sysconfdir}/bash_completion.d
 install -p -m 644 contrib/completion/bash/docker %{buildroot}%{_sysconfdir}/bash_completion.d/docker.bash
@@ -146,6 +151,7 @@ fi
 %doc AUTHORS CHANGELOG.md CONTRIBUTING.md FIXME LICENSE MAINTAINERS NOTICE README.md 
 %doc LICENSE-vim-syntax README-vim-syntax.md
 %{_mandir}/man1/docker*.1.gz
+%{_mandir}/man5/Dockerfile.5.gz
 %{_bindir}/docker
 %dir %{_libexecdir}/docker
 %{_libexecdir}/docker/dockerinit
@@ -165,6 +171,11 @@ fi
 %{_datadir}/vim/vimfiles/syntax/dockerfile.vim
 
 %changelog
+* Mon Jun 14 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.0.0-2
+- RHBZ#1109533 patch libcontainer for finalize namespace error
+- RHBZ#1109039 build with updated golang-github-syndtr-gocapability
+- install Dockerfile.5 manpage
+
 * Sat Jun 14 2014 Hushan Jia <hushan@zelin.io> - 1.0.0-2
 - fix for build on epel6
 
