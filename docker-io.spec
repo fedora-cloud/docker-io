@@ -10,7 +10,7 @@
 
 Name:           docker-io
 Version:        1.0.0
-Release:        3%{?dist}
+Release:        4%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 Patch1:         upstream-patched-archive-tar.patch
@@ -84,7 +84,7 @@ pushd _build
 popd
 
 export DOCKER_GITCOMMIT="%{shortcommit}/%{version}"
-export DOCKER_BUILDTAGS='selinux'
+#export DOCKER_BUILDTAGS='selinux'
 export GOPATH=$(pwd)/_build:%{gopath}
 export DOCKER_BUILDTAGS='exclude_graphdriver_btrfs'
 
@@ -171,6 +171,9 @@ fi
 %{_datadir}/vim/vimfiles/syntax/dockerfile.vim
 
 %changelog
+* Wed Jun 18 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.0.0-4
+- disable selinux for el6
+
 * Sat Jun 14 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.0.0-3
 - correct bogus date
 
