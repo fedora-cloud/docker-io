@@ -10,7 +10,7 @@
 
 Name:           docker-io
 Version:        1.0.0
-Release:        5%{?dist}
+Release:        6%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 Patch1:         upstream-patched-archive-tar.patch
@@ -151,6 +151,11 @@ fi
 # Needed only during upgrades
 if [ "$1" -ge "1" ] ; then
   /sbin/service docker condrestart >/dev/null 2>&1 || :
+  # docker-io-1.0.0-3.el6.x86_64 caused an issue with upgrades
+  # and chkconfig. Need to clean it up.
+  if ! /sbin/chkconfig --list docker >/dev/null 2>&1 ; then
+    /sbin/chkconfig --list docker > /dev/null 2>&1
+  fi
 fi
 
 %files
@@ -178,6 +183,9 @@ fi
 %{_datadir}/vim/vimfiles/syntax/dockerfile.vim
 
 %changelog
+* Thu Jun 19 2014 Adam Miller <maxamillion@fedoraproject.org> - 1.0.0-6
+- Clean up after ourselves from (or possibly earlier, first noticed in) 1.0.0-3
+
 * Thu Jun 19 2014 Adam Miller <maxamillion@fedoraproject.org> - 1.0.0-5
 - Fix up post, preun, postun to handle tasks conditionally based on 
   update vs install vs erase
