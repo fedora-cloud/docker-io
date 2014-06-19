@@ -138,14 +138,14 @@ exit 0
 
 %preun
 # Only perform these tasks when erasing, not during updates
-if [ "$1" -eq "0" ] ; then
-  /sbin/service docker stop >/dev/null 2>&1
+if [ $1 -eq 0 ] ; then
+  /sbin/service docker stop >/dev/null 2>&1 || :
   /sbin/chkconfig --del docker
 fi
 
 %postun
 # Needed only during upgrades
-if [ "$1" -ge "1" ] ; then
+if [ $1 -ge 1 ] ; then
   /sbin/service docker condrestart >/dev/null 2>&1 || :
 fi
 
