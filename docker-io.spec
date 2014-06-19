@@ -135,21 +135,21 @@ exit 0
 
 %post
 # Only do this on install, don't need to re-add each update
-if [ "$1" -eq "1" ] ; then
+if [ $1 -eq 1 ] ; then
   # install but don't activate
   /sbin/chkconfig --add docker
 fi
 
 %preun
 # Only perform these tasks when erasing, not during updates
-if [ "$1" -eq "0" ] ; then
+if [ $1 -eq 0 ] ; then
   /sbin/service docker stop >/dev/null 2>&1
   /sbin/chkconfig --del docker
 fi
 
 %postun
 # Needed only during upgrades
-if [ "$1" -ge "1" ] ; then
+if [ $1 -ge 1 ] ; then
   /sbin/service docker condrestart >/dev/null 2>&1 || :
   # docker-io-1.0.0-3.el6.x86_64 caused an issue with upgrades
   # and chkconfig. Need to clean it up.
