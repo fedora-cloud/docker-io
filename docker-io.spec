@@ -10,7 +10,7 @@
 
 Name:           docker-io
 Version:        1.0.0
-Release:        4%{?dist}
+Release:        5%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 Patch1:         upstream-patched-archive-tar.patch
@@ -134,16 +134,23 @@ getent group docker > /dev/null || %{_sbindir}/groupadd -r docker
 exit 0
 
 %post
-# install but don't activate
-/sbin/chkconfig --add docker
+# Only do this on install, don't need to re-add each update
+if [ "$1" -eq "1" ] ; then
+  # install but don't activate
+  /sbin/chkconfig --add docker
+fi
 
 %preun
-/sbin/service docker stop >/dev/null 2>&1
-/sbin/chkconfig --del docker
+# Only perform these tasks when erasing, not during updates
+if [ "$1" -eq "0" ] ; then
+  /sbin/service docker stop >/dev/null 2>&1
+  /sbin/chkconfig --del docker
+fi
 
 %postun
+# Needed only during upgrades
 if [ "$1" -ge "1" ] ; then
-        /sbin/service docker condrestart >/dev/null 2>&1 || :
+  /sbin/service docker condrestart >/dev/null 2>&1 || :
 fi
 
 %files
@@ -171,6 +178,10 @@ fi
 %{_datadir}/vim/vimfiles/syntax/dockerfile.vim
 
 %changelog
+* Thu Jun 19 2014 Adam Miller <maxamillion@fedoraproject.org> - 1.0.0-5
+- Fix up post, preun, postun to handle tasks conditionally based on 
+  update vs install vs erase
+
 * Wed Jun 18 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.0.0-4
 - disable selinux for el6
 
