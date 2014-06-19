@@ -156,12 +156,11 @@ fi
 %posttrans
 # This is a dirty hack to clean up old-%preun
 # Needed only during upgrades
-if [ $1 -ge 1 ] ; then
-  # docker-io-1.0.0-3.el6.x86_64 caused an issue with upgrades
-  # and chkconfig. Need to clean it up.
-  if ! /sbin/chkconfig --list docker >/dev/null 2>&1 ; then
-    /sbin/chkconfig --add docker 
-  fi
+
+# docker-io-1.0.0-3.el6.x86_64 caused an issue with upgrades
+# and chkconfig. Need to clean it up.
+if ! /sbin/chkconfig --list docker >/dev/null 2>&1 ; then
+  /sbin/chkconfig --add docker 
 fi
 
 %files
