@@ -134,7 +134,11 @@ getent group docker > /dev/null || %{_sbindir}/groupadd -r docker
 exit 0
 
 %post
-/sbin/chkconfig --add docker
+# Only do this on install, don't need to re-add each update
+if [ "$1" -eq "1" ] ; then
+  # install but don't activate
+  /sbin/chkconfig --add docker
+fi
 
 %preun
 # Only perform these tasks when erasing, not during updates
@@ -175,7 +179,7 @@ fi
 
 %changelog
 * Thu Jun 19 2014 Adam Miller <maxamillion@fedoraproject.org> - 1.0.0-5
-- Fix up preun, postun to handle tasks conditionally based on 
+- Fix up post, preun, postun to handle tasks conditionally based on 
   update vs install vs erase
 
 * Wed Jun 18 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.0.0-4
