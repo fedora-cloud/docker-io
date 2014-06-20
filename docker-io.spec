@@ -157,8 +157,8 @@ fi
 # This is a dirty hack to clean up old-%preun
 # Needed only during upgrades
 
-# docker-io-1.0.0-3.el6.x86_64 caused an issue with upgrades
-# and chkconfig. Need to clean it up.
+# Previous releases caused an issue with upgrades and chkconfig. 
+# Need to clean it up.
 if ! /sbin/chkconfig --list docker >/dev/null 2>&1 ; then
   /sbin/chkconfig --add docker 
 fi
@@ -189,7 +189,8 @@ fi
 
 %changelog
 * Thu Jun 19 2014 Adam Miller <maxamillion@fedoraproject.org> - 1.0.0-6
-- Clean up after ourselves from (or possibly earlier, first noticed in) 1.0.0-3
+- Clean up after ourselves from previous releases. We caused a failure in 
+  yum update transactions by removing chkconfig entries.
 
 * Thu Jun 19 2014 Adam Miller <maxamillion@fedoraproject.org> - 1.0.0-5
 - Fix up post, preun, postun to handle tasks conditionally based on 
