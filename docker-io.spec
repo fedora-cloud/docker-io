@@ -10,7 +10,7 @@
 
 Name:           docker-io
 Version:        1.0.0
-Release:        3%{?dist}
+Release:        4%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 Patch1:         upstream-patched-archive-tar.patch
@@ -21,6 +21,7 @@ ExclusiveArch:  x86_64
 Source0:        https://github.com/dotcloud/docker/archive/v%{version}.tar.gz
 Source1:        docker.service
 Source2:        docker.sysconfig
+Source3:        docker.socket
 # though final name for sysconf/sysvinit files is simply 'docker',
 # having .sysvinit and .sysconfig makes things clear
 BuildRequires:  gcc
@@ -117,7 +118,7 @@ install -d -m 700 %{buildroot}%{_sharedstatedir}/docker
 install -d %{buildroot}%{_unitdir}
 #install -p -m 644 contrib/init/systemd/docker.service %{buildroot}%{_unitdir}
 install -p -m 644 %{SOURCE1} %{buildroot}%{_unitdir}
-install -p -m 644 contrib/init/systemd/socket-activation/docker.socket %{buildroot}%{_unitdir}
+install -p -m 644 %{SOURCE3} %{buildroot}%{_unitdir}
 # for additional args
 install -d %{buildroot}%{_sysconfdir}/sysconfig/
 install -p -m 644 %{SOURCE2} %{buildroot}%{_sysconfdir}/sysconfig/docker
@@ -161,6 +162,9 @@ exit 0
 %{_datadir}/vim/vimfiles/syntax/dockerfile.vim
 
 %changelog
+* Tue Jun 24 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.0.0-4
+- Set mode,user,group in docker.socket file
+
 * Sat Jun 14 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.0.0-3
 - correct bogus date
 
