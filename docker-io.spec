@@ -1,16 +1,17 @@
 # modifying the dockerinit binary breaks the SHA1 sum check by docker
 %global __os_install_post %{_rpmconfigdir}/brp-compress
 
-#debuginfo not supported with Go
+# docker builds in a checksum of dockerinit into docker,
+# so stripping the binaries breaks docker
 %global debug_package %{nil}
-%global gopath  %{_datadir}/gocode
 
+%global import_path github.com/dotcloud/docker
 %global commit      63fe64c471e7d76be96a625350468dfc65c06c31
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:           docker-io
 Version:        1.0.0
-Release:        6%{?dist}
+Release:        7%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 Patch1:         upstream-patched-archive-tar.patch
@@ -63,6 +64,81 @@ and between virtually any server. The same container that a developer builds
 and tests on a laptop will run at scale, in production*, on VMs, bare-metal
 servers, OpenStack clusters, public instances, or combinations of the above.
 
+%package devel
+BuildRequires:  golang
+Requires:       golang
+Summary:        A golang registry for global request variables
+Provides:       golang(%{import_path}) = %{version}-%{release}
+Provides:       golang(%{import_path}/api) = %{version}-%{release}
+Provides:       golang(%{import_path}/api/client) = %{version}-%{release}
+Provides:       golang(%{import_path}/api/server) = %{version}-%{release}
+Provides:       golang(%{import_path}/archive) = %{version}-%{release}
+Provides:       golang(%{import_path}/builtins) = %{version}-%{release}
+Provides:       golang(%{import_path}/contrib) = %{version}-%{release}
+Provides:       golang(%{import_path}/contrib/docker-device-tool) = %{version}-%{release}
+Provides:       golang(%{import_path}/contrib/host-integration) = %{version}-%{release}
+Provides:       golang(%{import_path}/daemon) = %{version}-%{release}
+Provides:       golang(%{import_path}/daemon/execdriver) = %{version}-%{release}
+Provides:       golang(%{import_path}/daemon/execdriver/execdrivers) = %{version}-%{release}
+Provides:       golang(%{import_path}/daemon/execdriver/lxc) = %{version}-%{release}
+Provides:       golang(%{import_path}/daemon/execdriver/native) = %{version}-%{release}
+Provides:       golang(%{import_path}/daemon/execdriver/native/configuration) = %{version}-%{release}
+Provides:       golang(%{import_path}/daemon/execdriver/native/template) = %{version}-%{release}
+Provides:       golang(%{import_path}/daemon/graphdriver) = %{version}-%{release}
+Provides:       golang(%{import_path}/daemon/graphdriver/aufs) = %{version}-%{release}
+Provides:       golang(%{import_path}/daemon/graphdriver/btrfs) = %{version}-%{release}
+Provides:       golang(%{import_path}/daemon/graphdriver/devmapper) = %{version}-%{release}
+Provides:       golang(%{import_path}/daemon/graphdriver/graphtest) = %{version}-%{release}
+Provides:       golang(%{import_path}/daemon/graphdriver/vfs) = %{version}-%{release}
+Provides:       golang(%{import_path}/daemon/networkdriver) = %{version}-%{release}
+Provides:       golang(%{import_path}/daemon/networkdriver/bridge) = %{version}-%{release}
+Provides:       golang(%{import_path}/daemon/networkdriver/ipallocator) = %{version}-%{release}
+Provides:       golang(%{import_path}/daemon/networkdriver/portallocator) = %{version}-%{release}
+Provides:       golang(%{import_path}/daemon/networkdriver/portmapper) = %{version}-%{release}
+Provides:       golang(%{import_path}/daemonconfig) = %{version}-%{release}
+Provides:       golang(%{import_path}/dockerversion) = %{version}-%{release}
+Provides:       golang(%{import_path}/engine) = %{version}-%{release}
+Provides:       golang(%{import_path}/graph) = %{version}-%{release}
+Provides:       golang(%{import_path}/image) = %{version}-%{release}
+Provides:       golang(%{import_path}/integration) = %{version}-%{release}
+Provides:       golang(%{import_path}/integration-cli) = %{version}-%{release}
+Provides:       golang(%{import_path}/links) = %{version}-%{release}
+Provides:       golang(%{import_path}/nat) = %{version}-%{release}
+Provides:       golang(%{import_path}/opts) = %{version}-%{release}
+Provides:       golang(%{import_path}/pkg/graphdb) = %{version}-%{release}
+Provides:       golang(%{import_path}/pkg/iptables) = %{version}-%{release}
+Provides:       golang(%{import_path}/pkg/listenbuffer) = %{version}-%{release}
+Provides:       golang(%{import_path}/pkg/mflag) = %{version}-%{release}
+Provides:       golang(%{import_path}/pkg/mflag/example) = %{version}-%{release}
+Provides:       golang(%{import_path}/pkg/mount) = %{version}-%{release}
+Provides:       golang(%{import_path}/pkg/namesgenerator) = %{version}-%{release}
+Provides:       golang(%{import_path}/pkg/networkfs/etchosts) = %{version}-%{release}
+Provides:       golang(%{import_path}/pkg/networkfs/resolvconf) = %{version}-%{release}
+Provides:       golang(%{import_path}/pkg/proxy) = %{version}-%{release}
+Provides:       golang(%{import_path}/pkg/signal) = %{version}-%{release}
+Provides:       golang(%{import_path}/pkg/symlink) = %{version}-%{release}
+Provides:       golang(%{import_path}/pkg/sysinfo) = %{version}-%{release}
+Provides:       golang(%{import_path}/pkg/system) = %{version}-%{release}
+Provides:       golang(%{import_path}/pkg/systemd) = %{version}-%{release}
+Provides:       golang(%{import_path}/pkg/tailfile) = %{version}-%{release}
+Provides:       golang(%{import_path}/pkg/term) = %{version}-%{release}
+Provides:       golang(%{import_path}/pkg/testutils) = %{version}-%{release}
+Provides:       golang(%{import_path}/pkg/truncindex) = %{version}-%{release}
+Provides:       golang(%{import_path}/pkg/units) = %{version}-%{release}
+Provides:       golang(%{import_path}/pkg/user) = %{version}-%{release}
+Provides:       golang(%{import_path}/pkg/version) = %{version}-%{release}
+Provides:       golang(%{import_path}/registry) = %{version}-%{release}
+Provides:       golang(%{import_path}/runconfig) = %{version}-%{release}
+Provides:       golang(%{import_path}/server) = %{version}-%{release}
+Provides:       golang(%{import_path}/sysinit) = %{version}-%{release}
+Provides:       golang(%{import_path}/utils) = %{version}-%{release}
+Provides:       golang(%{import_path}/utils/broadcastwriter) = %{version}-%{release}
+Provides:       golang(%{import_path}/utils/filters) = %{version}-%{release}
+
+%description devel
+
+This is the source libraries for docker.
+
 %prep
 %setup -q -n docker-%{version}
 rm -rf vendor
@@ -70,12 +146,9 @@ rm -rf vendor
 %patch2 -p1 -b finalize-namespace
 
 %build
-mkdir _build
-
-pushd _build
-  mkdir -p src/github.com/dotcloud
-  ln -s $(dirs +1 -l) src/github.com/dotcloud/docker
-popd
+# set up temporary build gopath, and put our directory there
+mkdir -p ./_build/src/github.com/dotcloud
+ln -s $(pwd) ./_build/src/github.com/dotcloud/docker
 
 export DOCKER_GITCOMMIT="%{shortcommit}/%{version}"
 export DOCKER_BUILDTAGS='selinux'
@@ -123,6 +196,15 @@ install -p -m 644 %{SOURCE3} %{buildroot}%{_unitdir}
 install -d %{buildroot}%{_sysconfdir}/sysconfig/
 install -p -m 644 %{SOURCE2} %{buildroot}%{_sysconfdir}/sysconfig/docker
 
+# sources
+install -d -p %{buildroot}/%{gopath}/src/%{import_path}
+
+for dir in api archive builtins daemon daemonconfig dockerversion engine graph \
+           image links nat opts pkg registry runconfig server sysinit utils
+do
+	cp -pav $dir %{buildroot}/%{gopath}/src/%{import_path}/
+done
+
 %pre
 getent group docker > /dev/null || %{_sbindir}/groupadd -r docker
 exit 0
@@ -161,7 +243,158 @@ exit 0
 %dir %{_datadir}/vim/vimfiles/syntax
 %{_datadir}/vim/vimfiles/syntax/dockerfile.vim
 
+%files devel
+%defattr(-,root,root,-)
+%dir %{gopath}/src/%{import_path}
+%{gopath}/src/%{import_path}/api/MAINTAINERS
+%{gopath}/src/%{import_path}/api/README.md
+%{gopath}/src/%{import_path}/api/*.go
+%{gopath}/src/%{import_path}/api/client/*.go
+%{gopath}/src/%{import_path}/api/server/*.go
+%{gopath}/src/%{import_path}/archive/MAINTAINERS
+%{gopath}/src/%{import_path}/archive/README.md
+%{gopath}/src/%{import_path}/archive/*.go
+%{gopath}/src/%{import_path}/archive/*.goupstream-patched-archive-tar
+%{gopath}/src/%{import_path}/archive/testdata/broken.tar
+%{gopath}/src/%{import_path}/builtins/*.go
+%{gopath}/src/%{import_path}/daemon/*.go
+%{gopath}/src/%{import_path}/daemon/README.md
+%{gopath}/src/%{import_path}/daemon/execdriver/*.go
+%{gopath}/src/%{import_path}/daemon/execdriver/MAINTAINERS
+%{gopath}/src/%{import_path}/daemon/execdriver/execdrivers/*.go
+%{gopath}/src/%{import_path}/daemon/execdriver/lxc/*.go
+%{gopath}/src/%{import_path}/daemon/execdriver/native/*.go
+%{gopath}/src/%{import_path}/daemon/execdriver/native/configuration/*.go
+%{gopath}/src/%{import_path}/daemon/execdriver/native/template/*.go
+%{gopath}/src/%{import_path}/daemon/graphdriver/*.go
+%{gopath}/src/%{import_path}/daemon/graphdriver/aufs/*.go
+%{gopath}/src/%{import_path}/daemon/graphdriver/btrfs/*.go
+%{gopath}/src/%{import_path}/daemon/graphdriver/btrfs/MAINTAINERS
+%{gopath}/src/%{import_path}/daemon/graphdriver/devmapper/*.go
+%{gopath}/src/%{import_path}/daemon/graphdriver/devmapper/MAINTAINERS
+%{gopath}/src/%{import_path}/daemon/graphdriver/devmapper/README.md
+%{gopath}/src/%{import_path}/daemon/graphdriver/graphtest/*.go
+%{gopath}/src/%{import_path}/daemon/graphdriver/vfs/*.go
+%{gopath}/src/%{import_path}/daemon/networkdriver/bridge/*.go
+%{gopath}/src/%{import_path}/daemon/networkdriver/ipallocator/*.go
+%{gopath}/src/%{import_path}/daemon/networkdriver/*.go
+%{gopath}/src/%{import_path}/daemon/networkdriver/portallocator/*.go
+%{gopath}/src/%{import_path}/daemon/networkdriver/portmapper/*.go
+%{gopath}/src/%{import_path}/daemonconfig/README.md
+%{gopath}/src/%{import_path}/daemonconfig/*.go
+%{gopath}/src/%{import_path}/dockerversion/*.go
+%{gopath}/src/%{import_path}/engine/MAINTAINERS
+%{gopath}/src/%{import_path}/engine/*.go
+%{gopath}/src/%{import_path}/engine/rengine/*.go
+%{gopath}/src/%{import_path}/engine/spawn/*.go
+%{gopath}/src/%{import_path}/engine/spawn/subengine/*.go
+%{gopath}/src/%{import_path}/graph/*.go
+%{gopath}/src/%{import_path}/graph/*.goupstream-patched-archive-tar
+%{gopath}/src/%{import_path}/image/*.go
+%{gopath}/src/%{import_path}/links/*.go
+%{gopath}/src/%{import_path}/nat/*.go
+%{gopath}/src/%{import_path}/opts/*.go
+%{gopath}/src/%{import_path}/pkg/README.md
+%{gopath}/src/%{import_path}/pkg/apparmor/*.go
+%{gopath}/src/%{import_path}/pkg/beam/MAINTAINERS
+%{gopath}/src/%{import_path}/pkg/beam/*.go
+%{gopath}/src/%{import_path}/pkg/beam/data/*.go
+%{gopath}/src/%{import_path}/pkg/beam/data/netstring.txt
+%{gopath}/src/%{import_path}/pkg/beam/examples/beamsh/beamsh
+%{gopath}/src/%{import_path}/pkg/beam/examples/beamsh/*.go
+%{gopath}/src/%{import_path}/pkg/beam/examples/beamsh/scripts/*.ds
+%{gopath}/src/%{import_path}/pkg/dockerscript/MAINTAINERS
+%{gopath}/src/%{import_path}/pkg/dockerscript/*.go
+%{gopath}/src/%{import_path}/pkg/dockerscript/scanner/*.go
+%{gopath}/src/%{import_path}/pkg/graphdb/MAINTAINERS
+%{gopath}/src/%{import_path}/pkg/graphdb/*.go
+%{gopath}/src/%{import_path}/pkg/iptables/MAINTAINERS
+%{gopath}/src/%{import_path}/pkg/iptables/*.go
+%{gopath}/src/%{import_path}/pkg/label/*.go
+%{gopath}/src/%{import_path}/pkg/listenbuffer/*.go
+%{gopath}/src/%{import_path}/pkg/libcontainer/*.go
+%{gopath}/src/%{import_path}/pkg/libcontainer/MAINTAINERS
+%{gopath}/src/%{import_path}/pkg/libcontainer/README.md
+%{gopath}/src/%{import_path}/pkg/libcontainer/TODO.md
+%{gopath}/src/%{import_path}/pkg/libcontainer/cgroups/*.go
+%{gopath}/src/%{import_path}/pkg/libcontainer/cgroups/fs/*.go
+%{gopath}/src/%{import_path}/pkg/libcontainer/cgroups/systemd/*.go
+%{gopath}/src/%{import_path}/pkg/libcontainer/console/*.go
+%{gopath}/src/%{import_path}/pkg/libcontainer/container.json
+%{gopath}/src/%{import_path}/pkg/libcontainer/devices/*.go
+%{gopath}/src/%{import_path}/pkg/libcontainer/mount/*.go
+%{gopath}/src/%{import_path}/pkg/libcontainer/mount/nodes/*.go
+%{gopath}/src/%{import_path}/pkg/libcontainer/namespaces/*.go
+%{gopath}/src/%{import_path}/pkg/libcontainer/namespaces/init.gofinalize-namespace
+%{gopath}/src/%{import_path}/pkg/libcontainer/network/*.go
+%{gopath}/src/%{import_path}/pkg/libcontainer/nsinit/*.go
+%{gopath}/src/%{import_path}/pkg/libcontainer/security/capabilities/*.go
+%{gopath}/src/%{import_path}/pkg/libcontainer/security/restrict/*.go
+%{gopath}/src/%{import_path}/pkg/libcontainer/utils/*.go
+%{gopath}/src/%{import_path}/pkg/mflag/LICENSE
+%{gopath}/src/%{import_path}/pkg/mflag/MAINTAINERS
+%{gopath}/src/%{import_path}/pkg/mflag/README.md
+%{gopath}/src/%{import_path}/pkg/mflag/example/example.go
+%{gopath}/src/%{import_path}/pkg/mflag/*.go
+%{gopath}/src/%{import_path}/pkg/mount/MAINTAINERS
+%{gopath}/src/%{import_path}/pkg/mount/*.go
+%{gopath}/src/%{import_path}/pkg/namesgenerator/*.go
+%{gopath}/src/%{import_path}/pkg/netlink/MAINTAINERS
+%{gopath}/src/%{import_path}/pkg/netlink/*.go
+%{gopath}/src/%{import_path}/pkg/networkfs/MAINTAINERS
+%{gopath}/src/%{import_path}/pkg/networkfs/etchosts/*.go
+%{gopath}/src/%{import_path}/pkg/networkfs/resolvconf/*.go
+%{gopath}/src/%{import_path}/pkg/proxy/MAINTAINERS
+%{gopath}/src/%{import_path}/pkg/proxy/*.go
+%{gopath}/src/%{import_path}/pkg/selinux/*.go
+%{gopath}/src/%{import_path}/pkg/signal/MAINTAINERS
+%{gopath}/src/%{import_path}/pkg/signal/*.go
+%{gopath}/src/%{import_path}/pkg/symlink/MAINTAINERS
+%{gopath}/src/%{import_path}/pkg/symlink/*.go
+%{gopath}/src/%{import_path}/pkg/symlink/testdata/fs/a/d
+%{gopath}/src/%{import_path}/pkg/symlink/testdata/fs/a/e
+%{gopath}/src/%{import_path}/pkg/symlink/testdata/fs/a/f
+%{gopath}/src/%{import_path}/pkg/symlink/testdata/fs/b/h
+%{gopath}/src/%{import_path}/pkg/symlink/testdata/fs/g
+%{gopath}/src/%{import_path}/pkg/symlink/testdata/fs/i
+%{gopath}/src/%{import_path}/pkg/sysinfo/MAINTAINERS
+%{gopath}/src/%{import_path}/pkg/sysinfo/*.go
+%{gopath}/src/%{import_path}/pkg/system/MAINTAINERS
+%{gopath}/src/%{import_path}/pkg/system/*.go
+%{gopath}/src/%{import_path}/pkg/systemd/MAINTAINERS
+%{gopath}/src/%{import_path}/pkg/systemd/*.go
+%{gopath}/src/%{import_path}/pkg/term/MAINTAINERS
+%{gopath}/src/%{import_path}/pkg/term/*.go
+%{gopath}/src/%{import_path}/pkg/testutils/MAINTAINERS
+%{gopath}/src/%{import_path}/pkg/testutils/README.md
+%{gopath}/src/%{import_path}/pkg/testutils/testutils.go
+%{gopath}/src/%{import_path}/pkg/units/MAINTAINERS
+%{gopath}/src/%{import_path}/pkg/units/*.go
+%{gopath}/src/%{import_path}/pkg/user/MAINTAINERS
+%{gopath}/src/%{import_path}/pkg/user/*.go
+%{gopath}/src/%{import_path}/pkg/version/*.go
+%{gopath}/src/%{import_path}/registry/MAINTAINERS
+%{gopath}/src/%{import_path}/registry/*.go
+%{gopath}/src/%{import_path}/runconfig/*.go
+%{gopath}/src/%{import_path}/server/MAINTAINERS
+%{gopath}/src/%{import_path}/server/*.go
+%{gopath}/src/%{import_path}/sysinit/README.md
+%{gopath}/src/%{import_path}/sysinit/*.go
+%{gopath}/src/%{import_path}/utils/filters/*.go
+%{gopath}/src/%{import_path}/utils/*.goupstream-patched-archive-tar
+%{gopath}/src/%{import_path}/utils/*.go
+%{gopath}/src/%{import_path}/utils/testdata/46af0962ab5afeb5ce6740d4d91652e69206fc991fd5328c1a94d364ad00e457/json
+%{gopath}/src/%{import_path}/utils/testdata/46af0962ab5afeb5ce6740d4d91652e69206fc991fd5328c1a94d364ad00e457/layer.tar
+%{gopath}/src/%{import_path}/utils/testdata/511136ea3c5a64f264b78b5433614aec563103b4d4702f3ba7d4d2698e22c158/json
+%{gopath}/src/%{import_path}/utils/testdata/511136ea3c5a64f264b78b5433614aec563103b4d4702f3ba7d4d2698e22c158/layer.tar
+
 %changelog
+* Wed Jul 16 2014 Vincent Batts <vbatts@fedoraproject.org> - 1.0.0-7
+- clean up gopath
+- add Provides for docker libraries
+- produce a -devel with docker source libraries
+- accomodate golang rpm macros
+
 * Tue Jul 01 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.0.0-6
 - Resolves: rhbz#1114810 - CVE-2014-3499 (correct bz#)
 
