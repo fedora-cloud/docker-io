@@ -11,7 +11,7 @@
 
 Name:           docker-io
 Version:        1.0.0
-Release:        8%{?dist}
+Release:        9%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 Patch1:         upstream-patched-archive-tar.patch
@@ -233,6 +233,7 @@ exit 0
 %defattr(-,root,root,-)
 %doc AUTHORS CHANGELOG.md CONTRIBUTING.md FIXME LICENSE MAINTAINERS NOTICE README.md 
 %doc LICENSE-vim-syntax README-vim-syntax.md
+%config(noreplace) %{_sysconfdir}/sysconfig/docker
 %{_mandir}/man1/docker*.1.gz
 %{_mandir}/man5/Dockerfile.5.gz
 %{_bindir}/docker
@@ -240,7 +241,6 @@ exit 0
 %{_libexecdir}/docker/dockerinit
 %{_unitdir}/docker.service
 %{_unitdir}/docker.socket
-%{_sysconfdir}/sysconfig/docker
 %dir %{_sysconfdir}/bash_completion.d
 %{_sysconfdir}/bash_completion.d/docker.bash
 %{_datadir}/zsh/site-functions/_docker
@@ -495,6 +495,9 @@ exit 0
 %{gopath}/src/%{import_path}/utils/testdata/511136ea3c5a64f264b78b5433614aec563103b4d4702f3ba7d4d2698e22c158/layer.tar
 
 %changelog
+* Thu Jul 24 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.0.0-9
+- /etc/sysconfig/docker should be config(noreplace)
+
 * Wed Jul 23 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.0.0-8
 - Resolves: rhbz#1119849
 - Resolves: rhbz#1119413 - min delta between upstream and packaged unitfiles
