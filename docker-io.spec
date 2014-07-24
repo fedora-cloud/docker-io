@@ -11,11 +11,13 @@
 
 Name:           docker-io
 Version:        1.0.0
-Release:        7%{?dist}
+Release:        8%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 Patch1:         upstream-patched-archive-tar.patch
 Patch2:         finalize-namespace.patch
+# Resolves: rhbz#1119849 - add AUDIT_WRITE capablility
+Patch3:         audit-write.patch
 URL:            http://www.docker.io
 # only x86_64 for now: https://github.com/dotcloud/docker/issues/136
 ExclusiveArch:  x86_64
@@ -44,7 +46,14 @@ BuildRequires:  device-mapper-devel
 BuildRequires:  btrfs-progs-devel
 BuildRequires:  pkgconfig(systemd)
 BuildRequires:  pandoc
-Requires:       systemd-units
+# Use appropriate NVR for systemd-units to ensure SocketUser and SocketGroup are available
+%if 0%{?fedora} >= 21
+Requires:       systemd-units >= 214
+%else if 0%{?fedora} == 20
+Requires:       systemd-units >= 208-20
+%else
+Requires:       systemd-units >= 204-20
+%endif
 # need xz to work with ubuntu images
 # https://bugzilla.redhat.com/show_bug.cgi?id=1045220
 Requires:       xz
@@ -144,6 +153,8 @@ This is the source libraries for docker.
 rm -rf vendor
 %patch1 -p1 -b upstream-patched-archive-tar
 %patch2 -p1 -b finalize-namespace
+%patch3 -p1
+rm daemon/execdriver/native/template/*.go.orig
 
 %build
 # set up temporary build gopath, and put our directory there
@@ -246,149 +257,250 @@ exit 0
 %files devel
 %defattr(-,root,root,-)
 %dir %{gopath}/src/%{import_path}
+%dir %{gopath}/src/%{import_path}/api
 %{gopath}/src/%{import_path}/api/MAINTAINERS
 %{gopath}/src/%{import_path}/api/README.md
 %{gopath}/src/%{import_path}/api/*.go
 %{gopath}/src/%{import_path}/api/client/*.go
+%dir %{gopath}/src/%{import_path}/api/server
 %{gopath}/src/%{import_path}/api/server/*.go
+%dir %{gopath}/src/%{import_path}/archive
 %{gopath}/src/%{import_path}/archive/MAINTAINERS
 %{gopath}/src/%{import_path}/archive/README.md
 %{gopath}/src/%{import_path}/archive/*.go
 %{gopath}/src/%{import_path}/archive/*.goupstream-patched-archive-tar
+%dir %{gopath}/src/%{import_path}/archive/testdata
 %{gopath}/src/%{import_path}/archive/testdata/broken.tar
+%dir %{gopath}/src/%{import_path}/builtins
 %{gopath}/src/%{import_path}/builtins/*.go
+%dir %{gopath}/src/%{import_path}/daemon
 %{gopath}/src/%{import_path}/daemon/*.go
 %{gopath}/src/%{import_path}/daemon/README.md
+%dir %{gopath}/src/%{import_path}/daemon/execdriver
 %{gopath}/src/%{import_path}/daemon/execdriver/*.go
 %{gopath}/src/%{import_path}/daemon/execdriver/MAINTAINERS
+%dir %{gopath}/src/%{import_path}/daemon/execdriver/execdrivers
 %{gopath}/src/%{import_path}/daemon/execdriver/execdrivers/*.go
+%dir %{gopath}/src/%{import_path}/daemon/execdriver/lxc
 %{gopath}/src/%{import_path}/daemon/execdriver/lxc/*.go
+%dir %{gopath}/src/%{import_path}/daemon/execdriver/native
 %{gopath}/src/%{import_path}/daemon/execdriver/native/*.go
+%dir %{gopath}/src/%{import_path}/daemon/execdriver/native/configuration
 %{gopath}/src/%{import_path}/daemon/execdriver/native/configuration/*.go
+%dir %{gopath}/src/%{import_path}/daemon/execdriver/native/template
 %{gopath}/src/%{import_path}/daemon/execdriver/native/template/*.go
+%dir %{gopath}/src/%{import_path}/daemon/graphdriver
 %{gopath}/src/%{import_path}/daemon/graphdriver/*.go
+%dir %{gopath}/src/%{import_path}/daemon/graphdriver/aufs
 %{gopath}/src/%{import_path}/daemon/graphdriver/aufs/*.go
+%dir %{gopath}/src/%{import_path}/daemon/graphdriver/btrfs
 %{gopath}/src/%{import_path}/daemon/graphdriver/btrfs/*.go
 %{gopath}/src/%{import_path}/daemon/graphdriver/btrfs/MAINTAINERS
+%dir %{gopath}/src/%{import_path}/daemon/graphdriver/devmapper
 %{gopath}/src/%{import_path}/daemon/graphdriver/devmapper/*.go
 %{gopath}/src/%{import_path}/daemon/graphdriver/devmapper/MAINTAINERS
 %{gopath}/src/%{import_path}/daemon/graphdriver/devmapper/README.md
+%dir %{gopath}/src/%{import_path}/daemon/graphdriver/graphtest
 %{gopath}/src/%{import_path}/daemon/graphdriver/graphtest/*.go
+%dir %{gopath}/src/%{import_path}/daemon/graphdriver/vfs
 %{gopath}/src/%{import_path}/daemon/graphdriver/vfs/*.go
+%dir %{gopath}/src/%{import_path}/daemon/networkdriver
+%dir %{gopath}/src/%{import_path}/daemon/networkdriver/bridge
 %{gopath}/src/%{import_path}/daemon/networkdriver/bridge/*.go
+%dir %{gopath}/src/%{import_path}/daemon/networkdriver/ipallocator
 %{gopath}/src/%{import_path}/daemon/networkdriver/ipallocator/*.go
 %{gopath}/src/%{import_path}/daemon/networkdriver/*.go
+%dir %{gopath}/src/%{import_path}/daemon/networkdriver/portallocator
 %{gopath}/src/%{import_path}/daemon/networkdriver/portallocator/*.go
+%dir %{gopath}/src/%{import_path}/daemon/networkdriver/portmapper
 %{gopath}/src/%{import_path}/daemon/networkdriver/portmapper/*.go
+%dir %{gopath}/src/%{import_path}/daemonconfig
 %{gopath}/src/%{import_path}/daemonconfig/README.md
 %{gopath}/src/%{import_path}/daemonconfig/*.go
+%dir %{gopath}/src/%{import_path}/dockerversion
 %{gopath}/src/%{import_path}/dockerversion/*.go
+%dir %{gopath}/src/%{import_path}/engine
 %{gopath}/src/%{import_path}/engine/MAINTAINERS
 %{gopath}/src/%{import_path}/engine/*.go
+%dir %{gopath}/src/%{import_path}/engine/rengine
 %{gopath}/src/%{import_path}/engine/rengine/*.go
+%dir %{gopath}/src/%{import_path}/engine/spawn
 %{gopath}/src/%{import_path}/engine/spawn/*.go
+%dir %{gopath}/src/%{import_path}/engine/spawn/subengine
 %{gopath}/src/%{import_path}/engine/spawn/subengine/*.go
+%dir %{gopath}/src/%{import_path}/graph
 %{gopath}/src/%{import_path}/graph/*.go
 %{gopath}/src/%{import_path}/graph/*.goupstream-patched-archive-tar
+%dir %{gopath}/src/%{import_path}/image
 %{gopath}/src/%{import_path}/image/*.go
+%dir %{gopath}/src/%{import_path}/links
 %{gopath}/src/%{import_path}/links/*.go
+%dir %{gopath}/src/%{import_path}/nat
 %{gopath}/src/%{import_path}/nat/*.go
+%dir %{gopath}/src/%{import_path}/opts
 %{gopath}/src/%{import_path}/opts/*.go
+%dir %{gopath}/src/%{import_path}/pkg
 %{gopath}/src/%{import_path}/pkg/README.md
+%dir %{gopath}/src/%{import_path}/pkg/apparmor
 %{gopath}/src/%{import_path}/pkg/apparmor/*.go
+%dir %{gopath}/src/%{import_path}/pkg/beam
 %{gopath}/src/%{import_path}/pkg/beam/MAINTAINERS
 %{gopath}/src/%{import_path}/pkg/beam/*.go
+%dir %{gopath}/src/%{import_path}/pkg/beam/data
 %{gopath}/src/%{import_path}/pkg/beam/data/*.go
 %{gopath}/src/%{import_path}/pkg/beam/data/netstring.txt
+%dir %{gopath}/src/%{import_path}/pkg/beam/examples
+%dir %{gopath}/src/%{import_path}/pkg/beam/examples/beamsh
 %{gopath}/src/%{import_path}/pkg/beam/examples/beamsh/beamsh
 %{gopath}/src/%{import_path}/pkg/beam/examples/beamsh/*.go
+%dir %{gopath}/src/%{import_path}/pkg/beam/examples/beamsh/scripts
 %{gopath}/src/%{import_path}/pkg/beam/examples/beamsh/scripts/*.ds
+%dir %{gopath}/src/%{import_path}/pkg/dockerscript
 %{gopath}/src/%{import_path}/pkg/dockerscript/MAINTAINERS
 %{gopath}/src/%{import_path}/pkg/dockerscript/*.go
+%dir %{gopath}/src/%{import_path}/pkg/dockerscript/scanner
 %{gopath}/src/%{import_path}/pkg/dockerscript/scanner/*.go
+%dir %{gopath}/src/%{import_path}/pkg/graphdb
 %{gopath}/src/%{import_path}/pkg/graphdb/MAINTAINERS
 %{gopath}/src/%{import_path}/pkg/graphdb/*.go
+%dir %{gopath}/src/%{import_path}/pkg/iptables
 %{gopath}/src/%{import_path}/pkg/iptables/MAINTAINERS
 %{gopath}/src/%{import_path}/pkg/iptables/*.go
+%dir %{gopath}/src/%{import_path}/pkg/label
 %{gopath}/src/%{import_path}/pkg/label/*.go
+%dir %{gopath}/src/%{import_path}/pkg/listenbuffer
 %{gopath}/src/%{import_path}/pkg/listenbuffer/*.go
+%dir %{gopath}/src/%{import_path}/pkg/libcontainer
 %{gopath}/src/%{import_path}/pkg/libcontainer/*.go
 %{gopath}/src/%{import_path}/pkg/libcontainer/MAINTAINERS
 %{gopath}/src/%{import_path}/pkg/libcontainer/README.md
 %{gopath}/src/%{import_path}/pkg/libcontainer/TODO.md
+%dir %{gopath}/src/%{import_path}/pkg/libcontainer/cgroups
 %{gopath}/src/%{import_path}/pkg/libcontainer/cgroups/*.go
+%dir %{gopath}/src/%{import_path}/pkg/libcontainer/cgroups/fs
 %{gopath}/src/%{import_path}/pkg/libcontainer/cgroups/fs/*.go
+%dir %{gopath}/src/%{import_path}/pkg/libcontainer/cgroups/systemd
 %{gopath}/src/%{import_path}/pkg/libcontainer/cgroups/systemd/*.go
+%dir %{gopath}/src/%{import_path}/pkg/libcontainer/console
 %{gopath}/src/%{import_path}/pkg/libcontainer/console/*.go
 %{gopath}/src/%{import_path}/pkg/libcontainer/container.json
+%dir %{gopath}/src/%{import_path}/pkg/libcontainer/devices
 %{gopath}/src/%{import_path}/pkg/libcontainer/devices/*.go
+%dir %{gopath}/src/%{import_path}/pkg/libcontainer/mount
 %{gopath}/src/%{import_path}/pkg/libcontainer/mount/*.go
+%dir %{gopath}/src/%{import_path}/pkg/libcontainer/mount/nodes
 %{gopath}/src/%{import_path}/pkg/libcontainer/mount/nodes/*.go
+%dir %{gopath}/src/%{import_path}/pkg/libcontainer/namespaces
 %{gopath}/src/%{import_path}/pkg/libcontainer/namespaces/*.go
 %{gopath}/src/%{import_path}/pkg/libcontainer/namespaces/init.gofinalize-namespace
+%dir %{gopath}/src/%{import_path}/pkg/libcontainer/network
 %{gopath}/src/%{import_path}/pkg/libcontainer/network/*.go
+%dir %{gopath}/src/%{import_path}/pkg/libcontainer/nsinit
 %{gopath}/src/%{import_path}/pkg/libcontainer/nsinit/*.go
+%dir %{gopath}/src/%{import_path}/pkg/libcontainer/security
+%dir %{gopath}/src/%{import_path}/pkg/libcontainer/security/capabilities
 %{gopath}/src/%{import_path}/pkg/libcontainer/security/capabilities/*.go
+%dir %{gopath}/src/%{import_path}/pkg/libcontainer/security/restrict
 %{gopath}/src/%{import_path}/pkg/libcontainer/security/restrict/*.go
+%dir %{gopath}/src/%{import_path}/pkg/libcontainer/utils
 %{gopath}/src/%{import_path}/pkg/libcontainer/utils/*.go
+%dir %{gopath}/src/%{import_path}/pkg/mflag
 %{gopath}/src/%{import_path}/pkg/mflag/LICENSE
 %{gopath}/src/%{import_path}/pkg/mflag/MAINTAINERS
 %{gopath}/src/%{import_path}/pkg/mflag/README.md
+%dir %{gopath}/src/%{import_path}/pkg/mflag/example
 %{gopath}/src/%{import_path}/pkg/mflag/example/example.go
 %{gopath}/src/%{import_path}/pkg/mflag/*.go
+%dir %{gopath}/src/%{import_path}/pkg/mount
 %{gopath}/src/%{import_path}/pkg/mount/MAINTAINERS
 %{gopath}/src/%{import_path}/pkg/mount/*.go
+%dir %{gopath}/src/%{import_path}/pkg/namesgenerator
 %{gopath}/src/%{import_path}/pkg/namesgenerator/*.go
+%dir %{gopath}/src/%{import_path}/pkg/netlink
 %{gopath}/src/%{import_path}/pkg/netlink/MAINTAINERS
 %{gopath}/src/%{import_path}/pkg/netlink/*.go
+%dir %{gopath}/src/%{import_path}/pkg/networkfs
 %{gopath}/src/%{import_path}/pkg/networkfs/MAINTAINERS
+%dir %{gopath}/src/%{import_path}/pkg/networkfs/etchosts
 %{gopath}/src/%{import_path}/pkg/networkfs/etchosts/*.go
+%dir %{gopath}/src/%{import_path}/pkg/networkfs/resolvconf
 %{gopath}/src/%{import_path}/pkg/networkfs/resolvconf/*.go
+%dir %{gopath}/src/%{import_path}/pkg/proxy
 %{gopath}/src/%{import_path}/pkg/proxy/MAINTAINERS
 %{gopath}/src/%{import_path}/pkg/proxy/*.go
+%dir %{gopath}/src/%{import_path}/pkg/selinux
 %{gopath}/src/%{import_path}/pkg/selinux/*.go
+%dir %{gopath}/src/%{import_path}/pkg/signal
 %{gopath}/src/%{import_path}/pkg/signal/MAINTAINERS
 %{gopath}/src/%{import_path}/pkg/signal/*.go
+%dir %{gopath}/src/%{import_path}/pkg/symlink
 %{gopath}/src/%{import_path}/pkg/symlink/MAINTAINERS
 %{gopath}/src/%{import_path}/pkg/symlink/*.go
+%dir %{gopath}/src/%{import_path}/pkg/symlink/testdata
+%dir %{gopath}/src/%{import_path}/pkg/symlink/testdata/fs
+%dir %{gopath}/src/%{import_path}/pkg/symlink/testdata/fs/a
 %{gopath}/src/%{import_path}/pkg/symlink/testdata/fs/a/d
 %{gopath}/src/%{import_path}/pkg/symlink/testdata/fs/a/e
 %{gopath}/src/%{import_path}/pkg/symlink/testdata/fs/a/f
+%dir %{gopath}/src/%{import_path}/pkg/symlink/testdata/fs/b
 %{gopath}/src/%{import_path}/pkg/symlink/testdata/fs/b/h
 %{gopath}/src/%{import_path}/pkg/symlink/testdata/fs/g
 %{gopath}/src/%{import_path}/pkg/symlink/testdata/fs/i
+%dir %{gopath}/src/%{import_path}/pkg/sysinfo
 %{gopath}/src/%{import_path}/pkg/sysinfo/MAINTAINERS
 %{gopath}/src/%{import_path}/pkg/sysinfo/*.go
+%dir %{gopath}/src/%{import_path}/pkg/system
 %{gopath}/src/%{import_path}/pkg/system/MAINTAINERS
 %{gopath}/src/%{import_path}/pkg/system/*.go
+%dir %{gopath}/src/%{import_path}/pkg/systemd
 %{gopath}/src/%{import_path}/pkg/systemd/MAINTAINERS
 %{gopath}/src/%{import_path}/pkg/systemd/*.go
+%dir %{gopath}/src/%{import_path}/pkg/term
 %{gopath}/src/%{import_path}/pkg/term/MAINTAINERS
 %{gopath}/src/%{import_path}/pkg/term/*.go
+%dir %{gopath}/src/%{import_path}/pkg/testutils
 %{gopath}/src/%{import_path}/pkg/testutils/MAINTAINERS
 %{gopath}/src/%{import_path}/pkg/testutils/README.md
 %{gopath}/src/%{import_path}/pkg/testutils/testutils.go
+%dir %{gopath}/src/%{import_path}/pkg/units
 %{gopath}/src/%{import_path}/pkg/units/MAINTAINERS
 %{gopath}/src/%{import_path}/pkg/units/*.go
+%dir %{gopath}/src/%{import_path}/pkg/user
 %{gopath}/src/%{import_path}/pkg/user/MAINTAINERS
 %{gopath}/src/%{import_path}/pkg/user/*.go
+%dir %{gopath}/src/%{import_path}/pkg/version
 %{gopath}/src/%{import_path}/pkg/version/*.go
+%dir %{gopath}/src/%{import_path}/registry
 %{gopath}/src/%{import_path}/registry/MAINTAINERS
 %{gopath}/src/%{import_path}/registry/*.go
+%dir %{gopath}/src/%{import_path}/runconfig
 %{gopath}/src/%{import_path}/runconfig/*.go
+%dir %{gopath}/src/%{import_path}/server
 %{gopath}/src/%{import_path}/server/MAINTAINERS
 %{gopath}/src/%{import_path}/server/*.go
+%dir %{gopath}/src/%{import_path}/sysinit
 %{gopath}/src/%{import_path}/sysinit/README.md
 %{gopath}/src/%{import_path}/sysinit/*.go
+%dir %{gopath}/src/%{import_path}/utils
+%dir %{gopath}/src/%{import_path}/utils/filters
 %{gopath}/src/%{import_path}/utils/filters/*.go
 %{gopath}/src/%{import_path}/utils/*.goupstream-patched-archive-tar
 %{gopath}/src/%{import_path}/utils/*.go
+%dir %{gopath}/src/%{import_path}/utils/testdata
+%dir %{gopath}/src/%{import_path}/utils/testdata/46af0962ab5afeb5ce6740d4d91652e69206fc991fd5328c1a94d364ad00e457
 %{gopath}/src/%{import_path}/utils/testdata/46af0962ab5afeb5ce6740d4d91652e69206fc991fd5328c1a94d364ad00e457/json
 %{gopath}/src/%{import_path}/utils/testdata/46af0962ab5afeb5ce6740d4d91652e69206fc991fd5328c1a94d364ad00e457/layer.tar
+%dir %{gopath}/src/%{import_path}/utils/testdata/511136ea3c5a64f264b78b5433614aec563103b4d4702f3ba7d4d2698e22c158
 %{gopath}/src/%{import_path}/utils/testdata/511136ea3c5a64f264b78b5433614aec563103b4d4702f3ba7d4d2698e22c158/json
 %{gopath}/src/%{import_path}/utils/testdata/511136ea3c5a64f264b78b5433614aec563103b4d4702f3ba7d4d2698e22c158/layer.tar
 
 %changelog
+* Wed Jul 23 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.0.0-8
+- Resolves: rhbz#1119849
+- Resolves: rhbz#1119413 - min delta between upstream and packaged unitfiles
+- devel package owns directories it creates
+- ensure min NVRs used for systemd contain fixes RE: CVE-2014-3499
+
 * Wed Jul 16 2014 Vincent Batts <vbatts@fedoraproject.org> - 1.0.0-7
 - clean up gopath
 - add Provides for docker libraries
