@@ -5,23 +5,22 @@
 # so stripping the binaries breaks docker
 %global debug_package %{nil}
 
-%global import_path github.com/dotcloud/docker
-%global commit      63fe64c471e7d76be96a625350468dfc65c06c31
+%global import_path github.com/docker/docker
+%global commit      d84a070e476ce923dd03e28232564a87704613ab
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:           docker-io
-Version:        1.0.0
-Release:        10%{?dist}
+Version:        1.1.2
+Release:        1%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 Patch1:         upstream-patched-archive-tar.patch
-Patch2:         finalize-namespace.patch
 # Resolves: rhbz#1119849 - add AUDIT_WRITE capablility
-Patch3:         audit-write.patch
-URL:            http://www.docker.io
-# only x86_64 for now: https://github.com/dotcloud/docker/issues/136
+Patch2:         audit-write.patch
+URL:            http://www.docker.com
+# only x86_64 for now: https://github.com/docker/docker/issues/136
 ExclusiveArch:  x86_64
-Source0:        https://github.com/dotcloud/docker/archive/v%{version}.tar.gz
+Source0:        https://github.com/docker/docker/archive/v%{version}.tar.gz
 Source1:        docker.service
 Source2:        docker.sysconfig
 Source3:        docker.socket
@@ -42,6 +41,8 @@ BuildRequires:  golang(code.google.com/p/go.net/websocket)
 BuildRequires:  golang(code.google.com/p/gosqlite/sqlite3)
 # RHBZ#1109039 use syndtr/gocapability >= 0-0.7
 BuildRequires:  golang(github.com/syndtr/gocapability/capability) >= 0-0.7
+BuildRequires:  golang(github.com/docker/libcontainer)
+BuildRequires:  golang(github.com/tchap/go-patricia/patricia)
 BuildRequires:  device-mapper-devel
 BuildRequires:  btrfs-progs-devel
 BuildRequires:  pkgconfig(systemd)
@@ -154,7 +155,6 @@ Provides:       golang(%{import_path}/pkg/user) = %{version}-%{release}
 Provides:       golang(%{import_path}/pkg/version) = %{version}-%{release}
 
 %description pkg-devel
-This is the source libraries for docker.
 These source librariees are provided by docker, but are independent of docker specific logic.
 The import paths of %{import_path}/pkg/...
 
@@ -162,8 +162,7 @@ The import paths of %{import_path}/pkg/...
 %setup -q -n docker-%{version}
 rm -rf vendor
 %patch1 -p1 -b upstream-patched-archive-tar
-%patch2 -p1 -b finalize-namespace
-%patch3 -p1
+%patch2 -p1
 rm daemon/execdriver/native/template/*.go.orig
 
 %build
@@ -176,7 +175,7 @@ export DOCKER_BUILDTAGS='selinux'
 export GOPATH=$(pwd)/_build:%{gopath}
 
 hack/make.sh dynbinary
-contrib/man/md/md2man-all.sh
+docs/man/md2man-all.sh
 cp contrib/syntax/vim/LICENSE LICENSE-vim-syntax
 cp contrib/syntax/vim/README.md README-vim-syntax.md
 
@@ -189,9 +188,9 @@ install -d %{buildroot}%{_libexecdir}/docker
 install -p -m 755 bundles/%{version}/dynbinary/dockerinit-%{version} %{buildroot}%{_libexecdir}/docker/dockerinit
 # install manpage
 install -d %{buildroot}%{_mandir}/man1
-install -p -m 644 contrib/man/man1/docker*.1 %{buildroot}%{_mandir}/man1
+install -p -m 644 docs/man/man1/docker*.1 %{buildroot}%{_mandir}/man1
 install -d %{buildroot}%{_mandir}/man5
-install -p -m 644 contrib/man/man5/Dockerfile.5 %{buildroot}%{_mandir}/man5
+install -p -m 644 docs/man/man5/Dockerfile.5 %{buildroot}%{_mandir}/man5
 # install bash completion
 install -d %{buildroot}%{_sysconfdir}/bash_completion.d
 install -p -m 644 contrib/completion/bash/docker %{buildroot}%{_sysconfdir}/bash_completion.d/docker.bash
@@ -240,7 +239,6 @@ exit 0
 %systemd_postun_with_restart docker
 
 %files
-%defattr(-,root,root,-)
 %doc AUTHORS CHANGELOG.md CONTRIBUTING.md FIXME LICENSE MAINTAINERS NOTICE README.md 
 %doc LICENSE-vim-syntax README-vim-syntax.md
 %config(noreplace) %{_sysconfdir}/sysconfig/docker
@@ -265,7 +263,6 @@ exit 0
 %{_datadir}/vim/vimfiles/syntax/dockerfile.vim
 
 %files devel
-%defattr(-,root,root,-)
 %dir %{gopath}/src/%{import_path}
 %dir %{gopath}/src/%{import_path}/api
 %{gopath}/src/%{import_path}/api/MAINTAINERS
@@ -273,6 +270,7 @@ exit 0
 %{gopath}/src/%{import_path}/api/*.go
 %{gopath}/src/%{import_path}/api/client/*.go
 %dir %{gopath}/src/%{import_path}/api/server
+%{gopath}/src/%{import_path}/api/server/MAINTAINERS
 %{gopath}/src/%{import_path}/api/server/*.go
 %dir %{gopath}/src/%{import_path}/archive
 %{gopath}/src/%{import_path}/archive/MAINTAINERS
@@ -292,6 +290,7 @@ exit 0
 %dir %{gopath}/src/%{import_path}/daemon/execdriver/execdrivers
 %{gopath}/src/%{import_path}/daemon/execdriver/execdrivers/*.go
 %dir %{gopath}/src/%{import_path}/daemon/execdriver/lxc
+%{gopath}/src/%{import_path}/daemon/execdriver/lxc/MAINTAINERS
 %{gopath}/src/%{import_path}/daemon/execdriver/lxc/*.go
 %dir %{gopath}/src/%{import_path}/daemon/execdriver/native
 %{gopath}/src/%{import_path}/daemon/execdriver/native/*.go
@@ -332,12 +331,6 @@ exit 0
 %dir %{gopath}/src/%{import_path}/engine
 %{gopath}/src/%{import_path}/engine/MAINTAINERS
 %{gopath}/src/%{import_path}/engine/*.go
-%dir %{gopath}/src/%{import_path}/engine/rengine
-%{gopath}/src/%{import_path}/engine/rengine/*.go
-%dir %{gopath}/src/%{import_path}/engine/spawn
-%{gopath}/src/%{import_path}/engine/spawn/*.go
-%dir %{gopath}/src/%{import_path}/engine/spawn/subengine
-%{gopath}/src/%{import_path}/engine/spawn/subengine/*.go
 %dir %{gopath}/src/%{import_path}/graph
 %{gopath}/src/%{import_path}/graph/*.go
 %{gopath}/src/%{import_path}/graph/*.goupstream-patched-archive-tar
@@ -374,73 +367,17 @@ exit 0
 %{gopath}/src/%{import_path}/utils/testdata/511136ea3c5a64f264b78b5433614aec563103b4d4702f3ba7d4d2698e22c158/layer.tar
 
 %files pkg-devel
-%defattr(-,root,root,-)
 %dir %{gopath}/src/%{import_path}
 %dir %{gopath}/src/%{import_path}/pkg
 %{gopath}/src/%{import_path}/pkg/README.md
-%dir %{gopath}/src/%{import_path}/pkg/apparmor
-%{gopath}/src/%{import_path}/pkg/apparmor/*.go
-%dir %{gopath}/src/%{import_path}/pkg/beam
-%{gopath}/src/%{import_path}/pkg/beam/MAINTAINERS
-%{gopath}/src/%{import_path}/pkg/beam/*.go
-%dir %{gopath}/src/%{import_path}/pkg/beam/data
-%{gopath}/src/%{import_path}/pkg/beam/data/*.go
-%{gopath}/src/%{import_path}/pkg/beam/data/netstring.txt
-%dir %{gopath}/src/%{import_path}/pkg/beam/examples
-%dir %{gopath}/src/%{import_path}/pkg/beam/examples/beamsh
-%{gopath}/src/%{import_path}/pkg/beam/examples/beamsh/beamsh
-%{gopath}/src/%{import_path}/pkg/beam/examples/beamsh/*.go
-%dir %{gopath}/src/%{import_path}/pkg/beam/examples/beamsh/scripts
-%{gopath}/src/%{import_path}/pkg/beam/examples/beamsh/scripts/*.ds
-%dir %{gopath}/src/%{import_path}/pkg/dockerscript
-%{gopath}/src/%{import_path}/pkg/dockerscript/MAINTAINERS
-%{gopath}/src/%{import_path}/pkg/dockerscript/*.go
-%dir %{gopath}/src/%{import_path}/pkg/dockerscript/scanner
-%{gopath}/src/%{import_path}/pkg/dockerscript/scanner/*.go
 %dir %{gopath}/src/%{import_path}/pkg/graphdb
 %{gopath}/src/%{import_path}/pkg/graphdb/MAINTAINERS
 %{gopath}/src/%{import_path}/pkg/graphdb/*.go
 %dir %{gopath}/src/%{import_path}/pkg/iptables
 %{gopath}/src/%{import_path}/pkg/iptables/MAINTAINERS
 %{gopath}/src/%{import_path}/pkg/iptables/*.go
-%dir %{gopath}/src/%{import_path}/pkg/label
-%{gopath}/src/%{import_path}/pkg/label/*.go
 %dir %{gopath}/src/%{import_path}/pkg/listenbuffer
 %{gopath}/src/%{import_path}/pkg/listenbuffer/*.go
-%dir %{gopath}/src/%{import_path}/pkg/libcontainer
-%{gopath}/src/%{import_path}/pkg/libcontainer/*.go
-%{gopath}/src/%{import_path}/pkg/libcontainer/MAINTAINERS
-%{gopath}/src/%{import_path}/pkg/libcontainer/README.md
-%{gopath}/src/%{import_path}/pkg/libcontainer/TODO.md
-%dir %{gopath}/src/%{import_path}/pkg/libcontainer/cgroups
-%{gopath}/src/%{import_path}/pkg/libcontainer/cgroups/*.go
-%dir %{gopath}/src/%{import_path}/pkg/libcontainer/cgroups/fs
-%{gopath}/src/%{import_path}/pkg/libcontainer/cgroups/fs/*.go
-%dir %{gopath}/src/%{import_path}/pkg/libcontainer/cgroups/systemd
-%{gopath}/src/%{import_path}/pkg/libcontainer/cgroups/systemd/*.go
-%dir %{gopath}/src/%{import_path}/pkg/libcontainer/console
-%{gopath}/src/%{import_path}/pkg/libcontainer/console/*.go
-%{gopath}/src/%{import_path}/pkg/libcontainer/container.json
-%dir %{gopath}/src/%{import_path}/pkg/libcontainer/devices
-%{gopath}/src/%{import_path}/pkg/libcontainer/devices/*.go
-%dir %{gopath}/src/%{import_path}/pkg/libcontainer/mount
-%{gopath}/src/%{import_path}/pkg/libcontainer/mount/*.go
-%dir %{gopath}/src/%{import_path}/pkg/libcontainer/mount/nodes
-%{gopath}/src/%{import_path}/pkg/libcontainer/mount/nodes/*.go
-%dir %{gopath}/src/%{import_path}/pkg/libcontainer/namespaces
-%{gopath}/src/%{import_path}/pkg/libcontainer/namespaces/*.go
-%{gopath}/src/%{import_path}/pkg/libcontainer/namespaces/init.gofinalize-namespace
-%dir %{gopath}/src/%{import_path}/pkg/libcontainer/network
-%{gopath}/src/%{import_path}/pkg/libcontainer/network/*.go
-%dir %{gopath}/src/%{import_path}/pkg/libcontainer/nsinit
-%{gopath}/src/%{import_path}/pkg/libcontainer/nsinit/*.go
-%dir %{gopath}/src/%{import_path}/pkg/libcontainer/security
-%dir %{gopath}/src/%{import_path}/pkg/libcontainer/security/capabilities
-%{gopath}/src/%{import_path}/pkg/libcontainer/security/capabilities/*.go
-%dir %{gopath}/src/%{import_path}/pkg/libcontainer/security/restrict
-%{gopath}/src/%{import_path}/pkg/libcontainer/security/restrict/*.go
-%dir %{gopath}/src/%{import_path}/pkg/libcontainer/utils
-%{gopath}/src/%{import_path}/pkg/libcontainer/utils/*.go
 %dir %{gopath}/src/%{import_path}/pkg/mflag
 %{gopath}/src/%{import_path}/pkg/mflag/LICENSE
 %{gopath}/src/%{import_path}/pkg/mflag/MAINTAINERS
@@ -453,9 +390,6 @@ exit 0
 %{gopath}/src/%{import_path}/pkg/mount/*.go
 %dir %{gopath}/src/%{import_path}/pkg/namesgenerator
 %{gopath}/src/%{import_path}/pkg/namesgenerator/*.go
-%dir %{gopath}/src/%{import_path}/pkg/netlink
-%{gopath}/src/%{import_path}/pkg/netlink/MAINTAINERS
-%{gopath}/src/%{import_path}/pkg/netlink/*.go
 %dir %{gopath}/src/%{import_path}/pkg/networkfs
 %{gopath}/src/%{import_path}/pkg/networkfs/MAINTAINERS
 %dir %{gopath}/src/%{import_path}/pkg/networkfs/etchosts
@@ -465,10 +399,7 @@ exit 0
 %dir %{gopath}/src/%{import_path}/pkg/proxy
 %{gopath}/src/%{import_path}/pkg/proxy/MAINTAINERS
 %{gopath}/src/%{import_path}/pkg/proxy/*.go
-%dir %{gopath}/src/%{import_path}/pkg/selinux
-%{gopath}/src/%{import_path}/pkg/selinux/*.go
 %dir %{gopath}/src/%{import_path}/pkg/signal
-%{gopath}/src/%{import_path}/pkg/signal/MAINTAINERS
 %{gopath}/src/%{import_path}/pkg/signal/*.go
 %dir %{gopath}/src/%{import_path}/pkg/symlink
 %{gopath}/src/%{import_path}/pkg/symlink/MAINTAINERS
@@ -492,6 +423,10 @@ exit 0
 %dir %{gopath}/src/%{import_path}/pkg/systemd
 %{gopath}/src/%{import_path}/pkg/systemd/MAINTAINERS
 %{gopath}/src/%{import_path}/pkg/systemd/*.go
+%dir %{gopath}/src/%{import_path}/pkg/tailfile
+%{gopath}/src/%{import_path}/pkg/tailfile/*.go
+%dir %{gopath}/src/%{import_path}/pkg/truncindex
+%{gopath}/src/%{import_path}/pkg/truncindex/*.go
 %dir %{gopath}/src/%{import_path}/pkg/term
 %{gopath}/src/%{import_path}/pkg/term/MAINTAINERS
 %{gopath}/src/%{import_path}/pkg/term/*.go
@@ -509,6 +444,9 @@ exit 0
 %{gopath}/src/%{import_path}/pkg/version/*.go
 
 %changelog
+* Thu Jul 31 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.1.2-1
+- update to upstream v1.1.2 (d84a070e476ce923dd03e28232564a87704613ab)
+
 * Mon Jul 28 2014 Vincent Batts <vbatts@fedoraproject.org> - 1.0.0-10
 - split out the %{import_path}/pkg/... libraries, to avoid cyclic deps with libcontainer
 

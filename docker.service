@@ -1,16 +1,15 @@
 [Unit]
 Description=Docker Application Container Engine
-Documentation=http://docs.docker.io
-After=network.target
+Documentation=http://docs.docker.com
+After=network.target docker.socket
 Requires=docker.socket
 
 [Service]
 Type=notify
 EnvironmentFile=-/etc/sysconfig/docker
 ExecStart=/usr/bin/docker -d -H fd:// $OPTIONS
-Restart=on-failure
 LimitNOFILE=1048576
 LimitNPROC=1048576
 
 [Install]
-WantedBy=multi-user.target
+Also=docker.socket
