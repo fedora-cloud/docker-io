@@ -20,6 +20,7 @@
 <option value='f18'>f18</option>
 <option value='f19'>f19</option>
 <option value='f20'>f20</option>
+<option value='f21'>f21</option>
 <option value='master' selected='selected'>master</option>
 </select> <input type='submit' name='' value='switch'/></form></td></tr>
 <tr><td class='sub'>docker-io</td><td class='sub right'>Jon Ciesla</td></tr></table>
@@ -35,7 +36,7 @@
 <input type='submit' value='search'/>
 </form>
 </td></tr></table>
-<div class='path'>path: <a href='/cgit/docker-io.git/tree/'>root</a>/<a href='/cgit/docker-io.git/tree/upstream-patched-archive-tar.patch'>upstream-patched-archive-tar.patch</a></div><div class='content'>blob: 061656accc019b35a57da1c1559f778a5c5f4069 (<a href='/cgit/docker-io.git/plain/upstream-patched-archive-tar.patch'>plain</a>)
+<div class='path'>path: <a href='/cgit/docker-io.git/tree/'>root</a>/<a href='/cgit/docker-io.git/tree/upstream-patched-archive-tar.patch'>upstream-patched-archive-tar.patch</a></div><div class='content'>blob: 2f766dd6f4389b91303b4ff898a838b3ddb978b3 (<a href='/cgit/docker-io.git/plain/upstream-patched-archive-tar.patch'>plain</a>)
 <table summary='blob content' class='blob'>
 <tr><td class='linenumbers'><pre><a id='n1' href='#n1'>1</a>
 <a id='n2' href='#n2'>2</a>
@@ -145,22 +146,10 @@
 <a id='n106' href='#n106'>106</a>
 <a id='n107' href='#n107'>107</a>
 <a id='n108' href='#n108'>108</a>
-<a id='n109' href='#n109'>109</a>
-<a id='n110' href='#n110'>110</a>
-<a id='n111' href='#n111'>111</a>
-<a id='n112' href='#n112'>112</a>
-<a id='n113' href='#n113'>113</a>
-<a id='n114' href='#n114'>114</a>
-<a id='n115' href='#n115'>115</a>
-<a id='n116' href='#n116'>116</a>
-<a id='n117' href='#n117'>117</a>
-<a id='n118' href='#n118'>118</a>
-<a id='n119' href='#n119'>119</a>
-<a id='n120' href='#n120'>120</a>
 </pre></td>
-<td class='lines'><pre><code>diff -uNr docker-0.12.0/archive/archive.go docker-0.12.0-1/archive/archive.go
---- docker-0.12.0/archive/archive.go	2014-06-05 20:59:19.000000000 -0400
-+++ docker-0.12.0-1/archive/archive.go	2014-06-08 17:10:37.537530082 -0400
+<td class='lines'><pre><code>diff -uNr docker-1.1.2/archive/archive.go docker-1.1.2-1/archive/archive.go
+--- docker-1.1.2/archive/archive.go	2014-07-22 19:29:56.000000000 -0500
++++ docker-1.1.2-1/archive/archive.go	2014-07-25 10:47:31.042199877 -0500
 @@ -18,7 +18,7 @@
  
  	"github.com/dotcloud/docker/pkg/system"
@@ -170,9 +159,9 @@
  )
  
  type (
-diff -uNr docker-0.12.0/archive/archive_test.go docker-0.12.0-1/archive/archive_test.go
---- docker-0.12.0/archive/archive_test.go	2014-06-05 20:59:19.000000000 -0400
-+++ docker-0.12.0-1/archive/archive_test.go	2014-06-08 17:09:47.983603103 -0400
+diff -uNr docker-1.1.2/archive/archive_test.go docker-1.1.2-1/archive/archive_test.go
+--- docker-1.1.2/archive/archive_test.go	2014-07-22 19:29:56.000000000 -0500
++++ docker-1.1.2-1/archive/archive_test.go	2014-07-25 10:46:52.199198162 -0500
 @@ -11,7 +11,7 @@
  	"testing"
  	"time"
@@ -182,9 +171,9 @@ diff -uNr docker-0.12.0/archive/archive_test.go docker-0.12.0-1/archive/archive_
  )
  
  func TestCmdStreamLargeStderr(t *testing.T) {
-diff -uNr docker-0.12.0/archive/changes.go docker-0.12.0-1/archive/changes.go
---- docker-0.12.0/archive/changes.go	2014-06-05 20:59:19.000000000 -0400
-+++ docker-0.12.0-1/archive/changes.go	2014-06-08 17:10:27.932544229 -0400
+diff -uNr docker-1.1.2/archive/changes.go docker-1.1.2-1/archive/changes.go
+--- docker-1.1.2/archive/changes.go	2014-07-22 19:29:56.000000000 -0500
++++ docker-1.1.2-1/archive/changes.go	2014-07-25 10:47:19.873199418 -0500
 @@ -12,7 +12,7 @@
  
  	"github.com/dotcloud/docker/pkg/system"
@@ -194,9 +183,9 @@ diff -uNr docker-0.12.0/archive/changes.go docker-0.12.0-1/archive/changes.go
  )
  
  type ChangeType int
-diff -uNr docker-0.12.0/archive/diff.go docker-0.12.0-1/archive/diff.go
---- docker-0.12.0/archive/diff.go	2014-06-05 20:59:19.000000000 -0400
-+++ docker-0.12.0-1/archive/diff.go	2014-06-08 17:10:20.248555556 -0400
+diff -uNr docker-1.1.2/archive/diff.go docker-1.1.2-1/archive/diff.go
+--- docker-1.1.2/archive/diff.go	2014-07-22 19:29:56.000000000 -0500
++++ docker-1.1.2-1/archive/diff.go	2014-07-25 10:47:07.541198850 -0500
 @@ -9,7 +9,7 @@
  	"strings"
  	"syscall"
@@ -206,9 +195,9 @@ diff -uNr docker-0.12.0/archive/diff.go docker-0.12.0-1/archive/diff.go
  )
  
  // Linux device nodes are a bit weird due to backwards compat with 16 bit device nodes.
-diff -uNr docker-0.12.0/archive/wrap.go docker-0.12.0-1/archive/wrap.go
---- docker-0.12.0/archive/wrap.go	2014-06-05 20:59:19.000000000 -0400
-+++ docker-0.12.0-1/archive/wrap.go	2014-06-08 17:10:11.704568146 -0400
+diff -uNr docker-1.1.2/archive/wrap.go docker-1.1.2-1/archive/wrap.go
+--- docker-1.1.2/archive/wrap.go	2014-07-22 19:29:56.000000000 -0500
++++ docker-1.1.2-1/archive/wrap.go	2014-07-25 10:46:59.077198483 -0500
 @@ -2,7 +2,7 @@
  
  import (
@@ -218,9 +207,9 @@ diff -uNr docker-0.12.0/archive/wrap.go docker-0.12.0-1/archive/wrap.go
  	"io/ioutil"
  )
  
-diff -uNr docker-0.12.0/graph/tags_unit_test.go docker-0.12.0-1/graph/tags_unit_test.go
---- docker-0.12.0/graph/tags_unit_test.go	2014-06-05 20:59:19.000000000 -0400
-+++ docker-0.12.0-1/graph/tags_unit_test.go	2014-06-08 17:10:48.989513208 -0400
+diff -uNr docker-1.1.2/graph/tags_unit_test.go docker-1.1.2-1/graph/tags_unit_test.go
+--- docker-1.1.2/graph/tags_unit_test.go	2014-07-22 19:29:56.000000000 -0500
++++ docker-1.1.2-1/graph/tags_unit_test.go	2014-07-25 10:47:40.758200323 -0500
 @@ -6,7 +6,7 @@
  	_ "github.com/dotcloud/docker/daemon/graphdriver/vfs" // import the vfs driver so it is used in the tests
  	"github.com/dotcloud/docker/image"
@@ -230,33 +219,21 @@ diff -uNr docker-0.12.0/graph/tags_unit_test.go docker-0.12.0-1/graph/tags_unit_
  	"io"
  	"os"
  	"path"
-diff -uNr docker-0.12.0/integration/api_test.go docker-0.12.0-1/integration/api_test.go
---- docker-0.12.0/integration/api_test.go	2014-06-05 20:59:19.000000000 -0400
-+++ docker-0.12.0-1/integration/api_test.go	2014-06-08 17:10:58.148499687 -0400
-@@ -21,7 +21,7 @@
+diff -uNr docker-1.1.2/integration/api_test.go docker-1.1.2-1/integration/api_test.go
+--- docker-1.1.2/integration/api_test.go	2014-07-22 19:29:56.000000000 -0500
++++ docker-1.1.2-1/integration/api_test.go	2014-07-25 10:47:58.985201130 -0500
+@@ -18,7 +18,7 @@
+ 	"github.com/dotcloud/docker/engine"
  	"github.com/dotcloud/docker/image"
  	"github.com/dotcloud/docker/runconfig"
- 	"github.com/dotcloud/docker/utils"
 -	"github.com/dotcloud/docker/vendor/src/code.google.com/p/go/src/pkg/archive/tar"
 +	"archive/tar"
  )
  
- func TestGetEvents(t *testing.T) {
-diff -uNr docker-0.12.0/integration/utils_test.go docker-0.12.0-1/integration/utils_test.go
---- docker-0.12.0/integration/utils_test.go	2014-06-05 20:59:19.000000000 -0400
-+++ docker-0.12.0-1/integration/utils_test.go	2014-06-08 17:11:10.725481190 -0400
-@@ -13,7 +13,7 @@
- 	"testing"
- 	"time"
- 
--	"github.com/dotcloud/docker/vendor/src/code.google.com/p/go/src/pkg/archive/tar"
-+	"archive/tar"
- 
- 	"github.com/dotcloud/docker/builtins"
- 	"github.com/dotcloud/docker/daemon"
-diff -uNr docker-0.12.0/utils/tarsum.go docker-0.12.0-1/utils/tarsum.go
---- docker-0.12.0/utils/tarsum.go	2014-06-05 20:59:19.000000000 -0400
-+++ docker-0.12.0-1/utils/tarsum.go	2014-06-08 17:11:19.678468002 -0400
+ func TestGetImagesJSON(t *testing.T) {
+diff -uNr docker-1.1.2/utils/tarsum.go docker-1.1.2-1/utils/tarsum.go
+--- docker-1.1.2/utils/tarsum.go	2014-07-22 19:29:56.000000000 -0500
++++ docker-1.1.2-1/utils/tarsum.go	2014-07-25 10:49:00.034203856 -0500
 @@ -5,7 +5,7 @@
  	"compress/gzip"
  	"crypto/sha256"
@@ -266,21 +243,21 @@ diff -uNr docker-0.12.0/utils/tarsum.go docker-0.12.0-1/utils/tarsum.go
  	"hash"
  	"io"
  	"sort"
-diff -uNr docker-0.12.0/utils/tarsum_test.go docker-0.12.0-1/utils/tarsum_test.go
---- docker-0.12.0/utils/tarsum_test.go	2014-06-05 20:59:19.000000000 -0400
-+++ docker-0.12.0-1/utils/tarsum_test.go	2014-06-08 17:11:43.703432620 -0400
-@@ -4,7 +4,7 @@
- 	"bytes"
- 	"crypto/rand"
- 	"fmt"
+diff -uNr docker-1.1.2/utils/tarsum_test.go docker-1.1.2-1/utils/tarsum_test.go
+--- docker-1.1.2/utils/tarsum_test.go	2014-07-22 19:29:56.000000000 -0500
++++ docker-1.1.2-1/utils/tarsum_test.go	2014-07-25 10:49:19.202204685 -0500
+@@ -9,7 +9,7 @@
+ 	"os"
+ 	"testing"
+ 
 -	"github.com/dotcloud/docker/vendor/src/code.google.com/p/go/src/pkg/archive/tar"
 +	"archive/tar"
- 	"io"
- 	"io/ioutil"
- 	"os"
+ )
+ 
+ type testLayer struct {
 </code></pre></td></tr></table>
 </div> <!-- class=content -->
-<div class='footer'>generated  by cgit v0.10.1 at 2014-06-09 15:36:25 (GMT)</div>
+<div class='footer'>generated  by cgit v0.10.1 at 2014-08-01 16:04:28 (GMT)</div>
 </div> <!-- id=cgit -->
 </body>
 </html>
