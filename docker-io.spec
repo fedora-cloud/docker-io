@@ -11,7 +11,7 @@
 
 Name:           docker-io
 Version:        1.0.0
-Release:        9%{?dist}
+Release:        10%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 Patch1:         upstream-patched-archive-tar.patch
@@ -76,7 +76,8 @@ servers, OpenStack clusters, public instances, or combinations of the above.
 %package devel
 BuildRequires:  golang
 Requires:       golang
-Summary:        A golang registry for global request variables
+Requires:       docker-io-pkg-devel
+Summary:        A golang registry for global request variables (source libraries)
 Provides:       golang(%{import_path}) = %{version}-%{release}
 Provides:       golang(%{import_path}/api) = %{version}-%{release}
 Provides:       golang(%{import_path}/api/client) = %{version}-%{release}
@@ -114,6 +115,21 @@ Provides:       golang(%{import_path}/integration-cli) = %{version}-%{release}
 Provides:       golang(%{import_path}/links) = %{version}-%{release}
 Provides:       golang(%{import_path}/nat) = %{version}-%{release}
 Provides:       golang(%{import_path}/opts) = %{version}-%{release}
+Provides:       golang(%{import_path}/registry) = %{version}-%{release}
+Provides:       golang(%{import_path}/runconfig) = %{version}-%{release}
+Provides:       golang(%{import_path}/server) = %{version}-%{release}
+Provides:       golang(%{import_path}/sysinit) = %{version}-%{release}
+Provides:       golang(%{import_path}/utils) = %{version}-%{release}
+Provides:       golang(%{import_path}/utils/broadcastwriter) = %{version}-%{release}
+Provides:       golang(%{import_path}/utils/filters) = %{version}-%{release}
+
+%description devel
+This is the source libraries for docker.
+
+%package pkg-devel
+BuildRequires:  golang
+Requires:       golang
+Summary:        A golang registry for global request variables (source libraries)
 Provides:       golang(%{import_path}/pkg/graphdb) = %{version}-%{release}
 Provides:       golang(%{import_path}/pkg/iptables) = %{version}-%{release}
 Provides:       golang(%{import_path}/pkg/listenbuffer) = %{version}-%{release}
@@ -136,17 +152,11 @@ Provides:       golang(%{import_path}/pkg/truncindex) = %{version}-%{release}
 Provides:       golang(%{import_path}/pkg/units) = %{version}-%{release}
 Provides:       golang(%{import_path}/pkg/user) = %{version}-%{release}
 Provides:       golang(%{import_path}/pkg/version) = %{version}-%{release}
-Provides:       golang(%{import_path}/registry) = %{version}-%{release}
-Provides:       golang(%{import_path}/runconfig) = %{version}-%{release}
-Provides:       golang(%{import_path}/server) = %{version}-%{release}
-Provides:       golang(%{import_path}/sysinit) = %{version}-%{release}
-Provides:       golang(%{import_path}/utils) = %{version}-%{release}
-Provides:       golang(%{import_path}/utils/broadcastwriter) = %{version}-%{release}
-Provides:       golang(%{import_path}/utils/filters) = %{version}-%{release}
 
-%description devel
-
+%description pkg-devel
 This is the source libraries for docker.
+These source librariees are provided by docker, but are independent of docker specific logic.
+The import paths of %{import_path}/pkg/...
 
 %prep
 %setup -q -n docker-%{version}
@@ -339,6 +349,33 @@ exit 0
 %{gopath}/src/%{import_path}/nat/*.go
 %dir %{gopath}/src/%{import_path}/opts
 %{gopath}/src/%{import_path}/opts/*.go
+%dir %{gopath}/src/%{import_path}/registry
+%{gopath}/src/%{import_path}/registry/MAINTAINERS
+%{gopath}/src/%{import_path}/registry/*.go
+%dir %{gopath}/src/%{import_path}/runconfig
+%{gopath}/src/%{import_path}/runconfig/*.go
+%dir %{gopath}/src/%{import_path}/server
+%{gopath}/src/%{import_path}/server/MAINTAINERS
+%{gopath}/src/%{import_path}/server/*.go
+%dir %{gopath}/src/%{import_path}/sysinit
+%{gopath}/src/%{import_path}/sysinit/README.md
+%{gopath}/src/%{import_path}/sysinit/*.go
+%dir %{gopath}/src/%{import_path}/utils
+%dir %{gopath}/src/%{import_path}/utils/filters
+%{gopath}/src/%{import_path}/utils/filters/*.go
+%{gopath}/src/%{import_path}/utils/*.goupstream-patched-archive-tar
+%{gopath}/src/%{import_path}/utils/*.go
+%dir %{gopath}/src/%{import_path}/utils/testdata
+%dir %{gopath}/src/%{import_path}/utils/testdata/46af0962ab5afeb5ce6740d4d91652e69206fc991fd5328c1a94d364ad00e457
+%{gopath}/src/%{import_path}/utils/testdata/46af0962ab5afeb5ce6740d4d91652e69206fc991fd5328c1a94d364ad00e457/json
+%{gopath}/src/%{import_path}/utils/testdata/46af0962ab5afeb5ce6740d4d91652e69206fc991fd5328c1a94d364ad00e457/layer.tar
+%dir %{gopath}/src/%{import_path}/utils/testdata/511136ea3c5a64f264b78b5433614aec563103b4d4702f3ba7d4d2698e22c158
+%{gopath}/src/%{import_path}/utils/testdata/511136ea3c5a64f264b78b5433614aec563103b4d4702f3ba7d4d2698e22c158/json
+%{gopath}/src/%{import_path}/utils/testdata/511136ea3c5a64f264b78b5433614aec563103b4d4702f3ba7d4d2698e22c158/layer.tar
+
+%files pkg-devel
+%defattr(-,root,root,-)
+%dir %{gopath}/src/%{import_path}
 %dir %{gopath}/src/%{import_path}/pkg
 %{gopath}/src/%{import_path}/pkg/README.md
 %dir %{gopath}/src/%{import_path}/pkg/apparmor
@@ -470,31 +507,11 @@ exit 0
 %{gopath}/src/%{import_path}/pkg/user/*.go
 %dir %{gopath}/src/%{import_path}/pkg/version
 %{gopath}/src/%{import_path}/pkg/version/*.go
-%dir %{gopath}/src/%{import_path}/registry
-%{gopath}/src/%{import_path}/registry/MAINTAINERS
-%{gopath}/src/%{import_path}/registry/*.go
-%dir %{gopath}/src/%{import_path}/runconfig
-%{gopath}/src/%{import_path}/runconfig/*.go
-%dir %{gopath}/src/%{import_path}/server
-%{gopath}/src/%{import_path}/server/MAINTAINERS
-%{gopath}/src/%{import_path}/server/*.go
-%dir %{gopath}/src/%{import_path}/sysinit
-%{gopath}/src/%{import_path}/sysinit/README.md
-%{gopath}/src/%{import_path}/sysinit/*.go
-%dir %{gopath}/src/%{import_path}/utils
-%dir %{gopath}/src/%{import_path}/utils/filters
-%{gopath}/src/%{import_path}/utils/filters/*.go
-%{gopath}/src/%{import_path}/utils/*.goupstream-patched-archive-tar
-%{gopath}/src/%{import_path}/utils/*.go
-%dir %{gopath}/src/%{import_path}/utils/testdata
-%dir %{gopath}/src/%{import_path}/utils/testdata/46af0962ab5afeb5ce6740d4d91652e69206fc991fd5328c1a94d364ad00e457
-%{gopath}/src/%{import_path}/utils/testdata/46af0962ab5afeb5ce6740d4d91652e69206fc991fd5328c1a94d364ad00e457/json
-%{gopath}/src/%{import_path}/utils/testdata/46af0962ab5afeb5ce6740d4d91652e69206fc991fd5328c1a94d364ad00e457/layer.tar
-%dir %{gopath}/src/%{import_path}/utils/testdata/511136ea3c5a64f264b78b5433614aec563103b4d4702f3ba7d4d2698e22c158
-%{gopath}/src/%{import_path}/utils/testdata/511136ea3c5a64f264b78b5433614aec563103b4d4702f3ba7d4d2698e22c158/json
-%{gopath}/src/%{import_path}/utils/testdata/511136ea3c5a64f264b78b5433614aec563103b4d4702f3ba7d4d2698e22c158/layer.tar
 
 %changelog
+* Mon Jul 28 2014 Vincent Batts <vbatts@fedoraproject.org> - 1.0.0-10
+- split out the %{import_path}/pkg/... libraries, to avoid cyclic deps with libcontainer
+
 * Thu Jul 24 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.0.0-9
 - /etc/sysconfig/docker should be config(noreplace)
 
