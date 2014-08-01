@@ -11,7 +11,7 @@
 
 Name:           docker-io
 Version:        1.1.2
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 Patch1:         upstream-patched-archive-tar.patch
@@ -50,10 +50,12 @@ BuildRequires:  pandoc
 # Use appropriate NVR for systemd-units to ensure SocketUser and SocketGroup are available
 %if 0%{?fedora} >= 21
 Requires:       systemd-units >= 214
-%else if 0%{?fedora} == 20
+%else
+%if 0%{?fedora} == 20
 Requires:       systemd-units >= 208-20
 %else
 Requires:       systemd-units >= 204-20
+%endif
 %endif
 # need xz to work with ubuntu images
 # https://bugzilla.redhat.com/show_bug.cgi?id=1045220
@@ -444,6 +446,9 @@ exit 0
 %{gopath}/src/%{import_path}/pkg/version/*.go
 
 %changelog
+* Fri Aug 01 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.1.2-2
+- change %else if -> %else %if
+
 * Thu Jul 31 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.1.2-1
 - Resolves: rhbz#1124036 - update to upstream v1.1.2
 
