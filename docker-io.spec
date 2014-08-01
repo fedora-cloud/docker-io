@@ -445,7 +445,7 @@ exit 0
 
 %changelog
 * Thu Jul 31 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.1.2-1
-- update to upstream v1.1.2 (d84a070e476ce923dd03e28232564a87704613ab)
+- Resolves: rhbz#1124036 - update to upstream v1.1.2
 
 * Mon Jul 28 2014 Vincent Batts <vbatts@fedoraproject.org> - 1.0.0-10
 - split out the %{import_path}/pkg/... libraries, to avoid cyclic deps with libcontainer
