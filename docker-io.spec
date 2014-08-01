@@ -40,7 +40,7 @@ BuildRequires:  golang(code.google.com/p/go.net/websocket)
 BuildRequires:  golang(code.google.com/p/gosqlite/sqlite3)
 # RHBZ#1109039 use syndtr/gocapability >= 0-0.7
 BuildRequires:  golang(github.com/syndtr/gocapability/capability) >= 0-0.7
-BuildRequires:  golang(github.com/docker/libcontainer)
+#BuildRequires:  golang(github.com/docker/libcontainer)
 BuildRequires:  golang(github.com/tchap/go-patricia/patricia)
 BuildRequires:  device-mapper-devel
 Requires(post):     chkconfig
@@ -156,7 +156,7 @@ The import paths of %{import_path}/pkg/...
 
 %prep
 %setup -q -n docker-%{version}
-rm -rf vendor
+#rm -rf vendor
 %patch1 -p1 -F 2 -b upstream-patched-archive-tar
 %patch2 -p1 -F 2
 cp -p %{SOURCE1} contrib/init/sysvinit-redhat/docker.sysconfig
@@ -169,7 +169,7 @@ ln -s $(pwd) ./_build/src/github.com/dotcloud/docker
 
 export DOCKER_GITCOMMIT="%{shortcommit}/%{version}"
 #export DOCKER_BUILDTAGS='selinux'
-export GOPATH=$(pwd)/_build:%{gopath}
+export GOPATH=$(pwd)/_build:$(pwd)/vendor
 export DOCKER_BUILDTAGS='exclude_graphdriver_btrfs'
 
 hack/make.sh dynbinary
