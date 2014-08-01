@@ -462,11 +462,17 @@ fi
 %{gopath}/src/%{import_path}/pkg/version/*.go
 
 %changelog
-* Thu Jul 31 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.1.2-1
+* Fri Aug 01 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.1.2-1
 - Resolves: rhbz#1124036 - update to upstream v1.1.2
 
 * Thu Jul 31 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.0.0-7
 - create -devel and -pkg-devel subpackages
+
+* Mon Jul 28 2014 Vincent Batts <vbatts@fedoraproject.org> - 1.0.0-10
+- split out the %{import_path}/pkg/... libraries, to avoid cyclic deps with libcontainer
+
+* Thu Jul 24 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.0.0-9
+- /etc/sysconfig/docker should be config(noreplace)
 
 * Thu Jun 19 2014 Adam Miller <maxamillion@fedoraproject.org> - 1.0.0-6
 - Clean up after ourselves from previous releases. We caused a failure in 
