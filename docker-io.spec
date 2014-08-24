@@ -11,7 +11,7 @@
 
 Name:           docker-io
 Version:        1.2.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 URL:            http://www.docker.com
@@ -60,7 +60,9 @@ Provides:       lxc-docker = %{version}
 # permitted by https://fedorahosted.org/fpc/ticket/341#comment:7
 # In F22, the whole package should be renamed to be just "docker" and
 # this changed to "Provides: docker-io".
+%if 0%{?fedora} >= 21
 Provides:       docker
+%endif
 
 %description
 Docker is an open-source engine that automates the deployment of any
@@ -457,6 +459,9 @@ exit 0
 %{gopath}/src/%{import_path}/pkg/version/*.go
 
 %changelog
+* Sun Aug 24 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.2.0-2
+- Provides docker only for f21 and above
+
 * Sat Aug 23 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.2.0-1
 - Resolves: rhbz#1132824 - update to v1.2.0
 
