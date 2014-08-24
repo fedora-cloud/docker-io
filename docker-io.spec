@@ -6,24 +6,20 @@
 %global debug_package %{nil}
 
 %global import_path github.com/docker/docker
-%global commit      d84a070e476ce923dd03e28232564a87704613ab
+%global commit      fa7b24f2c3948d1eb52453c609417a6bc7eba5dd
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:           docker-io
-Version:        1.1.2
-Release:        3%{?dist}
+Version:        1.2.0
+Release:        1%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
-Patch1:         upstream-patched-archive-tar.patch
-# Resolves: rhbz#1119849 - add AUDIT_WRITE capablility
-Patch2:         audit-write.patch
 URL:            http://www.docker.com
 # only x86_64 for now: https://github.com/docker/docker/issues/136
 ExclusiveArch:  x86_64
 Source0:        https://github.com/docker/docker/archive/v%{version}.tar.gz
 Source1:        docker.service
 Source2:        docker.sysconfig
-Source3:        docker.socket
 # though final name for sysconf/sysvinit files is simply 'docker',
 # having .sysvinit and .sysconfig makes things clear
 BuildRequires:  gcc
@@ -41,7 +37,7 @@ BuildRequires:  golang(code.google.com/p/go.net/websocket)
 BuildRequires:  golang(code.google.com/p/gosqlite/sqlite3)
 # RHBZ#1109039 use syndtr/gocapability >= 0-0.7
 BuildRequires:  golang(github.com/syndtr/gocapability/capability) >= 0-0.7
-BuildRequires:  golang(github.com/docker/libcontainer)
+BuildRequires:  golang(github.com/docker/libcontainer) >= 1.1.0-10
 BuildRequires:  golang(github.com/tchap/go-patricia/patricia)
 BuildRequires:  device-mapper-devel
 BuildRequires:  btrfs-progs-devel
@@ -108,7 +104,6 @@ Provides:       golang(%{import_path}/daemon/networkdriver/bridge) = %{version}-
 Provides:       golang(%{import_path}/daemon/networkdriver/ipallocator) = %{version}-%{release}
 Provides:       golang(%{import_path}/daemon/networkdriver/portallocator) = %{version}-%{release}
 Provides:       golang(%{import_path}/daemon/networkdriver/portmapper) = %{version}-%{release}
-Provides:       golang(%{import_path}/daemonconfig) = %{version}-%{release}
 Provides:       golang(%{import_path}/dockerversion) = %{version}-%{release}
 Provides:       golang(%{import_path}/engine) = %{version}-%{release}
 Provides:       golang(%{import_path}/graph) = %{version}-%{release}
@@ -120,11 +115,8 @@ Provides:       golang(%{import_path}/nat) = %{version}-%{release}
 Provides:       golang(%{import_path}/opts) = %{version}-%{release}
 Provides:       golang(%{import_path}/registry) = %{version}-%{release}
 Provides:       golang(%{import_path}/runconfig) = %{version}-%{release}
-Provides:       golang(%{import_path}/server) = %{version}-%{release}
-Provides:       golang(%{import_path}/sysinit) = %{version}-%{release}
 Provides:       golang(%{import_path}/utils) = %{version}-%{release}
 Provides:       golang(%{import_path}/utils/broadcastwriter) = %{version}-%{release}
-Provides:       golang(%{import_path}/utils/filters) = %{version}-%{release}
 
 %description devel
 This is the source libraries for docker.
@@ -163,14 +155,15 @@ The import paths of %{import_path}/pkg/...
 %prep
 %setup -q -n docker-%{version}
 rm -rf vendor
-%patch1 -p1 -b upstream-patched-archive-tar
-%patch2 -p1
-rm daemon/execdriver/native/template/*.go.orig
+find . -name "*.go" \
+        -print |\
+        xargs sed -i 's/github.com\/docker\/docker\/vendor\/src\/code.google.com\/p\/go\/src\/pkg\///g'
+sed -i 's/go-md2man -in "$FILE" -out/pandoc -s -t man "$FILE" -o/g' docs/man/md2man-all.sh
 
 %build
 # set up temporary build gopath, and put our directory there
-mkdir -p ./_build/src/github.com/dotcloud
-ln -s $(pwd) ./_build/src/github.com/dotcloud/docker
+mkdir -p ./_build/src/github.com/docker
+ln -s $(pwd) ./_build/src/github.com/docker/docker
 
 export DOCKER_GITCOMMIT="%{shortcommit}/%{version}"
 export DOCKER_BUILDTAGS='selinux'
@@ -185,35 +178,46 @@ cp contrib/syntax/vim/README.md README-vim-syntax.md
 # install binary
 install -d %{buildroot}%{_bindir}
 install -p -m 755 bundles/%{version}/dynbinary/docker-%{version} %{buildroot}%{_bindir}/docker
+
 # install dockerinit
 install -d %{buildroot}%{_libexecdir}/docker
 install -p -m 755 bundles/%{version}/dynbinary/dockerinit-%{version} %{buildroot}%{_libexecdir}/docker/dockerinit
-# install manpage
+
+# install manpages
 install -d %{buildroot}%{_mandir}/man1
 install -p -m 644 docs/man/man1/docker*.1 %{buildroot}%{_mandir}/man1
 install -d %{buildroot}%{_mandir}/man5
 install -p -m 644 docs/man/man5/Dockerfile.5 %{buildroot}%{_mandir}/man5
+
 # install bash completion
 install -d %{buildroot}%{_sysconfdir}/bash_completion.d
 install -p -m 644 contrib/completion/bash/docker %{buildroot}%{_sysconfdir}/bash_completion.d/docker.bash
+
 # install zsh completion
+# this has been included in upstream zsh, will be removed once it's included
+# in the zsh rpm as well
 install -d %{buildroot}%{_datadir}/zsh/site-functions
 install -p -m 644 contrib/completion/zsh/_docker %{buildroot}%{_datadir}/zsh/site-functions
+
 # install vim syntax highlighting
+# (in process of being included in default vim)
 install -d %{buildroot}%{_datadir}/vim/vimfiles/{doc,ftdetect,syntax}
 install -p -m 644 contrib/syntax/vim/doc/dockerfile.txt %{buildroot}%{_datadir}/vim/vimfiles/doc
 install -p -m 644 contrib/syntax/vim/ftdetect/dockerfile.vim %{buildroot}%{_datadir}/vim/vimfiles/ftdetect
 install -p -m 644 contrib/syntax/vim/syntax/dockerfile.vim %{buildroot}%{_datadir}/vim/vimfiles/syntax
+
 # install udev rules
 install -d %{buildroot}%{_sysconfdir}/udev/rules.d
 install -p -m 755 contrib/udev/80-docker.rules %{buildroot}%{_sysconfdir}/udev/rules.d
+
 # install storage dir
 install -d -m 700 %{buildroot}%{_sharedstatedir}/docker
+
 # install systemd/init scripts
 install -d %{buildroot}%{_unitdir}
-#install -p -m 644 contrib/init/systemd/docker.service %{buildroot}%{_unitdir}
 install -p -m 644 %{SOURCE1} %{buildroot}%{_unitdir}
-install -p -m 644 %{SOURCE3} %{buildroot}%{_unitdir}
+install -p -m 644 contrib/init/systemd/docker.socket %{buildroot}%{_unitdir}
+
 # for additional args
 install -d %{buildroot}%{_sysconfdir}/sysconfig/
 install -p -m 644 %{SOURCE2} %{buildroot}%{_sysconfdir}/sysconfig/docker
@@ -221,8 +225,8 @@ install -p -m 644 %{SOURCE2} %{buildroot}%{_sysconfdir}/sysconfig/docker
 # sources
 install -d -p %{buildroot}/%{gopath}/src/%{import_path}
 
-for dir in api archive builtins daemon daemonconfig dockerversion engine graph \
-           image links nat opts pkg registry runconfig server sysinit utils
+for dir in api archive builtins daemon dockerversion engine graph \
+           image links nat opts pkg registry runconfig utils
 do
 	cp -pav $dir %{buildroot}/%{gopath}/src/%{import_path}/
 done
@@ -241,7 +245,7 @@ exit 0
 %systemd_postun_with_restart docker
 
 %files
-%doc AUTHORS CHANGELOG.md CONTRIBUTING.md FIXME LICENSE MAINTAINERS NOTICE README.md 
+%doc AUTHORS CHANGELOG.md CONTRIBUTING.md LICENSE MAINTAINERS NOTICE README.md 
 %doc LICENSE-vim-syntax README-vim-syntax.md
 %config(noreplace) %{_sysconfdir}/sysconfig/docker
 %{_mandir}/man1/docker*.1.gz
@@ -270,6 +274,7 @@ exit 0
 %{gopath}/src/%{import_path}/api/MAINTAINERS
 %{gopath}/src/%{import_path}/api/README.md
 %{gopath}/src/%{import_path}/api/*.go
+%dir %{gopath}/src/%{import_path}/api/client
 %{gopath}/src/%{import_path}/api/client/*.go
 %dir %{gopath}/src/%{import_path}/api/server
 %{gopath}/src/%{import_path}/api/server/MAINTAINERS
@@ -278,13 +283,13 @@ exit 0
 %{gopath}/src/%{import_path}/archive/MAINTAINERS
 %{gopath}/src/%{import_path}/archive/README.md
 %{gopath}/src/%{import_path}/archive/*.go
-%{gopath}/src/%{import_path}/archive/*.goupstream-patched-archive-tar
 %dir %{gopath}/src/%{import_path}/archive/testdata
 %{gopath}/src/%{import_path}/archive/testdata/broken.tar
 %dir %{gopath}/src/%{import_path}/builtins
 %{gopath}/src/%{import_path}/builtins/*.go
 %dir %{gopath}/src/%{import_path}/daemon
 %{gopath}/src/%{import_path}/daemon/*.go
+%{gopath}/src/%{import_path}/daemon/MAINTAINERS
 %{gopath}/src/%{import_path}/daemon/README.md
 %dir %{gopath}/src/%{import_path}/daemon/execdriver
 %{gopath}/src/%{import_path}/daemon/execdriver/*.go
@@ -325,17 +330,14 @@ exit 0
 %{gopath}/src/%{import_path}/daemon/networkdriver/portallocator/*.go
 %dir %{gopath}/src/%{import_path}/daemon/networkdriver/portmapper
 %{gopath}/src/%{import_path}/daemon/networkdriver/portmapper/*.go
-%dir %{gopath}/src/%{import_path}/daemonconfig
-%{gopath}/src/%{import_path}/daemonconfig/README.md
-%{gopath}/src/%{import_path}/daemonconfig/*.go
 %dir %{gopath}/src/%{import_path}/dockerversion
 %{gopath}/src/%{import_path}/dockerversion/*.go
 %dir %{gopath}/src/%{import_path}/engine
 %{gopath}/src/%{import_path}/engine/MAINTAINERS
 %{gopath}/src/%{import_path}/engine/*.go
 %dir %{gopath}/src/%{import_path}/graph
+%{gopath}/src/%{import_path}/graph/MAINTAINERS
 %{gopath}/src/%{import_path}/graph/*.go
-%{gopath}/src/%{import_path}/graph/*.goupstream-patched-archive-tar
 %dir %{gopath}/src/%{import_path}/image
 %{gopath}/src/%{import_path}/image/*.go
 %dir %{gopath}/src/%{import_path}/links
@@ -349,37 +351,30 @@ exit 0
 %{gopath}/src/%{import_path}/registry/*.go
 %dir %{gopath}/src/%{import_path}/runconfig
 %{gopath}/src/%{import_path}/runconfig/*.go
-%dir %{gopath}/src/%{import_path}/server
-%{gopath}/src/%{import_path}/server/MAINTAINERS
-%{gopath}/src/%{import_path}/server/*.go
-%dir %{gopath}/src/%{import_path}/sysinit
-%{gopath}/src/%{import_path}/sysinit/README.md
-%{gopath}/src/%{import_path}/sysinit/*.go
 %dir %{gopath}/src/%{import_path}/utils
-%dir %{gopath}/src/%{import_path}/utils/filters
-%{gopath}/src/%{import_path}/utils/filters/*.go
-%{gopath}/src/%{import_path}/utils/*.goupstream-patched-archive-tar
 %{gopath}/src/%{import_path}/utils/*.go
-%dir %{gopath}/src/%{import_path}/utils/testdata
-%dir %{gopath}/src/%{import_path}/utils/testdata/46af0962ab5afeb5ce6740d4d91652e69206fc991fd5328c1a94d364ad00e457
-%{gopath}/src/%{import_path}/utils/testdata/46af0962ab5afeb5ce6740d4d91652e69206fc991fd5328c1a94d364ad00e457/json
-%{gopath}/src/%{import_path}/utils/testdata/46af0962ab5afeb5ce6740d4d91652e69206fc991fd5328c1a94d364ad00e457/layer.tar
-%dir %{gopath}/src/%{import_path}/utils/testdata/511136ea3c5a64f264b78b5433614aec563103b4d4702f3ba7d4d2698e22c158
-%{gopath}/src/%{import_path}/utils/testdata/511136ea3c5a64f264b78b5433614aec563103b4d4702f3ba7d4d2698e22c158/json
-%{gopath}/src/%{import_path}/utils/testdata/511136ea3c5a64f264b78b5433614aec563103b4d4702f3ba7d4d2698e22c158/layer.tar
 
 %files pkg-devel
 %dir %{gopath}/src/%{import_path}
 %dir %{gopath}/src/%{import_path}/pkg
 %{gopath}/src/%{import_path}/pkg/README.md
+%dir %{gopath}/src/%{import_path}/pkg/broadcastwriter
+%{gopath}/src/%{import_path}/pkg/broadcastwriter/*.go
 %dir %{gopath}/src/%{import_path}/pkg/graphdb
 %{gopath}/src/%{import_path}/pkg/graphdb/MAINTAINERS
 %{gopath}/src/%{import_path}/pkg/graphdb/*.go
+%dir %{gopath}/src/%{import_path}/pkg/httputils
+%{gopath}/src/%{import_path}/pkg/httputils/MAINTAINERS
+%{gopath}/src/%{import_path}/pkg/httputils/*.go
 %dir %{gopath}/src/%{import_path}/pkg/iptables
 %{gopath}/src/%{import_path}/pkg/iptables/MAINTAINERS
 %{gopath}/src/%{import_path}/pkg/iptables/*.go
+%dir %{gopath}/src/%{import_path}/pkg/jsonlog
+%{gopath}/src/%{import_path}/pkg/jsonlog/*.go
 %dir %{gopath}/src/%{import_path}/pkg/listenbuffer
 %{gopath}/src/%{import_path}/pkg/listenbuffer/*.go
+%dir %{gopath}/src/%{import_path}/pkg/log
+%{gopath}/src/%{import_path}/pkg/log/*.go
 %dir %{gopath}/src/%{import_path}/pkg/mflag
 %{gopath}/src/%{import_path}/pkg/mflag/LICENSE
 %{gopath}/src/%{import_path}/pkg/mflag/MAINTAINERS
@@ -398,6 +393,15 @@ exit 0
 %{gopath}/src/%{import_path}/pkg/networkfs/etchosts/*.go
 %dir %{gopath}/src/%{import_path}/pkg/networkfs/resolvconf
 %{gopath}/src/%{import_path}/pkg/networkfs/resolvconf/*.go
+%dir %{gopath}/src/%{import_path}/pkg/parsers
+%{gopath}/src/%{import_path}/pkg/parsers/MAINTAINERS
+%{gopath}/src/%{import_path}/pkg/parsers/*.go
+%dir %{gopath}/src/%{import_path}/pkg/parsers/filters
+%{gopath}/src/%{import_path}/pkg/parsers/filters/*.go
+%dir %{gopath}/src/%{import_path}/pkg/parsers/kernel
+%{gopath}/src/%{import_path}/pkg/parsers/kernel/*.go
+%dir %{gopath}/src/%{import_path}/pkg/parsers/operatingsystem
+%{gopath}/src/%{import_path}/pkg/parsers/operatingsystem/*.go
 %dir %{gopath}/src/%{import_path}/pkg/proxy
 %{gopath}/src/%{import_path}/pkg/proxy/MAINTAINERS
 %{gopath}/src/%{import_path}/pkg/proxy/*.go
@@ -427,7 +431,17 @@ exit 0
 %{gopath}/src/%{import_path}/pkg/systemd/*.go
 %dir %{gopath}/src/%{import_path}/pkg/tailfile
 %{gopath}/src/%{import_path}/pkg/tailfile/*.go
+%dir %{gopath}/src/%{import_path}/pkg/tarsum
+%{gopath}/src/%{import_path}/pkg/tarsum/*.go
+%dir %{gopath}/src/%{import_path}/pkg/tarsum/testdata
+%dir %{gopath}/src/%{import_path}/pkg/tarsum/testdata/46af0962ab5afeb5ce6740d4d91652e69206fc991fd5328c1a94d364ad00e457
+%{gopath}/src/%{import_path}/pkg/tarsum/testdata/46af0962ab5afeb5ce6740d4d91652e69206fc991fd5328c1a94d364ad00e457/json
+%{gopath}/src/%{import_path}/pkg/tarsum/testdata/46af0962ab5afeb5ce6740d4d91652e69206fc991fd5328c1a94d364ad00e457/layer.tar
+%dir %{gopath}/src/%{import_path}/pkg/tarsum/testdata/511136ea3c5a64f264b78b5433614aec563103b4d4702f3ba7d4d2698e22c158
+%{gopath}/src/%{import_path}/pkg/tarsum/testdata/511136ea3c5a64f264b78b5433614aec563103b4d4702f3ba7d4d2698e22c158/json
+%{gopath}/src/%{import_path}/pkg/tarsum/testdata/511136ea3c5a64f264b78b5433614aec563103b4d4702f3ba7d4d2698e22c158/layer.tar
 %dir %{gopath}/src/%{import_path}/pkg/truncindex
+%{gopath}/src/%{import_path}/pkg/truncindex/MAINTAINERS
 %{gopath}/src/%{import_path}/pkg/truncindex/*.go
 %dir %{gopath}/src/%{import_path}/pkg/term
 %{gopath}/src/%{import_path}/pkg/term/MAINTAINERS
@@ -435,17 +449,17 @@ exit 0
 %dir %{gopath}/src/%{import_path}/pkg/testutils
 %{gopath}/src/%{import_path}/pkg/testutils/MAINTAINERS
 %{gopath}/src/%{import_path}/pkg/testutils/README.md
-%{gopath}/src/%{import_path}/pkg/testutils/testutils.go
+%{gopath}/src/%{import_path}/pkg/testutils/utils.go
 %dir %{gopath}/src/%{import_path}/pkg/units
 %{gopath}/src/%{import_path}/pkg/units/MAINTAINERS
 %{gopath}/src/%{import_path}/pkg/units/*.go
-%dir %{gopath}/src/%{import_path}/pkg/user
-%{gopath}/src/%{import_path}/pkg/user/MAINTAINERS
-%{gopath}/src/%{import_path}/pkg/user/*.go
 %dir %{gopath}/src/%{import_path}/pkg/version
 %{gopath}/src/%{import_path}/pkg/version/*.go
 
 %changelog
+* Sat Aug 23 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.2.0-1
+- Resolves: rhbz#1132824 - update to v1.2.0
+
 * Sat Aug 16 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.1.2-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_21_22_Mass_Rebuild
 
