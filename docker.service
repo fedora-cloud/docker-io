@@ -7,7 +7,8 @@ Requires=docker.socket
 [Service]
 Type=notify
 EnvironmentFile=-/etc/sysconfig/docker
-ExecStart=/usr/bin/docker -d -H fd:// $OPTIONS
+EnvironmentFile=-/etc/sysconfig/docker-storage
+ExecStart=/usr/bin/docker -d -H fd:// $OPTIONS $DOCKER_STORAGE_OPTIONS
 LimitNOFILE=1048576
 LimitNPROC=1048576
 

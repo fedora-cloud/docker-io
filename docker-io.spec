@@ -11,7 +11,7 @@
 
 Name:           docker-io
 Version:        1.2.0
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 URL:            http://www.docker.com
@@ -20,9 +20,10 @@ ExclusiveArch:  x86_64
 Source0:        https://github.com/docker/docker/archive/v%{version}.tar.gz
 Source1:        docker.service
 Source2:        docker.sysconfig
+Source3:        docker-storage.sysconfig
+Patch0:         ignore-selinux-if-disabled.patch
 # though final name for sysconf/sysvinit files is simply 'docker',
 # having .sysvinit and .sysconfig makes things clear
-BuildRequires:  gcc
 BuildRequires:  glibc-static
 # ensure build uses golang 1.2-7 and above
 # http://code.google.com/p/go/source/detail?r=a15f344a9efa35ef168c8feaa92a15a1cdc93db5
@@ -161,6 +162,8 @@ find . -name "*.go" \
         -print |\
         xargs sed -i 's/github.com\/docker\/docker\/vendor\/src\/code.google.com\/p\/go\/src\/pkg\///g'
 sed -i 's/go-md2man -in "$FILE" -out/pandoc -s -t man "$FILE" -o/g' docs/man/md2man-all.sh
+%patch0 -p1
+rm daemon/daemon.go.orig
 
 %build
 # set up temporary build gopath, and put our directory there
@@ -192,8 +195,8 @@ install -d %{buildroot}%{_mandir}/man5
 install -p -m 644 docs/man/man5/Dockerfile.5 %{buildroot}%{_mandir}/man5
 
 # install bash completion
-install -d %{buildroot}%{_sysconfdir}/bash_completion.d
-install -p -m 644 contrib/completion/bash/docker %{buildroot}%{_sysconfdir}/bash_completion.d/docker.bash
+install -dp %{buildroot}%{_datadir}/bash_completion/completions
+install -p -m 644 contrib/completion/bash/docker %{buildroot}%{_datadir}/bash_completion/completions
 
 # install zsh completion
 # this has been included in upstream zsh, will be removed once it's included
@@ -223,6 +226,7 @@ install -p -m 644 contrib/init/systemd/docker.socket %{buildroot}%{_unitdir}
 # for additional args
 install -d %{buildroot}%{_sysconfdir}/sysconfig/
 install -p -m 644 %{SOURCE2} %{buildroot}%{_sysconfdir}/sysconfig/docker
+install -p -m 644 %{SOURCE3} %{buildroot}%{_sysconfdir}/sysconfig/docker-storage
 
 # sources
 install -d -p %{buildroot}/%{gopath}/src/%{import_path}
@@ -250,6 +254,7 @@ exit 0
 %doc AUTHORS CHANGELOG.md CONTRIBUTING.md LICENSE MAINTAINERS NOTICE README.md 
 %doc LICENSE-vim-syntax README-vim-syntax.md
 %config(noreplace) %{_sysconfdir}/sysconfig/docker
+%config(noreplace) %{_sysconfdir}/sysconfig/docker-storage
 %{_mandir}/man1/docker*.1.gz
 %{_mandir}/man5/Dockerfile.5.gz
 %{_bindir}/docker
@@ -257,8 +262,8 @@ exit 0
 %{_libexecdir}/docker/dockerinit
 %{_unitdir}/docker.service
 %{_unitdir}/docker.socket
-%dir %{_sysconfdir}/bash_completion.d
-%{_sysconfdir}/bash_completion.d/docker.bash
+%dir %{_datadir}/bash_completion/completions
+%{_datadir}/bash_completion/completions/docker
 %{_datadir}/zsh/site-functions/_docker
 %dir %{_sharedstatedir}/docker
 %dir %{_sysconfdir}/udev/rules.d
@@ -459,6 +464,14 @@ exit 0
 %{gopath}/src/%{import_path}/pkg/version/*.go
 
 %changelog
+* Thu Sep 25 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.2.0-3
+- Resolves: rhbz#1145660 - support /etc/sysconfig/docker-storage 
+  From: Colin Walters <walters@redhat.com>
+- patch to ignore selinux if it's disabled
+  https://github.com/docker/docker/commit/9e2eb0f1cc3c4ef000e139f1d85a20f0e00971e6
+  From: Dan Walsh <dwalsh@redhat.com>
+- Resolves: rhbz#1139415 - correct path for bash completion
+
 * Sun Aug 24 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.2.0-2
 - Provides docker only for f21 and above
 
