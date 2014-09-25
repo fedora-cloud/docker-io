@@ -11,7 +11,7 @@
 
 Name:           docker-io
 Version:        1.2.0
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 URL:            http://www.docker.com
@@ -21,12 +21,14 @@ Source0:        https://github.com/docker/docker/archive/v%{version}.tar.gz
 # though final name for sysconf file is simply 'docker',
 # having .sysconfig makes things clear
 Source1:        docker.sysconfig
-BuildRequires:  gcc
+Source2:        docker-storage.sysconfig
+# have init script wait up to 5 mins before forcibly terminating docker daemon
+# https://github.com/docker/docker/commit/640d2ef6f54d96ac4fc3f0f745cb1e6a35148607
+Source3:        docker.sysvinit
+Patch0:         ignore-selinux-if-disabled.patch
 BuildRequires:  glibc-static
 BuildRequires:  pandoc
-# ensure build uses golang 1.2-7 and above
-# http://code.google.com/p/go/source/detail?r=a15f344a9efa35ef168c8feaa92a15a1cdc93db5
-BuildRequires:  golang >= 1.2-7
+BuildRequires:  golang >= 1.3
 # for gorilla/mux and kr/pty https://github.com/dotcloud/docker/pull/5950
 BuildRequires:  golang(github.com/gorilla/mux) >= 0-0.13
 BuildRequires:  golang(github.com/kr/pty) >= 0-0.19
@@ -68,8 +70,8 @@ and tests on a laptop will run at scale, in production*, on VMs, bare-metal
 servers, OpenStack clusters, public instances, or combinations of the above.
 
 %package devel
-BuildRequires:  golang
-Requires:       golang
+BuildRequires:  golang >= 1.2.1-3
+Requires:       golang >= 1.2.1-3
 Requires:       docker-io-pkg-devel
 Summary:        A golang registry for global request variables (source libraries)
 Provides:       golang(%{import_path}) = %{version}-%{release}
@@ -116,8 +118,8 @@ Provides:       golang(%{import_path}/utils/broadcastwriter) = %{version}-%{rele
 This is the source libraries for docker.
 
 %package pkg-devel
-BuildRequires:  golang
-Requires:       golang
+BuildRequires:  golang >= 1.2.1-3
+Requires:       golang >= 1.2.1-3
 Summary:        A golang registry for global request variables (source libraries)
 Provides:       golang(%{import_path}/pkg/graphdb) = %{version}-%{release}
 Provides:       golang(%{import_path}/pkg/iptables) = %{version}-%{release}
@@ -153,6 +155,8 @@ find . -name "*.go" \
         -print |\
         xargs sed -i 's/github.com\/docker\/docker\/vendor\/src\/code.google.com\/p\/go\/src\/pkg\///g'
 sed -i 's/go-md2man -in "$FILE" -out/pandoc -s -t man "$FILE" -o/g' docs/man/md2man-all.sh
+%patch0 -p1
+rm daemon/daemon.go.orig
 
 %build
 # set up temporary build gopath, and put our directory there
@@ -185,8 +189,8 @@ install -d %{buildroot}%{_mandir}/man5
 install -p -m 644 docs/man/man5/Dockerfile.5 %{buildroot}%{_mandir}/man5
 
 # install bash completion
-install -d %{buildroot}%{_sysconfdir}/bash_completion.d
-install -p -m 644 contrib/completion/bash/docker %{buildroot}%{_sysconfdir}/bash_completion.d/docker.bash
+install -dp %{buildroot}%{_datadir}/bash_completion/completions
+install -p -m 644 contrib/completion/bash/docker %{buildroot}%{_datadir}/bash_completion/completions
 
 # install zsh completion
 # zsh completion has been upstreamed into docker and
@@ -211,8 +215,9 @@ install -d -m 700 %{buildroot}%{_sharedstatedir}/docker
 # install init scripts
 install -d %{buildroot}%{_sysconfdir}/sysconfig/
 install -p -m 644 %{SOURCE1} %{buildroot}%{_sysconfdir}/sysconfig/docker
+install -p -m 644 %{SOURCE2} %{buildroot}%{_sysconfdir}/sysconfig/docker-storage
 install -d %{buildroot}%{_initddir}
-install -p -m 755 contrib/init/sysvinit-redhat/docker %{buildroot}%{_initddir}/docker
+install -p -m 755 %{SOURCE3} %{buildroot}%{_initddir}/docker
 
 # sources
 install -d -p %{buildroot}/%{gopath}/src/%{import_path}
@@ -261,15 +266,15 @@ fi
 %defattr(-,root,root,-)
 %doc AUTHORS CHANGELOG.md CONTRIBUTING.md LICENSE MAINTAINERS NOTICE README.md 
 %doc LICENSE-vim-syntax README-vim-syntax.md
+%config(noreplace) %{_sysconfdir}/sysconfig/docker
+%config(noreplace) %{_sysconfdir}/sysconfig/docker-storage
 %{_mandir}/man1/docker*.1.gz
 %{_mandir}/man5/Dockerfile.5.gz
 %{_bindir}/docker
 %dir %{_libexecdir}/docker
 %{_libexecdir}/docker/dockerinit
-%config(noreplace) %{_sysconfdir}/sysconfig/docker
 %{_initddir}/docker
-%dir %{_sysconfdir}/bash_completion.d
-%{_sysconfdir}/bash_completion.d/docker.bash
+%{_datadir}/bash_completion/completions/docker
 %{_datadir}/zsh/site-functions/_docker
 %dir %{_sharedstatedir}/docker
 %dir %{_sysconfdir}/udev/rules.d
@@ -472,6 +477,15 @@ fi
 %{gopath}/src/%{import_path}/pkg/version/*.go
 
 %changelog
+* Thu Sep 25 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.2.0-2
+- Resolves: rhbz#1145660 - support /etc/sysconfig/docker-storage 
+  From: Colin Walters <walters@redhat.com>
+- patch to ignore selinux if it's disabled
+  https://github.com/docker/docker/commit/9e2eb0f1cc3c4ef000e139f1d85a20f0e00971e6
+  From: Dan Walsh <dwalsh@redhat.com>
+- Resolves: rhbz#1139415 - correct path for bash completion
+- init script waits upto 5 mins before terminating daemon
+
 * Sat Aug 23 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.2.0-1
 - Resolves: rhbz#1132824 - update to v1.2.0
 

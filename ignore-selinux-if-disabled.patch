@@ -1,0 +1,54 @@
+From 9e2eb0f1cc3c4ef000e139f1d85a20f0e00971e6 Mon Sep 17 00:00:00 2001
+From: Dan Walsh <dwalsh@redhat.com>
+Date: Tue, 23 Sep 2014 07:46:02 -0400
+Subject: [PATCH] --selinux-enabled flag should be ignored on Disabled SELinux
+ systems
+
+On Fedora and RHEL we ship selinux-enabled flag in the docker.service config,
+but if people setup the /var/lib/docker as btrfs and disable SELinux,
+we should not block the daemon from running.
+
+Docker-DCO-1.1-Signed-off-by: Dan Walsh <dwalsh@redhat.com> (github: rhatdan)
+---
+ daemon/daemon.go        | 2 +-
+ daemon/utils_linux.go   | 4 ++++
+ daemon/utils_nolinux.go | 4 ++++
+ 3 files changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/daemon/daemon.go b/daemon/daemon.go
+index 9515a1a..bf78f10 100644
+--- a/daemon/daemon.go
++++ b/daemon/daemon.go
+@@ -775,7 +775,7 @@ func NewDaemonFromDirectory(config *Config, eng *engine.Engine) (*Daemon, error)
+ 	log.Debugf("Using graph driver %s", driver)
+ 
+ 	// As Docker on btrfs and SELinux are incompatible at present, error on both being enabled
+-	if config.EnableSelinuxSupport && driver.String() == "btrfs" {
++	if selinuxEnabled() && config.EnableSelinuxSupport && driver.String() == "btrfs" {
+ 		return nil, fmt.Errorf("SELinux is not supported with the BTRFS graph driver!")
+ 	}
+ 
+diff --git a/daemon/utils_linux.go b/daemon/utils_linux.go
+index bff2a78..fb35152 100644
+--- a/daemon/utils_linux.go
++++ b/daemon/utils_linux.go
+@@ -11,3 +11,7 @@ func selinuxSetDisabled() {
+ func selinuxFreeLxcContexts(label string) {
+ 	selinux.FreeLxcContexts(label)
+ }
++
++func selinuxEnabled() bool {
++	return selinux.SelinuxEnabled()
++}
+diff --git a/daemon/utils_nolinux.go b/daemon/utils_nolinux.go
+index 399376d..25a56ad 100644
+--- a/daemon/utils_nolinux.go
++++ b/daemon/utils_nolinux.go
+@@ -7,3 +7,7 @@ func selinuxSetDisabled() {
+ 
+ func selinuxFreeLxcContexts(label string) {
+ }
++
++func selinuxEnabled() bool {
++	return false
++}
