@@ -3,25 +3,29 @@
 
 # docker builds in a checksum of dockerinit into docker,
 # so stripping the binaries breaks docker
-%global debug_package %{nil}
+%global debug_package   %{nil}
+%global provider        github
+%global provider_tld    com
+%global project         docker
+%global repo            %{project}
 
-%global import_path github.com/docker/docker
+%global import_path %{provider}.%{provider_tld}/%{project}/%{repo}
 %global commit      fa7b24f2c3948d1eb52453c609417a6bc7eba5dd
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
-Name:           docker-io
-Version:        1.2.0
-Release:        3%{?dist}
-Summary:        Automates deployment of containerized applications
-License:        ASL 2.0
-URL:            http://www.docker.com
+Name:       %{repo}-io
+Version:    1.2.0
+Release:    4%{?dist}
+Summary:    Automates deployment of containerized applications
+License:    ASL 2.0
+URL:        http://www.docker.com
 # only x86_64 for now: https://github.com/docker/docker/issues/136
 ExclusiveArch:  x86_64
-Source0:        https://github.com/docker/docker/archive/v%{version}.tar.gz
-Source1:        docker.service
-Source2:        docker.sysconfig
-Source3:        docker-storage.sysconfig
-Patch0:         ignore-selinux-if-disabled.patch
+Source0:    https://%{import_path}/archive/v%{version}.tar.gz
+Source1:    %{repo}.service
+Source2:    %{repo}.sysconfig
+Source3:    %{repo}-storage.sysconfig
+Patch0:     ignore-selinux-if-disabled.patch
 # though final name for sysconf/sysvinit files is simply 'docker',
 # having .sysvinit and .sysconfig makes things clear
 BuildRequires:  glibc-static
@@ -57,12 +61,12 @@ Requires:       systemd-units >= 204-20
 # need xz to work with ubuntu images
 # https://bugzilla.redhat.com/show_bug.cgi?id=1045220
 Requires:       xz
-Provides:       lxc-docker = %{version}
+Provides:       lxc-docker = %{version}-%{release}
 # permitted by https://fedorahosted.org/fpc/ticket/341#comment:7
 # In F22, the whole package should be renamed to be just "docker" and
 # this changed to "Provides: docker-io".
 %if 0%{?fedora} >= 21
-Provides:       docker
+Provides:       %{repo} = %{version}-%{release}
 %endif
 
 %description
@@ -76,8 +80,8 @@ and tests on a laptop will run at scale, in production*, on VMs, bare-metal
 servers, OpenStack clusters, public instances, or combinations of the above.
 
 %package devel
-BuildRequires:  golang
-Requires:       golang
+BuildRequires:  golang >= 1.2.1-3
+Requires:       golang >= 1.2.1-3
 Requires:       docker-io-pkg-devel
 Summary:        A golang registry for global request variables (source libraries)
 Provides:       golang(%{import_path}) = %{version}-%{release}
@@ -122,11 +126,13 @@ Provides:       golang(%{import_path}/utils) = %{version}-%{release}
 Provides:       golang(%{import_path}/utils/broadcastwriter) = %{version}-%{release}
 
 %description devel
-This is the source libraries for docker.
+%{summary}
+
+This package provides the source libraries for docker.
 
 %package pkg-devel
-BuildRequires:  golang
-Requires:       golang
+BuildRequires:  golang >= 1.2.1-3
+Requires:       golang >= 1.2.1-3
 Summary:        A golang registry for global request variables (source libraries)
 Provides:       golang(%{import_path}/pkg/graphdb) = %{version}-%{release}
 Provides:       golang(%{import_path}/pkg/iptables) = %{version}-%{release}
@@ -152,23 +158,27 @@ Provides:       golang(%{import_path}/pkg/user) = %{version}-%{release}
 Provides:       golang(%{import_path}/pkg/version) = %{version}-%{release}
 
 %description pkg-devel
-These source librariees are provided by docker, but are independent of docker specific logic.
-The import paths of %{import_path}/pkg/...
+%{summary}
+
+These source libraries are provided by docker, but are independent of docker
+specific logic.
+The import paths of import_path/pkg/...
 
 %prep
-%setup -q -n docker-%{version}
+%setup -q -n %{repo}-%{version}
 rm -rf vendor
 find . -name "*.go" \
         -print |\
         xargs sed -i 's/github.com\/docker\/docker\/vendor\/src\/code.google.com\/p\/go\/src\/pkg\///g'
 sed -i 's/go-md2man -in "$FILE" -out/pandoc -s -t man "$FILE" -o/g' docs/man/md2man-all.sh
+sed -i 's/\!bash//g' contrib/completion/bash/docker
 %patch0 -p1
 rm daemon/daemon.go.orig
 
 %build
 # set up temporary build gopath, and put our directory there
 mkdir -p ./_build/src/github.com/docker
-ln -s $(pwd) ./_build/src/github.com/docker/docker
+ln -s $(pwd) ./_build/src/%{import_path}
 
 export DOCKER_GITCOMMIT="%{shortcommit}/%{version}"
 export DOCKER_BUILDTAGS='selinux'
@@ -195,8 +205,8 @@ install -d %{buildroot}%{_mandir}/man5
 install -p -m 644 docs/man/man5/Dockerfile.5 %{buildroot}%{_mandir}/man5
 
 # install bash completion
-install -dp %{buildroot}%{_datadir}/bash_completion/completions
-install -p -m 644 contrib/completion/bash/docker %{buildroot}%{_datadir}/bash_completion/completions
+install -dp %{buildroot}%{_datadir}/bash-completion/completions
+install -p -m 644 contrib/completion/bash/docker %{buildroot}%{_datadir}/bash-completion/completions
 
 # install zsh completion
 # this has been included in upstream zsh, will be removed once it's included
@@ -213,10 +223,10 @@ install -p -m 644 contrib/syntax/vim/syntax/dockerfile.vim %{buildroot}%{_datadi
 
 # install udev rules
 install -d %{buildroot}%{_sysconfdir}/udev/rules.d
-install -p -m 755 contrib/udev/80-docker.rules %{buildroot}%{_sysconfdir}/udev/rules.d
+install -p contrib/udev/80-docker.rules %{buildroot}%{_sysconfdir}/udev/rules.d
 
 # install storage dir
-install -d -m 700 %{buildroot}%{_sharedstatedir}/docker
+install -d %{buildroot}%{_sharedstatedir}/%{repo}
 
 # install systemd/init scripts
 install -d %{buildroot}%{_unitdir}
@@ -230,11 +240,12 @@ install -p -m 644 %{SOURCE3} %{buildroot}%{_sysconfdir}/sysconfig/docker-storage
 
 # sources
 install -d -p %{buildroot}/%{gopath}/src/%{import_path}
+rm -rf pkg/symlink/testdata
 
 for dir in api archive builtins daemon dockerversion engine graph \
            image links nat opts pkg registry runconfig utils
 do
-	cp -pav $dir %{buildroot}/%{gopath}/src/%{import_path}/
+    cp -rpav $dir %{buildroot}/%{gopath}/src/%{import_path}/
 done
 
 %pre
@@ -262,20 +273,18 @@ exit 0
 %{_libexecdir}/docker/dockerinit
 %{_unitdir}/docker.service
 %{_unitdir}/docker.socket
-%dir %{_datadir}/bash_completion/completions
-%{_datadir}/bash_completion/completions/docker
+%{_datadir}/bash-completion/completions/docker
+%dir %{_datadir}/zsh/site-functions
 %{_datadir}/zsh/site-functions/_docker
 %dir %{_sharedstatedir}/docker
-%dir %{_sysconfdir}/udev/rules.d
 %{_sysconfdir}/udev/rules.d/80-docker.rules
-%dir %{_datadir}/vim/vimfiles/doc
 %{_datadir}/vim/vimfiles/doc/dockerfile.txt
-%dir %{_datadir}/vim/vimfiles/ftdetect
 %{_datadir}/vim/vimfiles/ftdetect/dockerfile.vim
-%dir %{_datadir}/vim/vimfiles/syntax
 %{_datadir}/vim/vimfiles/syntax/dockerfile.vim
 
 %files devel
+%doc AUTHORS CHANGELOG.md CONTRIBUTING.md LICENSE MAINTAINERS NOTICE README.md 
+%dir %{gopath}/src/%{provider}.%{provider_tld}/%{project}
 %dir %{gopath}/src/%{import_path}
 %dir %{gopath}/src/%{import_path}/api
 %{gopath}/src/%{import_path}/api/MAINTAINERS
@@ -362,6 +371,8 @@ exit 0
 %{gopath}/src/%{import_path}/utils/*.go
 
 %files pkg-devel
+%doc AUTHORS CHANGELOG.md CONTRIBUTING.md LICENSE MAINTAINERS NOTICE README.md 
+%dir %{gopath}/src/%{provider}.%{provider_tld}/%{project}
 %dir %{gopath}/src/%{import_path}
 %dir %{gopath}/src/%{import_path}/pkg
 %{gopath}/src/%{import_path}/pkg/README.md
@@ -417,16 +428,6 @@ exit 0
 %dir %{gopath}/src/%{import_path}/pkg/symlink
 %{gopath}/src/%{import_path}/pkg/symlink/MAINTAINERS
 %{gopath}/src/%{import_path}/pkg/symlink/*.go
-%dir %{gopath}/src/%{import_path}/pkg/symlink/testdata
-%dir %{gopath}/src/%{import_path}/pkg/symlink/testdata/fs
-%dir %{gopath}/src/%{import_path}/pkg/symlink/testdata/fs/a
-%{gopath}/src/%{import_path}/pkg/symlink/testdata/fs/a/d
-%{gopath}/src/%{import_path}/pkg/symlink/testdata/fs/a/e
-%{gopath}/src/%{import_path}/pkg/symlink/testdata/fs/a/f
-%dir %{gopath}/src/%{import_path}/pkg/symlink/testdata/fs/b
-%{gopath}/src/%{import_path}/pkg/symlink/testdata/fs/b/h
-%{gopath}/src/%{import_path}/pkg/symlink/testdata/fs/g
-%{gopath}/src/%{import_path}/pkg/symlink/testdata/fs/i
 %dir %{gopath}/src/%{import_path}/pkg/sysinfo
 %{gopath}/src/%{import_path}/pkg/sysinfo/MAINTAINERS
 %{gopath}/src/%{import_path}/pkg/sysinfo/*.go
@@ -464,13 +465,20 @@ exit 0
 %{gopath}/src/%{import_path}/pkg/version/*.go
 
 %changelog
+* Tue Sep 30 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.2.0-4
+- Resolves: rhbz#1139415 - correct path for bash completion
+    /usr/share/bash-completion/completions
+- versioned provides for docker
+- golang versioned requirements for devel and pkg-devel
+- remove macros from changelog
+- don't own dirs owned by vim, systemd, bash
+
 * Thu Sep 25 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.2.0-3
 - Resolves: rhbz#1145660 - support /etc/sysconfig/docker-storage 
   From: Colin Walters <walters@redhat.com>
 - patch to ignore selinux if it's disabled
   https://github.com/docker/docker/commit/9e2eb0f1cc3c4ef000e139f1d85a20f0e00971e6
   From: Dan Walsh <dwalsh@redhat.com>
-- Resolves: rhbz#1139415 - correct path for bash completion
 
 * Sun Aug 24 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.2.0-2
 - Provides docker only for f21 and above
@@ -482,13 +490,13 @@ exit 0
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_21_22_Mass_Rebuild
 
 * Fri Aug 01 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.1.2-2
-- change %else if -> %else %if
+- change conditionals
 
 * Thu Jul 31 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.1.2-1
 - Resolves: rhbz#1124036 - update to upstream v1.1.2
 
 * Mon Jul 28 2014 Vincent Batts <vbatts@fedoraproject.org> - 1.0.0-10
-- split out the %{import_path}/pkg/... libraries, to avoid cyclic deps with libcontainer
+- split out the import_path/pkg/... libraries, to avoid cyclic deps with libcontainer
 
 * Thu Jul 24 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.0.0-9
 - /etc/sysconfig/docker should be config(noreplace)
