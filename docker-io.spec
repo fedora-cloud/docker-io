@@ -11,7 +11,7 @@
 
 Name:           docker-io
 Version:        1.2.0
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Automates deployment of containerized applications
 License:        ASL 2.0
 URL:            http://www.docker.com
@@ -189,8 +189,8 @@ install -d %{buildroot}%{_mandir}/man5
 install -p -m 644 docs/man/man5/Dockerfile.5 %{buildroot}%{_mandir}/man5
 
 # install bash completion
-install -dp %{buildroot}%{_datadir}/bash_completion/completions
-install -p -m 644 contrib/completion/bash/docker %{buildroot}%{_datadir}/bash_completion/completions
+install -dp %{buildroot}%{_datadir}/bash-completion/completions
+install -p -m 644 contrib/completion/bash/docker %{buildroot}%{_datadir}/bash-completion/completions
 
 # install zsh completion
 # zsh completion has been upstreamed into docker and
@@ -274,16 +274,12 @@ fi
 %dir %{_libexecdir}/docker
 %{_libexecdir}/docker/dockerinit
 %{_initddir}/docker
-%{_datadir}/bash_completion/completions/docker
+%{_datadir}/bash-completion/completions/docker
 %{_datadir}/zsh/site-functions/_docker
 %dir %{_sharedstatedir}/docker
-%dir %{_sysconfdir}/udev/rules.d
 %{_sysconfdir}/udev/rules.d/80-docker.rules
-%dir %{_datadir}/vim/vimfiles/doc
 %{_datadir}/vim/vimfiles/doc/dockerfile.txt
-%dir %{_datadir}/vim/vimfiles/ftdetect
 %{_datadir}/vim/vimfiles/ftdetect/dockerfile.vim
-%dir %{_datadir}/vim/vimfiles/syntax
 %{_datadir}/vim/vimfiles/syntax/dockerfile.vim
 
 %files devel
@@ -477,6 +473,13 @@ fi
 %{gopath}/src/%{import_path}/pkg/version/*.go
 
 %changelog
+* Thu Oct 09 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.2.0-3
+- Resolves: rhbz#1139415 - correct path for bash completion
+    /usr/share/bash-completion/completions
+- sysvinit script update as per upstream commit 
+    640d2ef6f54d96ac4fc3f0f745cb1e6a35148607 
+- don't own dirs for vim highlighting, bash completion and udev
+
 * Thu Sep 25 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.2.0-2
 - Resolves: rhbz#1145660 - support /etc/sysconfig/docker-storage 
   From: Colin Walters <walters@redhat.com>
