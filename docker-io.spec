@@ -15,7 +15,7 @@
 
 Name:       %{repo}-io
 Version:    1.2.0
-Release:    4%{?dist}
+Release:    5%{?dist}
 Summary:    Automates deployment of containerized applications
 License:    ASL 2.0
 URL:        http://www.docker.com
@@ -25,6 +25,7 @@ Source0:    https://%{import_path}/archive/v%{version}.tar.gz
 Source1:    %{repo}.service
 Source2:    %{repo}.sysconfig
 Source3:    %{repo}-storage.sysconfig
+Source4:    %{repo}.socket
 Patch0:     ignore-selinux-if-disabled.patch
 # though final name for sysconf/sysvinit files is simply 'docker',
 # having .sysvinit and .sysconfig makes things clear
@@ -231,7 +232,7 @@ install -d %{buildroot}%{_sharedstatedir}/%{repo}
 # install systemd/init scripts
 install -d %{buildroot}%{_unitdir}
 install -p -m 644 %{SOURCE1} %{buildroot}%{_unitdir}
-install -p -m 644 contrib/init/systemd/docker.socket %{buildroot}%{_unitdir}
+install -p -m 644 %{SOURCE4} %{buildroot}%{_unitdir}
 
 # for additional args
 install -d %{buildroot}%{_sysconfdir}/sysconfig/
@@ -465,6 +466,9 @@ exit 0
 %{gopath}/src/%{import_path}/pkg/version/*.go
 
 %changelog
+* Wed Oct 08 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.2.0-5
+- Resolves: rhbz#1149882 - systemd unit and socket file updates
+
 * Tue Sep 30 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.2.0-4
 - Resolves: rhbz#1139415 - correct path for bash completion
     /usr/share/bash-completion/completions
