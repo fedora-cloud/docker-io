@@ -10,11 +10,11 @@
 %global repo            %{project}
 
 %global import_path %{provider}.%{provider_tld}/%{project}/%{repo}
-%global commit      c78088fe3d1b90640c637d8c3457de3caa0c7a24
+%global commit      4e9bbfa90054cd730e81b53b2de67a74306afc95
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:       %{repo}-io
-Version:    1.3.0
+Version:    1.3.1
 Release:    1%{?dist}
 Summary:    Automates deployment of containerized applications
 License:    ASL 2.0
@@ -25,13 +25,8 @@ Source0:    https://%{import_path}/archive/v%{version}.tar.gz
 Source1:    %{repo}.service
 Source2:    %{repo}.sysconfig
 Source3:    %{repo}-storage.sysconfig
-Patch0:     ipmasq.patch
-# though final name for sysconf/sysvinit files is simply 'docker',
-# having .sysvinit and .sysconfig makes things clear
 BuildRequires:  glibc-static
-# ensure build uses golang 1.2-7 and above
-# http://code.google.com/p/go/source/detail?r=a15f344a9efa35ef168c8feaa92a15a1cdc93db5
-BuildRequires:  golang >= 1.2-7
+BuildRequires:  golang >= 1.3.3
 # for gorilla/mux and kr/pty https://github.com/dotcloud/docker/pull/5950
 BuildRequires:  golang(github.com/gorilla/mux) >= 0-0.13
 BuildRequires:  golang(github.com/kr/pty) >= 0-0.19
@@ -46,6 +41,7 @@ BuildRequires:  golang(github.com/docker/libcontainer) >= 1.2.0-2
 BuildRequires:  golang(github.com/tchap/go-patricia/patricia)
 BuildRequires:  golang(github.com/docker/libtrust)
 BuildRequires:  golang(github.com/docker/libtrust/trustgraph)
+BuildRequires:  go-md2man
 BuildRequires:  device-mapper-devel
 BuildRequires:  btrfs-progs-devel
 BuildRequires:  pkgconfig(systemd)
@@ -90,7 +86,6 @@ Provides:       golang(%{import_path}) = %{version}-%{release}
 Provides:       golang(%{import_path}/api) = %{version}-%{release}
 Provides:       golang(%{import_path}/api/client) = %{version}-%{release}
 Provides:       golang(%{import_path}/api/server) = %{version}-%{release}
-#Provides:       golang(%{import_path}/archive) = %{version}-%{release}
 Provides:       golang(%{import_path}/builtins) = %{version}-%{release}
 Provides:       golang(%{import_path}/contrib) = %{version}-%{release}
 Provides:       golang(%{import_path}/contrib/docker-device-tool) = %{version}-%{release}
@@ -100,7 +95,6 @@ Provides:       golang(%{import_path}/daemon/execdriver) = %{version}-%{release}
 Provides:       golang(%{import_path}/daemon/execdriver/execdrivers) = %{version}-%{release}
 Provides:       golang(%{import_path}/daemon/execdriver/lxc) = %{version}-%{release}
 Provides:       golang(%{import_path}/daemon/execdriver/native) = %{version}-%{release}
-#Provides:       golang(%{import_path}/daemon/execdriver/native/configuration) = %{version}-%{release}
 Provides:       golang(%{import_path}/daemon/execdriver/native/template) = %{version}-%{release}
 Provides:       golang(%{import_path}/daemon/graphdriver) = %{version}-%{release}
 Provides:       golang(%{import_path}/daemon/graphdriver/aufs) = %{version}-%{release}
@@ -172,9 +166,7 @@ rm -rf vendor
 find . -name "*.go" \
         -print |\
         xargs sed -i 's/github.com\/docker\/docker\/vendor\/src\/code.google.com\/p\/go\/src\/pkg\///g'
-sed -i 's/go-md2man -in "$FILE" -out/pandoc -s -t man "$FILE" -o/g' docs/man/md2man-all.sh
 sed -i 's/\!bash//g' contrib/completion/bash/docker
-%patch0 -p1
 
 %build
 # set up temporary build gopath, and put our directory there
@@ -312,6 +304,9 @@ exit 0
 %{gopath}/src/%{import_path}/pkg/*/*/*/*.tar
 
 %changelog
+* Fri Oct 31 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.3.1-1
+- update to v1.3.1
+
 * Mon Oct 20 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.3.0-1
 - Resolves: rhbz#1153936 - update to v1.3.0
 - don't install zsh files
