@@ -13,12 +13,12 @@
 %global commit      c78088fe3d1b90640c637d8c3457de3caa0c7a24
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
-Name:           docker-io
-Version:        1.3.0
-Release:        1%{?dist}
-Summary:        Automates deployment of containerized applications
-License:        ASL 2.0
-URL:            http://www.docker.com
+Name:       %{repo}-io
+Version:    1.3.1
+Release:    2%{?dist}
+Summary:    Automates deployment of containerized applications
+License:    ASL 2.0
+URL:        http://www.docker.com
 # only x86_64 for now: https://github.com/docker/docker/issues/136
 ExclusiveArch:  x86_64
 Source0:        https://github.com/docker/docker/archive/v%{version}.tar.gz
@@ -29,10 +29,8 @@ Source2:        docker-storage.sysconfig
 # have init script wait up to 5 mins before forcibly terminating docker daemon
 # https://github.com/docker/docker/commit/640d2ef6f54d96ac4fc3f0f745cb1e6a35148607
 Source3:        docker.sysvinit
-Patch0:         ipmasq.patch
 BuildRequires:  glibc-static
-BuildRequires:  pandoc
-BuildRequires:  golang >= 1.3
+BuildRequires:  golang >= 1.3.3
 # for gorilla/mux and kr/pty https://github.com/dotcloud/docker/pull/5950
 BuildRequires:  golang(github.com/gorilla/mux) >= 0-0.13
 BuildRequires:  golang(github.com/kr/pty) >= 0-0.19
@@ -43,10 +41,11 @@ BuildRequires:  golang(code.google.com/p/go.net/websocket)
 BuildRequires:  golang(code.google.com/p/gosqlite/sqlite3)
 # RHBZ#1109039 use syndtr/gocapability >= 0-0.7
 BuildRequires:  golang(github.com/syndtr/gocapability/capability) >= 0-0.7
-BuildRequires:  golang(github.com/docker/libcontainer) >= 1.2.0-2
+BuildRequires:  golang(github.com/docker/libcontainer) >= 1.2.0
 BuildRequires:  golang(github.com/tchap/go-patricia/patricia)
 BuildRequires:  golang(github.com/docker/libtrust)
 BuildRequires:  golang(github.com/docker/libtrust/trustgraph)
+BuildRequires:  go-md2man
 BuildRequires:  device-mapper-devel
 Requires(post):     chkconfig
 Requires(preun):    chkconfig
@@ -160,8 +159,6 @@ rm -rf vendor
 find . -name "*.go" \
         -print |\
         xargs sed -i 's/github.com\/docker\/docker\/vendor\/src\/code.google.com\/p\/go\/src\/pkg\///g'
-sed -i 's/go-md2man -in "$FILE" -out/pandoc -s -t man "$FILE" -o/g' docs/man/md2man-all.sh
-%patch0 -p1
 
 %build
 # set up temporary build gopath, and put our directory there
@@ -325,7 +322,13 @@ fi
 %{gopath}/src/%{import_path}/pkg/*/*/*/*.tar
 
 %changelog
-* Fri Oct 24 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.3.0-1
+* Fri Oct 31 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.3.1-2
+- Remove pandoc from build reqs
+
+* Fri Oct 31 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.3.1-1
+- update to v1.3.1
+
+* Mon Oct 20 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.3.0-1
 - Resolves: rhbz#1153936 - update to v1.3.0
 - iptables=false => ip-masq=false
 
