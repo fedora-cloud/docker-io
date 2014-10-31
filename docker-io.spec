@@ -15,7 +15,7 @@
 
 Name:       %{repo}-io
 Version:    1.3.1
-Release:    1%{?dist}
+Release:    2%{?dist}
 Summary:    Automates deployment of containerized applications
 License:    ASL 2.0
 URL:        http://www.docker.com
@@ -45,7 +45,6 @@ BuildRequires:  go-md2man
 BuildRequires:  device-mapper-devel
 BuildRequires:  btrfs-progs-devel
 BuildRequires:  pkgconfig(systemd)
-BuildRequires:  pandoc
 # Use appropriate NVR for systemd-units to ensure SocketUser and SocketGroup are available
 %if 0%{?fedora} >= 21
 Requires:       systemd-units >= 214
@@ -304,6 +303,9 @@ exit 0
 %{gopath}/src/%{import_path}/pkg/*/*/*/*.tar
 
 %changelog
+* Fri Oct 31 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.3.1-2
+- Remove pandoc from build reqs
+
 * Fri Oct 31 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.3.1-1
 - update to v1.3.1
 
