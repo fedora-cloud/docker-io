@@ -15,7 +15,7 @@
 
 Name:       %{repo}-io
 Version:    1.3.2
-Release:    1%{?dist}
+Release:    2%{?dist}
 Summary:    Automates deployment of containerized applications
 License:    ASL 2.0
 URL:        http://www.docker.com
@@ -88,8 +88,10 @@ Provides:   golang(%{import_path}) = %{version}-%{release}
 Provides:   golang(%{import_path}/api) = %{version}-%{release}
 Provides:   golang(%{import_path}/api/client) = %{version}-%{release}
 Provides:   golang(%{import_path}/api/server) = %{version}-%{release}
+Provides:   golang(%{import_path}/builder) = %{version}-%{release}
+Provides:   golang(%{import_path}/builder/parser) = %{version}-%{release}
+Provides:   golang(%{import_path}/builder/parser/dumper) = %{version}-%{release}
 Provides:   golang(%{import_path}/builtins) = %{version}-%{release}
-Provides:   golang(%{import_path}/contrib) = %{version}-%{release}
 Provides:   golang(%{import_path}/contrib/docker-device-tool) = %{version}-%{release}
 Provides:   golang(%{import_path}/contrib/host-integration) = %{version}-%{release}
 Provides:   golang(%{import_path}/daemon) = %{version}-%{release}
@@ -250,8 +252,11 @@ install -p -m 644 %{SOURCE3} %{buildroot}%{_sysconfdir}/sysconfig/docker-storage
 install -d -p %{buildroot}/%{gopath}/src/%{import_path}
 rm -rf pkg/symlink/testdata
 
-for dir in api builtins daemon dockerversion engine graph \
-           image links nat opts pkg registry runconfig utils
+for dir in api builder builtins contrib/docker-device-tool \
+        contrib/host-integration daemon docker dockerinit \
+        dockerversion engine events graph \
+        image links nat opts pkg registry runconfig \
+        trust utils volumes
 do
     cp -rpav $dir %{buildroot}/%{gopath}/src/%{import_path}/
 done
@@ -292,39 +297,19 @@ exit 0
 %doc AUTHORS CHANGELOG.md CONTRIBUTING.md LICENSE MAINTAINERS NOTICE README.md 
 %dir %{gopath}/src/%{provider}.%{provider_tld}/%{project}
 %dir %{gopath}/src/%{import_path}
-%dir %{gopath}/src/%{import_path}/*
-%dir %{gopath}/src/%{import_path}/*/*
-%dir %{gopath}/src/%{import_path}/*/*/*
-%dir %{gopath}/src/%{import_path}/*/*/*/*
-%{gopath}/src/%{import_path}/*/MAINTAINERS
-%{gopath}/src/%{import_path}/*/README.md
-%{gopath}/src/%{import_path}/*/*.go
-%{gopath}/src/%{import_path}/*/*/*.go
-%{gopath}/src/%{import_path}/*/*/MAINTAINERS
-%{gopath}/src/%{import_path}/*/*/*/*.go
-%{gopath}/src/%{import_path}/*/*/*/MAINTAINERS
-%{gopath}/src/%{import_path}/*/*/*/README.md
-%{gopath}/src/%{import_path}/*/*/*/*/*.go
+%{gopath}/src/%{import_path}/*
 
 %files pkg-devel
 %doc AUTHORS CHANGELOG.md CONTRIBUTING.md LICENSE MAINTAINERS NOTICE README.md 
 %dir %{gopath}/src/%{provider}.%{provider_tld}/%{project}
 %dir %{gopath}/src/%{import_path}
 %dir %{gopath}/src/%{import_path}/pkg
-%dir %{gopath}/src/%{import_path}/pkg/*
-%dir %{gopath}/src/%{import_path}/pkg/*/*
-%dir %{gopath}/src/%{import_path}/pkg/*/*/*
-%{gopath}/src/%{import_path}/pkg/README.md
-%{gopath}/src/%{import_path}/pkg/*/MAINTAINER*
-%{gopath}/src/%{import_path}/pkg/*/LICENSE
-%{gopath}/src/%{import_path}/pkg/*/README.md
-%{gopath}/src/%{import_path}/pkg/*/*.go
-%{gopath}/src/%{import_path}/pkg/*/*/*.tar
-%{gopath}/src/%{import_path}/pkg/*/*/*.go
-%{gopath}/src/%{import_path}/pkg/*/*/*/json
-%{gopath}/src/%{import_path}/pkg/*/*/*/*.tar
+%{gopath}/src/%{import_path}/pkg/*
 
 %changelog
+* Tue Nov 25 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.3.2-2
+- install sources skipped prior
+
 * Tue Nov 25 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.3.2-1
 - Resolves: rhbz#1167642 - Update to upstream v1.3.2
 - Resolves: rhbz#1167505, rhbz#1167507 - CVE-2014-6407
