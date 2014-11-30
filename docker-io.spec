@@ -10,38 +10,40 @@
 %global repo            %{project}
 
 %global import_path %{provider}.%{provider_tld}/%{project}/%{repo}
-%global commit      39fa2faad2f3d6fa5133de4eb740677202f53ef4
+# This commit resolves rhbz#1169151
+%global commit      353ff40181276a0278b323e569cc887d0510ae69
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:       %{repo}-io
 Version:    1.3.2
-Release:    2%{?dist}
+Release:    3.git%{shortcommit}%{?dist}
 Summary:    Automates deployment of containerized applications
 License:    ASL 2.0
 URL:        http://www.docker.com
 # only x86_64 for now: https://github.com/docker/docker/issues/136
 ExclusiveArch:  x86_64
-Source0:    https://%{import_path}/archive/v%{version}.tar.gz
+#Source0:    https://%{import_path}/archive/v%{version}.tar.gz
+Source0:    https://%{import_path}/archive/%{commit}/%{repo}-%{shortcommit}.tar.gz
 Source1:    %{repo}.service
 Source2:    %{repo}.sysconfig
 Source3:    %{repo}-storage.sysconfig
 BuildRequires:  glibc-static
-#BuildRequires:  golang >= 1.3.3
+BuildRequires:  golang >= 1.3.3
 # for gorilla/mux and kr/pty https://github.com/dotcloud/docker/pull/5950
-#BuildRequires:  golang(github.com/gorilla/mux) >= 0-0.13
-#BuildRequires:  golang(github.com/kr/pty) >= 0-0.19
-#BuildRequires:  golang(github.com/godbus/dbus)
+BuildRequires:  golang(github.com/gorilla/mux) >= 0-0.13
+BuildRequires:  golang(github.com/kr/pty) >= 0-0.19
+BuildRequires:  golang(github.com/godbus/dbus)
 # for coreos/go-systemd https://github.com/dotcloud/docker/pull/5981
-#BuildRequires:  golang(github.com/coreos/go-systemd) >= 2-1
-#BuildRequires:  golang(code.google.com/p/go.net/websocket)
-#BuildRequires:  golang(code.google.com/p/gosqlite/sqlite3)
-# RHBZ#1109039 use syndtr/gocapability >= 0-0.7
-#BuildRequires:  golang(github.com/syndtr/gocapability/capability) >= 0-0.7
+BuildRequires:  golang(github.com/coreos/go-systemd) >= 2-1
+BuildRequires:  golang(code.google.com/p/go.net/websocket)
+BuildRequires:  golang(code.google.com/p/gosqlite/sqlite3)
+# Resolves: rhbz#1109039 use syndtr/gocapability >= 0-0.7
+BuildRequires:  golang(github.com/syndtr/gocapability/capability) >= 0-0.7
 #BuildRequires:  golang(github.com/docker/libcontainer) >= 1.2.0-3
-#BuildRequires:  golang(github.com/tchap/go-patricia/patricia)
-#BuildRequires:  golang(github.com/docker/libtrust)
-#BuildRequires:  golang(github.com/docker/libtrust/trustgraph)
-BuildRequires:  sqlite-devel
+BuildRequires:  golang(github.com/tchap/go-patricia/patricia)
+BuildRequires:  golang(github.com/docker/libtrust)
+BuildRequires:  golang(github.com/docker/libtrust/trustgraph)
+BuildRequires:  golang(github.com/Sirupsen/logrus) >= 0.6.0
 BuildRequires:  go-md2man
 BuildRequires:  device-mapper-devel
 BuildRequires:  btrfs-progs-devel
@@ -56,10 +58,11 @@ Requires:   systemd-units >= 208-20
 Requires:   systemd-units >= 204-20
 %endif
 %endif
+%if 0%{?fedora} >= 21 || 0%{?rhel} >= 6
 # Resolves: rhbz#1165615
 Requires:   device-mapper-libs >= 1.02.90-1
-# need xz to work with ubuntu images
-# https://bugzilla.redhat.com/show_bug.cgi?id=1045220
+%endif
+# Resolves: rhbz#1045220
 Requires:       xz
 Provides:       lxc-docker = %{version}-%{release}
 # permitted by https://fedorahosted.org/fpc/ticket/341#comment:7
@@ -111,6 +114,8 @@ Provides:   golang(%{import_path}/daemon/networkdriver/bridge) = %{version}-%{re
 Provides:   golang(%{import_path}/daemon/networkdriver/ipallocator) = %{version}-%{release}
 Provides:   golang(%{import_path}/daemon/networkdriver/portallocator) = %{version}-%{release}
 Provides:   golang(%{import_path}/daemon/networkdriver/portmapper) = %{version}-%{release}
+Provides:   golang(%{import_path}/docker) = %{version}-%{release}
+Provides:   golang(%{import_path}/dockerinit) = %{version}-%{release}
 Provides:   golang(%{import_path}/dockerversion) = %{version}-%{release}
 Provides:   golang(%{import_path}/engine) = %{version}-%{release}
 Provides:   golang(%{import_path}/events) = %{version}-%{release}
@@ -174,6 +179,7 @@ Provides:   golang(%{import_path}/pkg/testutils) = %{version}-%{release}
 Provides:   golang(%{import_path}/pkg/timeutils) = %{version}-%{release}
 Provides:   golang(%{import_path}/pkg/truncindex) = %{version}-%{release}
 Provides:   golang(%{import_path}/pkg/units) = %{version}-%{release}
+Provides:   golang(%{import_path}/pkg/urlutil) = %{version}-%{release}
 Provides:   golang(%{import_path}/pkg/version) = %{version}-%{release}
 
 %description pkg-devel
@@ -184,11 +190,11 @@ specific logic.
 The import paths of import_path/pkg/...
 
 %prep
-%setup -q -n %{repo}-%{version}
-#rm -rf vendor
-#find . -name "*.go" \
-#       -print |\
-#       xargs sed -i 's/github.com\/docker\/docker\/vendor\/src\/code.google.com\/p\/go\/src\/pkg\///g'
+%setup -qn %{repo}-%{commit}
+rm -rf vendor/src/github.com/{coreos,godbus,gorilla,kr,Sirupsen,syndtr,tchap}
+find . -name "*.go" \
+       -print |\
+       xargs sed -i 's/github.com\/docker\/docker\/vendor\/src\/code.google.com\/p\/go\/src\/pkg\///g'
 sed -i 's/\!bash//g' contrib/completion/bash/docker
 
 %build
@@ -208,11 +214,11 @@ cp contrib/syntax/vim/README.md README-vim-syntax.md
 %install
 # install binary
 install -d %{buildroot}%{_bindir}
-install -p -m 755 bundles/%{version}/dynbinary/docker-%{version} %{buildroot}%{_bindir}/docker
+install -p -m 755 bundles/%{version}-dev/dynbinary/docker-%{version}-dev %{buildroot}%{_bindir}/docker
 
 # install dockerinit
 install -d %{buildroot}%{_libexecdir}/docker
-install -p -m 755 bundles/%{version}/dynbinary/dockerinit-%{version} %{buildroot}%{_libexecdir}/docker/dockerinit
+install -p -m 755 bundles/%{version}-dev/dynbinary/dockerinit-%{version}-dev %{buildroot}%{_libexecdir}/docker/dockerinit
 
 # install manpages
 install -d %{buildroot}%{_mandir}/man1
@@ -307,6 +313,10 @@ exit 0
 %{gopath}/src/%{import_path}/pkg/*
 
 %changelog
+* Sun Nov 30 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.3.2-3.git353ff40
+- Resolves: rhbz#1169035, rhbz#1169151
+- bring back golang deps (except libcontainer)
+
 * Tue Nov 25 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.3.2-2
 - install sources skipped prior
 
