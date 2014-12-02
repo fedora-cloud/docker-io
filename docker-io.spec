@@ -11,19 +11,18 @@
 
 %global import_path %{provider}.%{provider_tld}/%{project}/%{repo}
 # This commit resolves rhbz#1169151
-%global commit      353ff40181276a0278b323e569cc887d0510ae69
+%global commit      39fa2faad2f3d6fa5133de4eb740677202f53ef4
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:       %{repo}-io
 Version:    1.3.2
-Release:    3.git%{shortcommit}%{?dist}
+Release:    4%{?dist}
 Summary:    Automates deployment of containerized applications
 License:    ASL 2.0
 URL:        http://www.docker.com
 # only x86_64 for now: https://github.com/docker/docker/issues/136
 ExclusiveArch:  x86_64
-#Source0:    https://%{import_path}/archive/v%{version}.tar.gz
-Source0:    https://%{import_path}/archive/%{commit}/%{repo}-%{shortcommit}.tar.gz
+Source0:    https://%{import_path}/archive/v%{version}.tar.gz
 Source1:    %{repo}.service
 Source2:    %{repo}.sysconfig
 Source3:    %{repo}-storage.sysconfig
@@ -179,7 +178,6 @@ Provides:   golang(%{import_path}/pkg/testutils) = %{version}-%{release}
 Provides:   golang(%{import_path}/pkg/timeutils) = %{version}-%{release}
 Provides:   golang(%{import_path}/pkg/truncindex) = %{version}-%{release}
 Provides:   golang(%{import_path}/pkg/units) = %{version}-%{release}
-Provides:   golang(%{import_path}/pkg/urlutil) = %{version}-%{release}
 Provides:   golang(%{import_path}/pkg/version) = %{version}-%{release}
 
 %description pkg-devel
@@ -190,7 +188,7 @@ specific logic.
 The import paths of import_path/pkg/...
 
 %prep
-%setup -qn %{repo}-%{commit}
+%setup -qn %{repo}-%{version}
 rm -rf vendor/src/github.com/{coreos,godbus,gorilla,kr,Sirupsen,syndtr,tchap}
 find . -name "*.go" \
        -print |\
@@ -214,11 +212,11 @@ cp contrib/syntax/vim/README.md README-vim-syntax.md
 %install
 # install binary
 install -d %{buildroot}%{_bindir}
-install -p -m 755 bundles/%{version}-dev/dynbinary/docker-%{version}-dev %{buildroot}%{_bindir}/docker
+install -p -m 755 bundles/%{version}/dynbinary/docker-%{version} %{buildroot}%{_bindir}/docker
 
 # install dockerinit
 install -d %{buildroot}%{_libexecdir}/docker
-install -p -m 755 bundles/%{version}-dev/dynbinary/dockerinit-%{version}-dev %{buildroot}%{_libexecdir}/docker/dockerinit
+install -p -m 755 bundles/%{version}/dynbinary/dockerinit-%{version} %{buildroot}%{_libexecdir}/docker/dockerinit
 
 # install manpages
 install -d %{buildroot}%{_mandir}/man1
@@ -313,6 +311,9 @@ exit 0
 %{gopath}/src/%{import_path}/pkg/*
 
 %changelog
+* Mon Dec 01 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.3.2-4
+- Revert to using upstream v1.3.2 release
+
 * Sun Nov 30 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.3.2-3.git353ff40
 - Resolves: rhbz#1169035, rhbz#1169151
 - bring back golang deps (except libcontainer)
