@@ -16,7 +16,7 @@
 
 Name:       %{repo}-io
 Version:    1.3.2
-Release:    3.git%{shortcommit}%{?dist}
+Release:    4.git%{shortcommit}%{?dist}
 Summary:    Automates deployment of containerized applications
 License:    ASL 2.0
 URL:        http://www.docker.com
@@ -27,6 +27,7 @@ Source0:    https://%{import_path}/archive/%{commit}/%{repo}-%{shortcommit}.tar.
 Source1:    %{repo}.service
 Source2:    %{repo}.sysconfig
 Source3:    %{repo}-storage.sysconfig
+Patch0:     initialize-db.patch
 BuildRequires:  glibc-static
 BuildRequires:  golang >= 1.3.3
 # for gorilla/mux and kr/pty https://github.com/dotcloud/docker/pull/5950
@@ -191,6 +192,7 @@ The import paths of import_path/pkg/...
 
 %prep
 %setup -qn %{repo}-%{commit}
+%patch0 -p1
 rm -rf vendor/src/github.com/{coreos,godbus,gorilla,kr,Sirupsen,syndtr,tchap}
 find . -name "*.go" \
        -print |\
@@ -313,6 +315,9 @@ exit 0
 %{gopath}/src/%{import_path}/pkg/*
 
 %changelog
+* Tue Dec 02 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.3.2-4.git353ff40
+- Resolves: rhbz#1169151, rhbz#1169334
+
 * Sun Nov 30 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.3.2-3.git353ff40
 - Resolves: rhbz#1169035, rhbz#1169151
 - bring back golang deps (except libcontainer)
