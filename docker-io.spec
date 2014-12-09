@@ -10,19 +10,19 @@
 %global repo            %{project}
 
 %global import_path %{provider}.%{provider_tld}/%{project}/%{repo}
-%global commit      39fa2faad2f3d6fa5133de4eb740677202f53ef4
+%global commit      bb24f99d741cd8d6a8b882afc929c15c633c39cb
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:       %{repo}-io
 Version:    1.3.2
-Release:    5%{?dist}
+Release:    6.git%{shortcommit}%{?dist}
 Summary:    Automates deployment of containerized applications
 License:    ASL 2.0
 URL:        http://www.docker.com
 # only x86_64 for now: https://github.com/docker/docker/issues/136
 ExclusiveArch:  x86_64
-Source0:    https://%{import_path}/archive/v%{version}.tar.gz
-#Source0:    https://%{import_path}/archive/%{commit}/%{repo}-%{shortcommit}.tar.gz
+#Source0:    https://%{import_path}/archive/v%{version}.tar.gz
+Source0:    https://%{import_path}/archive/%{commit}/%{repo}-%{shortcommit}.tar.gz
 Source1:    %{repo}.service
 Source2:    %{repo}.sysconfig
 Source3:    %{repo}-storage.sysconfig
@@ -49,12 +49,12 @@ BuildRequires:  btrfs-progs-devel
 BuildRequires:  pkgconfig(systemd)
 # Use appropriate NVR for systemd-units to ensure SocketUser and SocketGroup are available
 %if 0%{?fedora} >= 21
-Requires:       systemd-units >= 214
+Requires:       systemd >= 214
 %else
 %if 0%{?fedora} == 20
-Requires:   systemd-units >= 208-20
+Requires:   systemd >= 208-20
 %else
-Requires:   systemd-units >= 204-20
+Requires:   systemd >= 204-20
 %endif
 %endif
 %if 0%{?fedora} >= 21 || 0%{?rhel} >= 6
@@ -189,11 +189,12 @@ specific logic.
 The import paths of import_path/pkg/...
 
 %prep
-%setup -qn %{repo}-%{version}
+%setup -qn %{repo}-%{commit}
 rm -rf vendor/src/github.com/{coreos,godbus,gorilla,kr,Sirupsen,syndtr,tchap}
 find . -name "*.go" \
        -print |\
        xargs sed -i 's/github.com\/docker\/docker\/vendor\/src\/code.google.com\/p\/go\/src\/pkg\///g'
+sed -i 's/\.docker/\/etc\/docker/g' docker/flags.go
 sed -i 's/\!bash//g' contrib/completion/bash/docker
 
 %build
@@ -213,11 +214,11 @@ cp contrib/syntax/vim/README.md README-vim-syntax.md
 %install
 # install binary
 install -d %{buildroot}%{_bindir}
-install -p -m 755 bundles/%{version}/dynbinary/docker-%{version} %{buildroot}%{_bindir}/docker
+install -p -m 755 bundles/%{version}-dev/dynbinary/docker-%{version}-dev %{buildroot}%{_bindir}/docker
 
 # install dockerinit
 install -d %{buildroot}%{_libexecdir}/docker
-install -p -m 755 bundles/%{version}/dynbinary/dockerinit-%{version} %{buildroot}%{_libexecdir}/docker/dockerinit
+install -p -m 755 bundles/%{version}-dev/dynbinary/dockerinit-%{version}-dev %{buildroot}%{_libexecdir}/docker/dockerinit
 
 # install manpages
 install -d %{buildroot}%{_mandir}/man1
@@ -312,6 +313,11 @@ exit 0
 %{gopath}/src/%{import_path}/pkg/*
 
 %changelog
+* Tue Dec 09 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.3.2-6.gitbb24f99
+- use /etc/docker instead of /.docker
+- use upstream master commit bb24f99d741cd8d6a8b882afc929c15c633c39cb
+- include DOCKER_TMPDIR variable in /etc/sysconfig/docker
+
 * Mon Dec 08 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.3.2-5
 - Revert to using upstream release 1.3.2
 
