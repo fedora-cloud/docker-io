@@ -10,13 +10,12 @@
 %global repo            %{project}
 
 %global import_path %{provider}.%{provider_tld}/%{project}/%{repo}
-# This commit resolves rhbz#1169151
-%global commit      39fa2faad2f3d6fa5133de4eb740677202f53ef4
+%global commit      4595d4fb03093acf87b905bebc5ba4964d7c0707
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:       %{repo}-io
-Version:    1.3.2
-Release:    4%{?dist}
+Version:    1.4.0
+Release:    1%{?dist}
 Summary:    Automates deployment of containerized applications
 License:    ASL 2.0
 URL:        http://www.docker.com
@@ -49,12 +48,12 @@ BuildRequires:  btrfs-progs-devel
 BuildRequires:  pkgconfig(systemd)
 # Use appropriate NVR for systemd-units to ensure SocketUser and SocketGroup are available
 %if 0%{?fedora} >= 21
-Requires:       systemd-units >= 214
+Requires:   systemd >= 214
 %else
 %if 0%{?fedora} == 20
-Requires:   systemd-units >= 208-20
+Requires:   systemd >= 208-20
 %else
-Requires:   systemd-units >= 204-20
+Requires:   systemd >= 204-20
 %endif
 %endif
 %if 0%{?fedora} >= 21 || 0%{?rhel} >= 6
@@ -62,13 +61,13 @@ Requires:   systemd-units >= 204-20
 Requires:   device-mapper-libs >= 1.02.90-1
 %endif
 # Resolves: rhbz#1045220
-Requires:       xz
-Provides:       lxc-docker = %{version}-%{release}
+Requires:   xz
+Provides:   lxc-docker = %{version}-%{release}
 # permitted by https://fedorahosted.org/fpc/ticket/341#comment:7
 # In F22, the whole package should be renamed to be just "docker" and
 # this changed to "Provides: docker-io".
 %if 0%{?fedora} >= 21
-Provides:       %{repo} = %{version}-%{release}
+Provides:   %{repo} = %{version}-%{release}
 %endif
 
 %description
@@ -120,8 +119,6 @@ Provides:   golang(%{import_path}/engine) = %{version}-%{release}
 Provides:   golang(%{import_path}/events) = %{version}-%{release}
 Provides:   golang(%{import_path}/graph) = %{version}-%{release}
 Provides:   golang(%{import_path}/image) = %{version}-%{release}
-Provides:   golang(%{import_path}/integration) = %{version}-%{release}
-Provides:   golang(%{import_path}/integration-cli) = %{version}-%{release}
 Provides:   golang(%{import_path}/links) = %{version}-%{release}
 Provides:   golang(%{import_path}/nat) = %{version}-%{release}
 Provides:   golang(%{import_path}/opts) = %{version}-%{release}
@@ -143,6 +140,7 @@ Summary:    A golang registry for global request variables (source libraries)
 Provides:   golang(%{import_path}/pkg/archive) = %{version}-%{release}
 Provides:   golang(%{import_path}/pkg/broadcastwriter) = %{version}-%{release}
 Provides:   golang(%{import_path}/pkg/chrootarchive) = %{version}-%{release}
+Provides:   golang(%{import_path}/pkg/devicemapper) = %{version}-%{release}
 Provides:   golang(%{import_path}/pkg/fileutils) = %{version}-%{release}
 Provides:   golang(%{import_path}/pkg/graphdb) = %{version}-%{release}
 Provides:   golang(%{import_path}/pkg/httputils) = %{version}-%{release}
@@ -150,7 +148,6 @@ Provides:   golang(%{import_path}/pkg/ioutils) = %{version}-%{release}
 Provides:   golang(%{import_path}/pkg/iptables) = %{version}-%{release}
 Provides:   golang(%{import_path}/pkg/jsonlog) = %{version}-%{release}
 Provides:   golang(%{import_path}/pkg/listenbuffer) = %{version}-%{release}
-Provides:   golang(%{import_path}/pkg/log) = %{version}-%{release}
 Provides:   golang(%{import_path}/pkg/mflag) = %{version}-%{release}
 Provides:   golang(%{import_path}/pkg/mflag/example) = %{version}-%{release}
 Provides:   golang(%{import_path}/pkg/mount) = %{version}-%{release}
@@ -193,7 +190,6 @@ rm -rf vendor/src/github.com/{coreos,godbus,gorilla,kr,Sirupsen,syndtr,tchap}
 find . -name "*.go" \
        -print |\
        xargs sed -i 's/github.com\/docker\/docker\/vendor\/src\/code.google.com\/p\/go\/src\/pkg\///g'
-sed -i 's/\!bash//g' contrib/completion/bash/docker
 
 %build
 # set up temporary build gopath, and put our directory there
@@ -300,17 +296,25 @@ exit 0
 %files devel
 %doc AUTHORS CHANGELOG.md CONTRIBUTING.md LICENSE MAINTAINERS NOTICE README.md 
 %dir %{gopath}/src/%{provider}.%{provider_tld}/%{project}
-%dir %{gopath}/src/%{import_path}
-%{gopath}/src/%{import_path}/*
+%{gopath}/src/%{import_path}
 
 %files pkg-devel
 %doc AUTHORS CHANGELOG.md CONTRIBUTING.md LICENSE MAINTAINERS NOTICE README.md 
 %dir %{gopath}/src/%{provider}.%{provider_tld}/%{project}
 %dir %{gopath}/src/%{import_path}
-%dir %{gopath}/src/%{import_path}/pkg
-%{gopath}/src/%{import_path}/pkg/*
+%{gopath}/src/%{import_path}/pkg
 
 %changelog
+* Thu Dec 11 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.0-1
+- Resolves: rhbz#1173324
+- Resolves: rhbz#1172761 - CVE-2014-9356
+- Resolves: rhbz#1172782 - CVE-2014-9357
+- Resolves: rhbz#1172787 - CVE-2014-9358
+- update to upstream v1.4.0
+- override DOCKER_CERT_PATH in sysconfig instead of patching the source
+- create dockerroot user if doesn't exist prior
+- update metaprovides
+
 * Mon Dec 01 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.3.2-4
 - Revert to using upstream v1.3.2 release
 
