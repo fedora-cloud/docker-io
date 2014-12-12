@@ -9,13 +9,13 @@
 %global project         docker
 %global repo            %{project}
 
-%global import_path github.com/docker/docker
-%global commit      39fa2faad2f3d6fa5133de4eb740677202f53ef4
+%global import_path %{provider}.%{provider_tld}/%{project}/%{repo}
+%global commit      4595d4fb03093acf87b905bebc5ba4964d7c0707
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:       %{repo}-io
-Version:    1.3.2
-Release:    2%{?dist}
+Version:    1.4.0
+Release:    1%{?dist}
 Summary:    Automates deployment of containerized applications
 License:    ASL 2.0
 URL:        http://www.docker.com
@@ -52,21 +52,20 @@ Requires(post):     chkconfig
 Requires(preun):    chkconfig
 Requires(postun):   initscripts
 # need xz to work with ubuntu images
-# https://bugzilla.redhat.com/show_bug.cgi?id=1045220
-Requires:       xz
-# https://bugzilla.redhat.com/show_bug.cgi?id=1035436
-# this won't be needed for rhel7+
-Requires:       bridge-utils
-Requires:       lxc
+# Resolves: rhbz#1045220
+Requires:   xz
+# Resolves: rhbz#1035436
+Requires:   bridge-utils
+Requires:   lxc
 
 # Resolves: rhbz#1165615
 Requires:   device-mapper-libs >= 1.02.90-1
 
-# https://bugzilla.redhat.com/show_bug.cgi?id=1034919
+# Resolves: rhbz#1034919
 # No longer needed in Fedora because of libcontainer
-Requires:       libcgroup
+Requires:   libcgroup
 
-Provides:       lxc-docker = %{version}
+Provides:   lxc-docker = %{version}
 
 %description
 Docker is an open-source engine that automates the deployment of any
@@ -183,6 +182,8 @@ The import paths of %{import_path}/pkg/...
 #find . -name "*.go" \
 #        -print |\
 #        xargs sed -i 's/github.com\/docker\/docker\/vendor\/src\/code.google.com\/p\/go\/src\/pkg\///g'
+sed -i '/getopt.h/a\\n\#ifndef PR_SET_CHILD_SUBREAPER\n\#define PR_SET_CHILD_SUBREAPER 36\n\#endif' \
+        vendor/src/github.com/docker/libcontainer/namespaces/nsenter/nsenter.c
 
 %build
 # set up temporary build gopath, and put our directory there
@@ -190,7 +191,6 @@ mkdir -p ./_build/src/github.com/docker
 ln -s $(pwd) ./_build/src/github.com/docker/docker
 
 export DOCKER_GITCOMMIT="%{shortcommit}/%{version}"
-#export DOCKER_BUILDTAGS='selinux'
 export GOPATH=$(pwd)/_build:$(pwd)/vendor:%{gopath}
 export DOCKER_BUILDTAGS='exclude_graphdriver_btrfs'
 
@@ -326,6 +326,16 @@ fi
 %{gopath}/src/%{import_path}/pkg/*
 
 %changelog
+* Thu Dec 11 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.0-1
+- Resolves: rhbz#1173325
+- Resolves: rhbz#1172761 - CVE-2014-9356
+- Resolves: rhbz#1172782 - CVE-2014-9357
+- Resolves: rhbz#1172787 - CVE-2014-9358
+- update to upstream v1.4.0
+- override DOCKER_CERT_PATH in sysconfig instead of patching the source
+- update metaprovides
+- define PR_SET_CHILD_SUBREAPER as per newer kernel-headers
+
 * Tue Nov 25 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.3.2-2
 - Resolves: rhbz#1167642 - Update to upstream v1.3.2
 - Resolves: rhbz#1167505, rhbz#1167508 - CVE-2014-6407
