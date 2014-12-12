@@ -10,19 +10,19 @@
 %global repo            %{project}
 
 %global import_path %{provider}.%{provider_tld}/%{project}/%{repo}
-%global commit      bb24f99d741cd8d6a8b882afc929c15c633c39cb
+%global commit      4595d4fb03093acf87b905bebc5ba4964d7c0707
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:       %{repo}-io
-Version:    1.3.2
-Release:    6.git%{shortcommit}%{?dist}
+Version:    1.4.0
+Release:    1%{?dist}
 Summary:    Automates deployment of containerized applications
 License:    ASL 2.0
 URL:        http://www.docker.com
 # only x86_64 for now: https://github.com/docker/docker/issues/136
 ExclusiveArch:  x86_64
-#Source0:    https://%{import_path}/archive/v%{version}.tar.gz
-Source0:    https://%{import_path}/archive/%{commit}/%{repo}-%{shortcommit}.tar.gz
+Source0:    https://%{import_path}/archive/v%{version}.tar.gz
+#Source0:    https://%{import_path}/archive/%{commit}/%{repo}-%{shortcommit}.tar.gz
 Source1:    %{repo}.service
 Source2:    %{repo}.sysconfig
 Source3:    %{repo}-storage.sysconfig
@@ -49,7 +49,7 @@ BuildRequires:  btrfs-progs-devel
 BuildRequires:  pkgconfig(systemd)
 # Use appropriate NVR for systemd-units to ensure SocketUser and SocketGroup are available
 %if 0%{?fedora} >= 21
-Requires:       systemd >= 214
+Requires:   systemd >= 214
 %else
 %if 0%{?fedora} == 20
 Requires:   systemd >= 208-20
@@ -62,13 +62,13 @@ Requires:   systemd >= 204-20
 Requires:   device-mapper-libs >= 1.02.90-1
 %endif
 # Resolves: rhbz#1045220
-Requires:       xz
-Provides:       lxc-docker = %{version}-%{release}
+Requires:   xz
+Provides:   lxc-docker = %{version}-%{release}
 # permitted by https://fedorahosted.org/fpc/ticket/341#comment:7
 # In F22, the whole package should be renamed to be just "docker" and
 # this changed to "Provides: docker-io".
 %if 0%{?fedora} >= 21
-Provides:       %{repo} = %{version}-%{release}
+Provides:   %{repo} = %{version}-%{release}
 %endif
 
 %description
@@ -189,13 +189,11 @@ specific logic.
 The import paths of import_path/pkg/...
 
 %prep
-%setup -qn %{repo}-%{commit}
+%setup -qn %{repo}-%{version}
 rm -rf vendor/src/github.com/{coreos,godbus,gorilla,kr,Sirupsen,syndtr,tchap}
 find . -name "*.go" \
        -print |\
        xargs sed -i 's/github.com\/docker\/docker\/vendor\/src\/code.google.com\/p\/go\/src\/pkg\///g'
-sed -i 's/\.docker/\/etc\/docker/g' docker/flags.go
-sed -i 's/\!bash//g' contrib/completion/bash/docker
 
 %build
 # set up temporary build gopath, and put our directory there
@@ -214,11 +212,11 @@ cp contrib/syntax/vim/README.md README-vim-syntax.md
 %install
 # install binary
 install -d %{buildroot}%{_bindir}
-install -p -m 755 bundles/%{version}-dev/dynbinary/docker-%{version}-dev %{buildroot}%{_bindir}/docker
+install -p -m 755 bundles/%{version}/dynbinary/docker-%{version} %{buildroot}%{_bindir}/docker
 
 # install dockerinit
 install -d %{buildroot}%{_libexecdir}/docker
-install -p -m 755 bundles/%{version}-dev/dynbinary/dockerinit-%{version}-dev %{buildroot}%{_libexecdir}/docker/dockerinit
+install -p -m 755 bundles/%{version}/dynbinary/dockerinit-%{version} %{buildroot}%{_libexecdir}/docker/dockerinit
 
 # install manpages
 install -d %{buildroot}%{_mandir}/man1
@@ -269,6 +267,7 @@ done
 
 %pre
 getent group docker > /dev/null || %{_sbindir}/groupadd -r docker
+getent passwd dockerroot > /dev/null || %{_sbindir}/useradd -r -g docker -d %{_sharedstatedir}/docker -s /sbin/nologin -c "Docker User" dockerroot
 exit 0
 
 %post
@@ -313,6 +312,15 @@ exit 0
 %{gopath}/src/%{import_path}/pkg/*
 
 %changelog
+* Thu Dec 11 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.0-1
+- Resolves: rhbz#1173324
+- Resolves: rhbz#1172761 - CVE-2014-9356
+- Resolves: rhbz#1172782 - CVE-2014-9357
+- Resolves: rhbz#1172787 - CVE-2014-9358
+- update to upstream v1.4.0
+- override DOCKER_CERT_PATH in sysconfig instead of patching the source
+- create dockerroot user if doesn't exist prior
+
 * Tue Dec 09 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.3.2-6.gitbb24f99
 - use /etc/docker instead of /.docker
 - use upstream master commit bb24f99d741cd8d6a8b882afc929c15c633c39cb
