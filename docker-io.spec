@@ -15,7 +15,7 @@
 
 Name:       %{repo}-io
 Version:    1.4.0
-Release:    1%{?dist}
+Release:    2%{?dist}
 Summary:    Automates deployment of containerized applications
 License:    ASL 2.0
 URL:        http://www.docker.com
@@ -120,8 +120,6 @@ Provides:   golang(%{import_path}/engine) = %{version}-%{release}
 Provides:   golang(%{import_path}/events) = %{version}-%{release}
 Provides:   golang(%{import_path}/graph) = %{version}-%{release}
 Provides:   golang(%{import_path}/image) = %{version}-%{release}
-Provides:   golang(%{import_path}/integration) = %{version}-%{release}
-Provides:   golang(%{import_path}/integration-cli) = %{version}-%{release}
 Provides:   golang(%{import_path}/links) = %{version}-%{release}
 Provides:   golang(%{import_path}/nat) = %{version}-%{release}
 Provides:   golang(%{import_path}/opts) = %{version}-%{release}
@@ -143,6 +141,7 @@ Summary:    A golang registry for global request variables (source libraries)
 Provides:   golang(%{import_path}/pkg/archive) = %{version}-%{release}
 Provides:   golang(%{import_path}/pkg/broadcastwriter) = %{version}-%{release}
 Provides:   golang(%{import_path}/pkg/chrootarchive) = %{version}-%{release}
+Provides:   golang(%{import_path}/pkg/devicemapper) = %{version}-%{release}
 Provides:   golang(%{import_path}/pkg/fileutils) = %{version}-%{release}
 Provides:   golang(%{import_path}/pkg/graphdb) = %{version}-%{release}
 Provides:   golang(%{import_path}/pkg/httputils) = %{version}-%{release}
@@ -150,7 +149,6 @@ Provides:   golang(%{import_path}/pkg/ioutils) = %{version}-%{release}
 Provides:   golang(%{import_path}/pkg/iptables) = %{version}-%{release}
 Provides:   golang(%{import_path}/pkg/jsonlog) = %{version}-%{release}
 Provides:   golang(%{import_path}/pkg/listenbuffer) = %{version}-%{release}
-Provides:   golang(%{import_path}/pkg/log) = %{version}-%{release}
 Provides:   golang(%{import_path}/pkg/mflag) = %{version}-%{release}
 Provides:   golang(%{import_path}/pkg/mflag/example) = %{version}-%{release}
 Provides:   golang(%{import_path}/pkg/mount) = %{version}-%{release}
@@ -301,17 +299,18 @@ exit 0
 %files devel
 %doc AUTHORS CHANGELOG.md CONTRIBUTING.md LICENSE MAINTAINERS NOTICE README.md 
 %dir %{gopath}/src/%{provider}.%{provider_tld}/%{project}
-%dir %{gopath}/src/%{import_path}
-%{gopath}/src/%{import_path}/*
+%{gopath}/src/%{import_path}
 
 %files pkg-devel
 %doc AUTHORS CHANGELOG.md CONTRIBUTING.md LICENSE MAINTAINERS NOTICE README.md 
 %dir %{gopath}/src/%{provider}.%{provider_tld}/%{project}
 %dir %{gopath}/src/%{import_path}
-%dir %{gopath}/src/%{import_path}/pkg
-%{gopath}/src/%{import_path}/pkg/*
+%{gopath}/src/%{import_path}/pkg
 
 %changelog
+* Thu Dec 11 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.0-2
+- update metaprovides
+
 * Thu Dec 11 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.0-1
 - Resolves: rhbz#1173324
 - Resolves: rhbz#1172761 - CVE-2014-9356
