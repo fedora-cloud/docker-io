@@ -15,7 +15,7 @@
 
 Name:       %{repo}-io
 Version:    1.4.0
-Release:    1%{?dist}
+Release:    2%{?dist}
 Summary:    Automates deployment of containerized applications
 License:    ASL 2.0
 URL:        http://www.docker.com
@@ -305,6 +305,9 @@ exit 0
 %{gopath}/src/%{import_path}/pkg
 
 %changelog
+* Thu Dec 11 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.0-2
+- update metaprovides
+
 * Thu Dec 11 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.0-1
 - Resolves: rhbz#1173324
 - Resolves: rhbz#1172761 - CVE-2014-9356
