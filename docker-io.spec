@@ -15,7 +15,7 @@
 
 Name:       %{repo}-io
 Version:    1.4.0
-Release:    1%{?dist}
+Release:    2%{?dist}
 Summary:    Automates deployment of containerized applications
 License:    ASL 2.0
 URL:        http://www.docker.com
@@ -58,8 +58,8 @@ Requires:   xz
 Requires:   bridge-utils
 Requires:   lxc
 
-# Resolves: rhbz#1165615
-Requires:   device-mapper-libs >= 1.02.90-1
+# Resolves: rhbz#1173950
+Requires:   device-mapper-libs
 
 # Resolves: rhbz#1034919
 # No longer needed in Fedora because of libcontainer
@@ -326,6 +326,9 @@ fi
 %{gopath}/src/%{import_path}/pkg/*
 
 %changelog
+* Mon Dec 15 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.0-2
+- Resolves: rhbz#1173950 remove min version requirements on device-mapper-libs
+
 * Thu Dec 11 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.0-1
 - Resolves: rhbz#1173325
 - Resolves: rhbz#1172761 - CVE-2014-9356
