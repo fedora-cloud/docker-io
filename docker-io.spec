@@ -10,12 +10,12 @@
 %global repo            %{project}
 
 %global import_path %{provider}.%{provider_tld}/%{project}/%{repo}
-%global commit      4595d4fb03093acf87b905bebc5ba4964d7c0707
+%global commit      5bc2ff8a36e9a768e8b479de4fe3ea9c9daf4121
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:       %{repo}-io
-Version:    1.4.0
-Release:    2%{?dist}
+Version:    1.4.1
+Release:    1%{?dist}
 Summary:    Automates deployment of containerized applications
 License:    ASL 2.0
 URL:        http://www.docker.com
@@ -25,6 +25,8 @@ Source0:    https://%{import_path}/archive/v%{version}.tar.gz
 Source1:    %{repo}.service
 Source2:    %{repo}.sysconfig
 Source3:    %{repo}-storage.sysconfig
+Source4:    %{repo}-container-logrotate.sh
+Source5:    README.container-logrotate
 BuildRequires:  glibc-static
 BuildRequires:  golang >= 1.3.3
 # for gorilla/mux and kr/pty https://github.com/dotcloud/docker/pull/5950
@@ -39,8 +41,8 @@ BuildRequires:  golang(code.google.com/p/gosqlite/sqlite3)
 BuildRequires:  golang(github.com/syndtr/gocapability/capability) >= 0-0.7
 #BuildRequires:  golang(github.com/docker/libcontainer) >= 1.2.0-3
 BuildRequires:  golang(github.com/tchap/go-patricia/patricia)
-BuildRequires:  golang(github.com/docker/libtrust)
-BuildRequires:  golang(github.com/docker/libtrust/trustgraph)
+BuildRequires:  golang(github.com/docker/libtrust) >= 0-0.2
+BuildRequires:  golang(github.com/docker/libtrust/trustgraph) >= 0-0.2
 BuildRequires:  golang(github.com/Sirupsen/logrus) >= 0.6.0
 BuildRequires:  go-md2man
 BuildRequires:  device-mapper-devel
@@ -49,20 +51,16 @@ BuildRequires:  pkgconfig(systemd)
 # Use appropriate NVR for systemd-units to ensure SocketUser and SocketGroup are available
 %if 0%{?fedora} >= 21
 Requires:   systemd >= 214
-%else
-%if 0%{?fedora} == 20
-Requires:   systemd >= 208-20
-%else
-Requires:   systemd >= 204-20
-%endif
-%endif
-%if 0%{?fedora} >= 21 || 0%{?rhel} >= 6
 # Resolves: rhbz#1165615
 Requires:   device-mapper-libs >= 1.02.90-1
+%else
+Requires:   systemd >= 208-20
 %endif
+
 # Resolves: rhbz#1045220
 Requires:   xz
 Provides:   lxc-docker = %{version}-%{release}
+
 # permitted by https://fedorahosted.org/fpc/ticket/341#comment:7
 # In F22, the whole package should be renamed to be just "docker" and
 # this changed to "Provides: docker-io".
@@ -184,12 +182,49 @@ These source libraries are provided by docker, but are independent of docker
 specific logic.
 The import paths of import_path/pkg/...
 
+%package fish-completion
+Summary:    fish completion files for docker
+Requires:   docker-io = %{version}-%{release}
+Requires:   fish
+Provides:   docker-fish-completion = %{version}-%{release}
+
+%description fish-completion
+This package installs %{summary}.
+
+%package logrotate
+Summary:    cron job to run logrotate on docker containers
+Requires:   docker-io = %{version}-%{release}
+Provides:   docker-logrotate = %{version}-%{release}
+
+%description logrotate
+This package installs %{summary}. logrotate is assumed to be installed on
+containers for this to work, failures are silently ignored.
+
+%package vim
+Summary:    vim syntax highlighting files for docker
+Requires:   docker-io = %{version}-%{release}
+Requires:   vim
+Provides:   docker-vim = %{version}-%{release}
+
+%description vim
+This package installs %{summary}.
+
+%package zsh-completion
+Summary:    zsh completion files for docker
+Requires:   docker-io = %{version}-%{release}
+Requires:   zsh
+Provides:   docker-zsh-completion = %{version}-%{release}
+
+%description zsh-completion
+This package installs %{summary}.
+
 %prep
 %setup -qn %{repo}-%{version}
-rm -rf vendor/src/github.com/{coreos,godbus,gorilla,kr,Sirupsen,syndtr,tchap}
-find . -name "*.go" \
-       -print |\
-       xargs sed -i 's/github.com\/docker\/docker\/vendor\/src\/code.google.com\/p\/go\/src\/pkg\///g'
+rm -rf vendor/src/github.com/{coreos,docker/libtrust,godbus,gorilla,kr,Sirupsen,syndtr,tchap}
+#find . -name "*.go" \
+#       -print |\
+#       xargs sed -i 's/github.com\/docker\/docker\/vendor\/src\/code.google.com\/p\/go\/src\/pkg\///g'
+cp %{SOURCE5} .
 
 %build
 # set up temporary build gopath, and put our directory there
@@ -222,14 +257,27 @@ install -p -m 644 docs/man/man5/Dockerfile.5 %{buildroot}%{_mandir}/man5
 
 # install bash completion
 install -dp %{buildroot}%{_datadir}/bash-completion/completions
-install -p -m 644 contrib/completion/bash/docker %{buildroot}%{_datadir}/bash-completion/completions
+install -p -m 644 contrib/completion/bash/%{repo} %{buildroot}%{_datadir}/bash-completion/completions
+
+# install fish completion
+# create, install and own /usr/share/fish/vendor_completions.d until
+# upstream fish provides it
+install -dp %{buildroot}%{_datadir}/fish/vendor_completions.d
+install -p -m 644 contrib/completion/fish/%{repo}.fish %{buildroot}%{_datadir}/fish/vendor_completions.d
+
+# install container logrotate cron script
+install -dp %{buildroot}%{_sysconfdir}/cron.daily/
+install -p -m 755 %{SOURCE4} %{buildroot}%{_sysconfdir}/cron.daily/%{repo}-container-logrotate
 
 # install vim syntax highlighting
-# (in process of being included in default vim)
 install -d %{buildroot}%{_datadir}/vim/vimfiles/{doc,ftdetect,syntax}
 install -p -m 644 contrib/syntax/vim/doc/dockerfile.txt %{buildroot}%{_datadir}/vim/vimfiles/doc
 install -p -m 644 contrib/syntax/vim/ftdetect/dockerfile.vim %{buildroot}%{_datadir}/vim/vimfiles/ftdetect
 install -p -m 644 contrib/syntax/vim/syntax/dockerfile.vim %{buildroot}%{_datadir}/vim/vimfiles/syntax
+
+# install zsh completion
+install -d %{buildroot}%{_datadir}/zsh/site-functions
+install -p -m 644 contrib/completion/zsh/_%{repo} %{buildroot}%{_datadir}/zsh/site-functions
 
 # install udev rules
 install -d %{buildroot}%{_sysconfdir}/udev/rules.d
@@ -282,16 +330,12 @@ exit 0
 %{_mandir}/man1/docker*.1.gz
 %{_mandir}/man5/Dockerfile.5.gz
 %{_bindir}/docker
-%dir %{_libexecdir}/docker
-%{_libexecdir}/docker/dockerinit
+%{_libexecdir}/docker
 %{_unitdir}/docker.service
 %{_unitdir}/docker.socket
 %{_datadir}/bash-completion/completions/docker
 %dir %{_sharedstatedir}/docker
 %{_sysconfdir}/udev/rules.d/80-docker.rules
-%{_datadir}/vim/vimfiles/doc/dockerfile.txt
-%{_datadir}/vim/vimfiles/ftdetect/dockerfile.vim
-%{_datadir}/vim/vimfiles/syntax/dockerfile.vim
 
 %files devel
 %doc AUTHORS CHANGELOG.md CONTRIBUTING.md LICENSE MAINTAINERS NOTICE README.md 
@@ -304,7 +348,30 @@ exit 0
 %dir %{gopath}/src/%{import_path}
 %{gopath}/src/%{import_path}/pkg
 
+%files fish-completion
+%dir %{_datadir}/fish/vendor_completions.d/
+%{_datadir}/fish/vendor_completions.d/docker.fish
+
+%files logrotate
+%doc README.container-logrotate
+%{_sysconfdir}/cron.daily/%{repo}-container-logrotate
+
+%files vim
+%{_datadir}/vim/vimfiles/doc/dockerfile.txt
+%{_datadir}/vim/vimfiles/ftdetect/dockerfile.vim
+%{_datadir}/vim/vimfiles/syntax/dockerfile.vim
+
+%files zsh-completion
+%{_datadir}/zsh/site-functions/_docker
+
 %changelog
+* Wed Dec 17 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-1
+- Resolves: rhbz#1175144 - update to upstream v1.4.1
+- Resolves: rhbz#1175097, rhbz#1127570 - subpackages
+for fish and zsh completion and vim syntax highlighting
+- Provide subpackage to run logrotate on running containers as a daily cron
+job
+
 * Thu Dec 11 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.0-2
 - update metaprovides
 
