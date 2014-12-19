@@ -15,7 +15,7 @@
 
 Name:       %{repo}-io
 Version:    1.4.1
-Release:    1%{?dist}
+Release:    2%{?dist}
 Summary:    Automates deployment of containerized applications
 License:    ASL 2.0
 URL:        http://www.docker.com
@@ -26,8 +26,9 @@ Source0:    https://%{import_path}/archive/v%{version}.tar.gz
 Source1:    %{repo}.service
 Source2:    %{repo}.sysconfig
 Source3:    %{repo}-storage.sysconfig
-Source4:    %{repo}-container-logrotate.sh
-Source5:    README.container-logrotate
+Source4:    %{repo}-logrotate.sh
+Source5:    README.%{repo}-logrotate
+Source6:    %{repo}-network.sysconfig
 BuildRequires:  glibc-static
 BuildRequires:  golang >= 1.3.3
 # for gorilla/mux and kr/pty https://github.com/dotcloud/docker/pull/5950
@@ -82,7 +83,8 @@ servers, OpenStack clusters, public instances, or combinations of the above.
 %package devel
 BuildRequires:  golang >= 1.2.1-3
 Requires:   golang >= 1.2.1-3
-Requires:   docker-io-pkg-devel
+Requires:   %{name}-pkg-devel
+Provides:   %{repo}-devel
 Summary:    A golang registry for global request variables (source libraries)
 Provides:   golang(%{import_path}) = %{version}-%{release}
 Provides:   golang(%{import_path}/api) = %{version}-%{release}
@@ -135,6 +137,7 @@ This package provides the source libraries for docker.
 %package pkg-devel
 BuildRequires:  golang >= 1.2.1-3
 Requires:   golang >= 1.2.1-3
+Provides:   %{repo}-pkg-devel = %{version}-%{release}
 Summary:    A golang registry for global request variables (source libraries)
 Provides:   golang(%{import_path}/pkg/archive) = %{version}-%{release}
 Provides:   golang(%{import_path}/pkg/broadcastwriter) = %{version}-%{release}
@@ -186,17 +189,17 @@ The import paths of import_path/pkg/...
 
 %package fish-completion
 Summary:    fish completion files for docker
-Requires:   docker-io = %{version}-%{release}
+Requires:   %{name} = %{version}-%{release}
 Requires:   fish
-Provides:   docker-fish-completion = %{version}-%{release}
+Provides:   %{repo}-fish-completion = %{version}-%{release}
 
 %description fish-completion
 This package installs %{summary}.
 
 %package logrotate
 Summary:    cron job to run logrotate on docker containers
-Requires:   docker-io = %{version}-%{release}
-Provides:   docker-logrotate = %{version}-%{release}
+Requires:   %{name} = %{version}-%{release}
+Provides:   %{repo}-logrotate = %{version}-%{release}
 
 %description logrotate
 This package installs %{summary}. logrotate is assumed to be installed on
@@ -204,18 +207,18 @@ containers for this to work, failures are silently ignored.
 
 %package vim
 Summary:    vim syntax highlighting files for docker
-Requires:   docker-io = %{version}-%{release}
+Requires:   %{name} = %{version}-%{release}
 Requires:   vim
-Provides:   docker-vim = %{version}-%{release}
+Provides:   %{repo}-vim = %{version}-%{release}
 
 %description vim
 This package installs %{summary}.
 
 %package zsh-completion
 Summary:    zsh completion files for docker
-Requires:   docker-io = %{version}-%{release}
+Requires:   %{name} = %{version}-%{release}
 Requires:   zsh
-Provides:   docker-zsh-completion = %{version}-%{release}
+Provides:   %{repo}-zsh-completion = %{version}-%{release}
 
 %description zsh-completion
 This package installs %{summary}.
@@ -269,7 +272,7 @@ install -p -m 644 contrib/completion/fish/%{repo}.fish %{buildroot}%{_datadir}/f
 
 # install container logrotate cron script
 install -dp %{buildroot}%{_sysconfdir}/cron.daily/
-install -p -m 755 %{SOURCE4} %{buildroot}%{_sysconfdir}/cron.daily/%{repo}-container-logrotate
+install -p -m 755 %{SOURCE4} %{buildroot}%{_sysconfdir}/cron.daily/%{repo}-logrotate
 
 # install vim syntax highlighting
 install -d %{buildroot}%{_datadir}/vim/vimfiles/{doc,ftdetect,syntax}
@@ -296,6 +299,7 @@ install -p -m 644 contrib/init/systemd/%{repo}.socket %{buildroot}%{_unitdir}
 # for additional args
 install -d %{buildroot}%{_sysconfdir}/sysconfig/
 install -p -m 644 %{SOURCE2} %{buildroot}%{_sysconfdir}/sysconfig/docker
+install -p -m 644 %{SOURCE6} %{buildroot}%{_sysconfdir}/sysconfig/docker-network
 install -p -m 644 %{SOURCE3} %{buildroot}%{_sysconfdir}/sysconfig/docker-storage
 
 # sources
@@ -329,6 +333,7 @@ exit 0
 %doc AUTHORS CHANGELOG.md CONTRIBUTING.md LICENSE MAINTAINERS NOTICE README.md 
 %doc LICENSE-vim-syntax README-vim-syntax.md
 %config(noreplace) %{_sysconfdir}/sysconfig/docker
+%config(noreplace) %{_sysconfdir}/sysconfig/docker-network
 %config(noreplace) %{_sysconfdir}/sysconfig/docker-storage
 %{_mandir}/man1/docker*.1.gz
 %{_mandir}/man5/Dockerfile.5.gz
@@ -356,8 +361,8 @@ exit 0
 %{_datadir}/fish/vendor_completions.d/docker.fish
 
 %files logrotate
-%doc README.container-logrotate
-%{_sysconfdir}/cron.daily/%{repo}-container-logrotate
+%doc README.%{repo}-logrotate
+%{_sysconfdir}/cron.daily/%{repo}-logrotate
 
 %files vim
 %{_datadir}/vim/vimfiles/doc/dockerfile.txt
@@ -368,6 +373,10 @@ exit 0
 %{_datadir}/zsh/site-functions/_docker
 
 %changelog
+* Thu Dec 18 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-2
+- update and rename logrotate cron script
+- install /etc/sysconfig/docker-network
+
 * Wed Dec 17 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-1
 - Resolves: rhbz#1175144 - update to upstream v1.4.1
 - Resolves: rhbz#1175097, rhbz#1127570 - subpackages
