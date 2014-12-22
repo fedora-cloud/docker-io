@@ -13,9 +13,11 @@
 %global commit      5bc2ff8a36e9a768e8b479de4fe3ea9c9daf4121
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
+%global tar_import_path code.google.com/p/go/src/pkg/archive/tar
+
 Name:       %{repo}-io
 Version:    1.4.1
-Release:    2%{?dist}
+Release:    3%{?dist}
 Summary:    Automates deployment of containerized applications
 License:    ASL 2.0
 URL:        http://www.docker.com
@@ -127,6 +129,7 @@ Provides:   golang(%{import_path}/runconfig) = %{version}-%{release}
 Provides:   golang(%{import_path}/trust) = %{version}-%{release}
 Provides:   golang(%{import_path}/utils) = %{version}-%{release}
 Provides:   golang(%{import_path}/volumes) = %{version}-%{release}
+Provides:   golang(%{import_path}/vendor/src/%{tar_import_path}) = %{version}-%{release}
 
 %description devel
 %{summary}
@@ -301,7 +304,7 @@ install -p -m 644 %{SOURCE6} %{buildroot}%{_sysconfdir}/sysconfig/docker-network
 install -p -m 644 %{SOURCE3} %{buildroot}%{_sysconfdir}/sysconfig/docker-storage
 
 # sources
-install -d -p %{buildroot}/%{gopath}/src/%{import_path}
+install -d -p %{buildroot}%{gopath}/src/%{import_path}
 rm -rf pkg/symlink/testdata
 
 for dir in api builder builtins contrib/docker-device-tool \
@@ -310,8 +313,11 @@ for dir in api builder builtins contrib/docker-device-tool \
         image links nat opts pkg registry runconfig \
         trust utils volumes
 do
-    cp -rpav $dir %{buildroot}/%{gopath}/src/%{import_path}/
+    cp -rpav $dir %{buildroot}%{gopath}/src/%{import_path}/
 done
+
+install -d -p %{buildroot}%{gopath}/src/%{import_path}/vendor/src/%{tar_import_path}
+cp -rpav vendor/src/%{tar_import_path}/* %{buildroot}%{gopath}/src/%{import_path}/vendor/src/%{tar_import_path}
 
 %pre
 getent group docker > /dev/null || %{_sbindir}/groupadd -r docker
