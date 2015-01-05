@@ -1,0 +1,33 @@
+From 9728ad1030f5374addd30753762fe2add4c9f11d Mon Sep 17 00:00:00 2001
+From: Lokesh Mandvekar <lsm5@fedoraproject.org>
+Date: Mon, 5 Jan 2015 18:36:43 +0000
+Subject: [PATCH] docker exec patch for older kernels
+
+https://github.com/docker/libcontainer/issues/309
+
+From: Vincent Batts <vbatts@redhat.com>
+Signed-off-by: Lokesh Mandvekar <lsm5@fedoraproject.org>
+---
+ vendor/src/github.com/docker/libcontainer/namespaces/nsenter/nsenter.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/vendor/src/github.com/docker/libcontainer/namespaces/nsenter/nsenter.c b/vendor/src/github.com/docker/libcontainer/namespaces/nsenter/nsenter.c
+index f060f63..02e4649 100644
+--- a/vendor/src/github.com/docker/libcontainer/namespaces/nsenter/nsenter.c
++++ b/vendor/src/github.com/docker/libcontainer/namespaces/nsenter/nsenter.c
+@@ -89,10 +89,12 @@ void nsenter()
+ 		return;
+ 	}
+
++#ifdef PR_SET_CHILD_SUBREAPER
+ 	if (prctl(PR_SET_CHILD_SUBREAPER, 1, 0, 0, 0) == -1) {
+                 fprintf(stderr, "nsenter: failed to set child subreaper: %s", strerror(errno));
+                 exit(1);
+         }
++#endif
+
+ 	static const struct option longopts[] = {
+ 		{"nspid", required_argument, NULL, 'n'},
+-- 
+2.2.0
+

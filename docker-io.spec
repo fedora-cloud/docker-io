@@ -10,12 +10,12 @@
 %global repo            %{project}
 
 %global import_path %{provider}.%{provider_tld}/%{project}/%{repo}
-%global commit      4595d4fb03093acf87b905bebc5ba4964d7c0707
+%global commit      5bc2ff8a36e9a768e8b479de4fe3ea9c9daf4121
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 Name:       %{repo}-io
-Version:    1.4.0
-Release:    2%{?dist}
+Version:    1.4.1
+Release:    1%{?dist}
 Summary:    Automates deployment of containerized applications
 License:    ASL 2.0
 URL:        http://www.docker.com
@@ -24,13 +24,17 @@ ExclusiveArch:  x86_64
 Source0:        https://github.com/docker/docker/archive/v%{version}.tar.gz
 # though final name for sysconf file is simply 'docker',
 # having .sysconfig makes things clear
-Source1:        docker.sysconfig
-Source2:        docker-storage.sysconfig
+Source1:    docker.sysconfig
+Source2:    docker-storage.sysconfig
 # have init script wait up to 5 mins before forcibly terminating docker daemon
 # https://github.com/docker/docker/commit/640d2ef6f54d96ac4fc3f0f745cb1e6a35148607
-Source3:        docker.sysvinit
+Source3:    docker.sysvinit
+Source4:    docker-network.sysconfig
+Source5:    docker-logrotate.sh
+Source6:    README.%{repo}-logrotate
+Patch0:     0001-docker-exec-patch-for-older-kernels.patch 
 BuildRequires:  glibc-static
-#BuildRequires:  golang >= 1.3.3
+BuildRequires:  golang >= 1.3.3
 # for gorilla/mux and kr/pty https://github.com/dotcloud/docker/pull/5950
 #BuildRequires:  golang(github.com/gorilla/mux) >= 0-0.13
 #BuildRequires:  golang(github.com/kr/pty) >= 0-0.19
@@ -176,14 +180,46 @@ Provides:   golang(%{import_path}/pkg/version) = %{version}-%{release}
 These source librariees are provided by docker, but are independent of docker specific logic.
 The import paths of %{import_path}/pkg/...
 
+%package fish-completion
+Summary:    fish completion files for docker
+Requires:   %{name} = %{version}-%{release}
+Requires:   fish
+Provides:   %{repo}-fish-completion = %{version}-%{release}
+
+%description fish-completion
+This package installs %{summary}.
+
+%package logrotate
+Summary:    cron job to run logrotate on docker containers
+Requires:   %{name} = %{version}-%{release}
+Provides:   %{repo}-logrotate = %{version}-%{release}
+
+%description logrotate
+This package installs %{summary}. logrotate is assumed to be installed on
+containers for this to work, failures are silently ignored.
+
+%package vim
+Summary:    vim syntax highlighting files for docker
+Requires:   %{name} = %{version}-%{release}
+Requires:   vim
+Provides:   %{repo}-vim = %{version}-%{release}
+
+%description vim
+This package installs %{summary}.
+
+%package zsh-completion
+Summary:    zsh completion files for docker
+Requires:   %{name} = %{version}-%{release}
+Requires:   zsh
+Provides:   %{repo}-zsh-completion = %{version}-%{release}
+
+%description zsh-completion
+This package installs %{summary}.
+
 %prep
 %setup -q -n docker-%{version}
-#rm -rf vendor
-#find . -name "*.go" \
-#        -print |\
-#        xargs sed -i 's/github.com\/docker\/docker\/vendor\/src\/code.google.com\/p\/go\/src\/pkg\///g'
-sed -i '/getopt.h/a\\n\#ifndef PR_SET_CHILD_SUBREAPER\n\#define PR_SET_CHILD_SUBREAPER 36\n\#endif' \
-        vendor/src/github.com/docker/libcontainer/namespaces/nsenter/nsenter.c
+cp %{SOURCE6} .
+%patch0 -p1
 
 %build
 # set up temporary build gopath, and put our directory there
@@ -218,6 +254,16 @@ install -p -m 644 docs/man/man5/Dockerfile.5 %{buildroot}%{_mandir}/man5
 install -dp %{buildroot}%{_datadir}/bash-completion/completions
 install -p -m 644 contrib/completion/bash/docker %{buildroot}%{_datadir}/bash-completion/completions
 
+# install fish completion
+# create, install and own /usr/share/fish/vendor_completions.d until
+# upstream fish provides it
+install -dp %{buildroot}%{_datadir}/fish/vendor_completions.d
+install -p -m 644 contrib/completion/fish/%{repo}.fish %{buildroot}%{_datadir}/fish/vendor_completions.d
+
+# install container logrotate cron script
+install -dp %{buildroot}%{_sysconfdir}/cron.daily/
+install -p -m 755 %{SOURCE5} %{buildroot}%{_sysconfdir}/cron.daily/%{repo}-logrotate
+
 # install zsh completion
 # zsh completion has been upstreamed into docker and
 # this will be removed once it enters the zsh rpm
@@ -242,6 +288,7 @@ install -d -m 700 %{buildroot}%{_sharedstatedir}/docker
 install -d %{buildroot}%{_sysconfdir}/sysconfig/
 install -p -m 644 %{SOURCE1} %{buildroot}%{_sysconfdir}/sysconfig/docker
 install -p -m 644 %{SOURCE2} %{buildroot}%{_sysconfdir}/sysconfig/docker-storage
+install -p -m 644 %{SOURCE4} %{buildroot}%{_sysconfdir}/sysconfig/docker-network
 install -d %{buildroot}%{_initddir}
 install -p -m 755 %{SOURCE3} %{buildroot}%{_initddir}/docker
 
@@ -257,6 +304,12 @@ for dir in api builder builtins contrib/docker-device-tool \
 do
     cp -rpav $dir %{buildroot}/%{gopath}/src/%{import_path}/
 done
+
+# install docker config directory
+install -dp %{buildroot}%{_sysconfdir}/docker/
+
+%check
+[ ! -e /run/docker.sock ] || make test
 
 %pre
 getent group docker > /dev/null || %{_sbindir}/groupadd -r docker
@@ -298,19 +351,16 @@ fi
 %doc LICENSE-vim-syntax README-vim-syntax.md
 %config(noreplace) %{_sysconfdir}/sysconfig/docker
 %config(noreplace) %{_sysconfdir}/sysconfig/docker-storage
+%config(noreplace) %{_sysconfdir}/sysconfig/docker-network
 %{_mandir}/man1/docker*.1.gz
 %{_mandir}/man5/Dockerfile.5.gz
 %{_bindir}/docker
-%dir %{_libexecdir}/docker
-%{_libexecdir}/docker/dockerinit
+%{_libexecdir}/docker
 %{_initddir}/docker
 %{_datadir}/bash-completion/completions/docker
-%{_datadir}/zsh/site-functions/_docker
 %dir %{_sharedstatedir}/docker
 %{_sysconfdir}/udev/rules.d/80-docker.rules
-%{_datadir}/vim/vimfiles/doc/dockerfile.txt
-%{_datadir}/vim/vimfiles/ftdetect/dockerfile.vim
-%{_datadir}/vim/vimfiles/syntax/dockerfile.vim
+%{_sysconfdir}/docker
 
 %files devel
 %doc AUTHORS CHANGELOG.md CONTRIBUTING.md LICENSE MAINTAINERS NOTICE README.md 
@@ -325,7 +375,31 @@ fi
 %dir %{gopath}/src/%{import_path}/pkg
 %{gopath}/src/%{import_path}/pkg/*
 
+%files fish-completion
+%dir %{_datadir}/fish/vendor_completions.d/
+%{_datadir}/fish/vendor_completions.d/docker.fish
+
+%files logrotate
+%doc README.%{repo}-logrotate
+%{_sysconfdir}/cron.daily/%{repo}-logrotate
+
+%files vim
+%{_datadir}/vim/vimfiles/doc/dockerfile.txt
+%{_datadir}/vim/vimfiles/ftdetect/dockerfile.vim
+%{_datadir}/vim/vimfiles/syntax/dockerfile.vim
+
+%files zsh-completion
+%{_datadir}/zsh/site-functions/_docker
+
 %changelog
+* Mon Jan 05 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-1
+- Resolves: rhbz#1175144 - update to 1.4.1
+- patch to make 'docker exec' work
+via Vincent Batts <vbatts@fedoraproject.org>
+https://github.com/docker/libcontainer/issues/309
+- subpackages for fish, zsh completion, vim highlighting and logrotate cron
+job
+
 * Mon Dec 15 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.0-2
 - Resolves: rhbz#1173950 remove min version requirements on device-mapper-libs
 

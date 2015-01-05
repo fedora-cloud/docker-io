@@ -1,0 +1,17 @@
+This package will install the 'docker-logrotate' script to
+/etc/cron.daily. This script will run logrotate on all running
+containers and ignore all failures.
+
+This script is enabled by default. To disable it,
+uncomment the line "LOGROTATE=false" in /etc/sysconfig/docker.
+
+Possible issues:
+1. This assumes that logrotate is installed on containers to run
+successfully.
+
+2. A race condition occurs if a container exits before 'docker
+exec' run (though it's ignored)
+
+3. Not all containers may need this (whether logrotate is installed or not)
+
+Suggestions to improve this are welcome.
