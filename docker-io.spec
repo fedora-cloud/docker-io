@@ -15,7 +15,7 @@
 
 Name:       %{repo}-io
 Version:    1.4.1
-Release:    1%{?dist}
+Release:    2%{?dist}
 Summary:    Automates deployment of containerized applications
 License:    ASL 2.0
 URL:        http://www.docker.com
@@ -183,7 +183,6 @@ The import paths of %{import_path}/pkg/...
 %package fish-completion
 Summary:    fish completion files for docker
 Requires:   %{name} = %{version}-%{release}
-Requires:   fish
 Provides:   %{repo}-fish-completion = %{version}-%{release}
 
 %description fish-completion
@@ -392,6 +391,9 @@ fi
 %{_datadir}/zsh/site-functions/_docker
 
 %changelog
+* Wed Jan 07 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-2
+- don't require fish for fish-completion as it's unavailable
+
 * Mon Jan 05 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-1
 - Resolves: rhbz#1175144 - update to 1.4.1
 - patch to make 'docker exec' work
