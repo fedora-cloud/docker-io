@@ -1,7 +1,8 @@
 # /etc/sysconfig/docker
 
 # Modify these options if you want to change the way the docker daemon runs
-OPTIONS='--selinux-enabled'
+OPTIONS='--selinux-enabled -H fd://'
+DOCKER_CERT_PATH=/etc/docker
 
 # Location used for temporary files, such as those created by
 # docker load and build operations. Default is /var/lib/docker/tmp
