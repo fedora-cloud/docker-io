@@ -17,7 +17,7 @@
 
 Name:       %{repo}-io
 Version:    1.4.1
-Release:    3%{?dist}
+Release:    4%{?dist}
 Summary:    Automates deployment of containerized applications
 License:    ASL 2.0
 URL:        http://www.docker.com
@@ -229,9 +229,6 @@ This package installs %{summary}.
 %prep
 %setup -qn %{repo}-%{version}
 rm -rf vendor/src/github.com/{coreos,docker/libtrust,godbus,gorilla,kr,Sirupsen,syndtr,tchap}
-#find . -name "*.go" \
-#       -print |\
-#       xargs sed -i 's/github.com\/docker\/docker\/vendor\/src\/code.google.com\/p\/go\/src\/pkg\///g'
 cp %{SOURCE5} .
 
 %build
@@ -321,6 +318,12 @@ done
 install -d -p %{buildroot}%{gopath}/src/%{import_path}/vendor/src/%{tar_import_path}
 cp -rpav vendor/src/%{tar_import_path}/* %{buildroot}%{gopath}/src/%{import_path}/vendor/src/%{tar_import_path}
 
+# install docker config directory
+install -dp %{buildroot}%{_sysconfdir}/%{repo}
+
+%check
+[ ! -e /run/docker.sock ] || make test
+
 %pre
 getent group docker > /dev/null || %{_sbindir}/groupadd -r docker
 getent passwd dockerroot > /dev/null || %{_sbindir}/useradd -r -g docker -d %{_sharedstatedir}/docker -s /sbin/nologin -c "Docker User" dockerroot
@@ -350,6 +353,7 @@ exit 0
 %{_datadir}/bash-completion/completions/docker
 %dir %{_sharedstatedir}/docker
 %{_sysconfdir}/udev/rules.d/80-docker.rules
+%{_sysconfdir}/docker
 
 %files devel
 %doc AUTHORS CHANGELOG.md CONTRIBUTING.md LICENSE MAINTAINERS NOTICE README.md 
@@ -379,6 +383,13 @@ exit 0
 %{_datadir}/zsh/site-functions/_docker
 
 %changelog
+* Thu Jan 08 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-4
+- allow unitfile to use /etc/sysconfig/docker-network
+- MountFlags private
+
+* Fri Dec 19 2014 Dan Walsh <dwalsh@redhat.com> - 1.4.1-3
+- Add check to run unit tests
+
 * Thu Dec 18 2014 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-2
 - update and rename logrotate cron script
 - install /etc/sysconfig/docker-network

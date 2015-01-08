@@ -8,9 +8,11 @@ Requires=docker.socket
 Type=notify
 EnvironmentFile=-/etc/sysconfig/docker
 EnvironmentFile=-/etc/sysconfig/docker-storage
-ExecStart=/usr/bin/docker -d -H fd:// $OPTIONS $DOCKER_STORAGE_OPTIONS
+EnvironmentFile=-/etc/sysconfig/docker-network
+ExecStart=/usr/bin/docker -d $OPTIONS $DOCKER_STORAGE_OPTIONS $DOCKER_NETWORK_OPTIONS
 LimitNOFILE=1048576
 LimitNPROC=1048576
+MountFlags=private
 
 [Install]
 WantedBy=multi-user.target
