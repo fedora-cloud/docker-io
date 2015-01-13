@@ -1,0 +1,35 @@
+From 2bc25525096c60d32c49c506477e3585e8613182 Mon Sep 17 00:00:00 2001
+From: Jessica Frazelle <jess@docker.com>
+Date: Tue, 9 Dec 2014 14:18:25 -0800
+Subject: [PATCH] Change cert path to /etc/docker for root user
+
+Docker-DCO-1.1-Signed-off-by: Jessica Frazelle <jess@docker.com> (github: jfrazelle)
+---
+ docker/flags.go | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/docker/flags.go b/docker/flags.go
+index 6601b4f..0866519 100644
+--- a/docker/flags.go
++++ b/docker/flags.go
+@@ -3,6 +3,7 @@ package main
+ import (
+ 	"fmt"
+ 	"os"
++	"os/user"
+ 	"path/filepath"
+ 	"runtime"
+ 
+@@ -17,7 +18,11 @@ var (
+ 
+ func init() {
+ 	if dockerCertPath == "" {
+-		dockerCertPath = filepath.Join(getHomeDir(), ".docker")
++		if currentUser, err := user.Current(); err != nil || currentUser.Uid == "0" {
++			dockerCertPath = "/etc/docker"
++		} else {
++			dockerCertPath = filepath.Join(getHomeDir(), ".docker")
++		}
+ 	}
+ }
+ 
