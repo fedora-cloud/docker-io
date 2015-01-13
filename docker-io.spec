@@ -17,7 +17,7 @@
 
 Name:       %{repo}-io
 Version:    1.4.1
-Release:    4%{?dist}
+Release:    5%{?dist}
 Summary:    Automates deployment of containerized applications
 License:    ASL 2.0
 URL:        http://www.docker.com
@@ -31,6 +31,7 @@ Source3:    %{repo}-storage.sysconfig
 Source4:    %{repo}-logrotate.sh
 Source5:    README.%{repo}-logrotate
 Source6:    %{repo}-network.sysconfig
+Patch0:     %{repo}-cert-path.patch
 BuildRequires:  glibc-static
 BuildRequires:  golang >= 1.3.3
 # for gorilla/mux and kr/pty https://github.com/dotcloud/docker/pull/5950
@@ -229,6 +230,7 @@ This package installs %{summary}.
 %prep
 %setup -qn %{repo}-%{version}
 rm -rf vendor/src/github.com/{coreos,docker/libtrust,godbus,gorilla,kr,Sirupsen,syndtr,tchap}
+%patch0 -p1
 cp %{SOURCE5} .
 
 %build
@@ -383,6 +385,9 @@ exit 0
 %{_datadir}/zsh/site-functions/_docker
 
 %changelog
+* Tue Jan 13 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-5
+- Resolves: rhbz#1169593 patch to set DOCKER_CERT_PATH regardless of config file
+
 * Thu Jan 08 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-4
 - allow unitfile to use /etc/sysconfig/docker-network
 - MountFlags private
