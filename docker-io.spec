@@ -15,7 +15,7 @@
 
 Name:       %{repo}-io
 Version:    1.4.1
-Release:    2%{?dist}
+Release:    3%{?dist}
 Summary:    Automates deployment of containerized applications
 License:    ASL 2.0
 URL:        http://www.docker.com
@@ -33,6 +33,7 @@ Source4:    docker-network.sysconfig
 Source5:    docker-logrotate.sh
 Source6:    README.%{repo}-logrotate
 Patch0:     0001-docker-exec-patch-for-older-kernels.patch 
+Patch1:     docker-cert-path.patch
 BuildRequires:  glibc-static
 BuildRequires:  golang >= 1.3.3
 # for gorilla/mux and kr/pty https://github.com/dotcloud/docker/pull/5950
@@ -219,6 +220,7 @@ This package installs %{summary}.
 %setup -q -n docker-%{version}
 cp %{SOURCE6} .
 %patch0 -p1
+%patch1 -p1
 
 %build
 # set up temporary build gopath, and put our directory there
@@ -391,6 +393,9 @@ fi
 %{_datadir}/zsh/site-functions/_docker
 
 %changelog
+* Thu Jan 15 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-3
+- set DOCKER_CERT_PATH outside of sysconfig file
+
 * Wed Jan 07 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-2
 - don't require fish for fish-completion as it's unavailable
 
