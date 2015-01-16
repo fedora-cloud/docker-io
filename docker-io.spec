@@ -17,7 +17,7 @@
 
 Name:       %{repo}-io
 Version:    1.4.1
-Release:    5%{?dist}
+Release:    6%{?dist}
 Summary:    Automates deployment of containerized applications
 License:    ASL 2.0
 URL:        http://www.docker.com
@@ -322,7 +322,15 @@ cp -rpav vendor/src/%{tar_import_path}/* %{buildroot}%{gopath}/src/%{import_path
 install -dp %{buildroot}%{_sysconfdir}/%{repo}
 
 %check
-[ ! -e /run/docker.sock ] || make test
+[ ! -e /run/docker.sock ] || {
+    mkdir test_dir
+    pushd test_dir
+    git clone https://%{import_path}
+    pushd docker
+    make test-unit
+    popd
+    popd
+}
 
 %pre
 getent group docker > /dev/null || %{_sbindir}/groupadd -r docker
@@ -382,6 +390,9 @@ exit 0
 %{_datadir}/zsh/site-functions/_docker
 
 %changelog
+* Fri Jan 16 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-6
+- run tests inside a docker repo (doesn't affect koji builds - not built)
+
 * Tue Jan 13 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-5
 - Resolves: rhbz#1169593 patch to set DOCKER_CERT_PATH regardless of config file
 
