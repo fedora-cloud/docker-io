@@ -329,7 +329,7 @@ install -dp %{buildroot}%{_sysconfdir}/%{repo}
     pushd test_dir
     git clone https://%{import_path}
     pushd docker
-    make test-unit
+    make test
     popd
     popd
 }
