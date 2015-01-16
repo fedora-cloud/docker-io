@@ -17,7 +17,7 @@
 
 Name:       %{repo}-io
 Version:    1.4.1
-Release:    6%{?dist}
+Release:    7%{?dist}
 Summary:    Automates deployment of containerized applications
 License:    ASL 2.0
 URL:        http://www.docker.com
@@ -294,7 +294,6 @@ install -d %{buildroot}%{_sharedstatedir}/%{repo}
 # install systemd/init scripts
 install -d %{buildroot}%{_unitdir}
 install -p -m 644 %{SOURCE1} %{buildroot}%{_unitdir}
-install -p -m 644 contrib/init/systemd/%{repo}.socket %{buildroot}%{_unitdir}
 
 # for additional args
 install -d %{buildroot}%{_sysconfdir}/sysconfig/
@@ -333,7 +332,7 @@ install -dp %{buildroot}%{_sysconfdir}/%{repo}
 }
 
 %pre
-getent group docker > /dev/null || %{_sbindir}/groupadd -r docker
+getent passwd dockerroot > /dev/null || %{_sbindir}/useradd -r -d %{_sharedstatedir}/docker -s /sbin/nologin -c "Docker User" dockerroot
 exit 0
 
 %post
@@ -356,7 +355,6 @@ exit 0
 %{_bindir}/docker
 %{_libexecdir}/docker
 %{_unitdir}/docker.service
-%{_unitdir}/docker.socket
 %{_datadir}/bash-completion/completions/docker
 %dir %{_sharedstatedir}/docker
 %{_sysconfdir}/udev/rules.d/80-docker.rules
@@ -390,6 +388,12 @@ exit 0
 %{_datadir}/zsh/site-functions/_docker
 
 %changelog
+* Fri Jan 16 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-7
+- docker group no longer used or created
+- no socket activation
+- config file updates to include info about docker_transition_unconfined
+boolean
+
 * Fri Jan 16 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-6
 - run tests inside a docker repo (doesn't affect koji builds - not built)
 
