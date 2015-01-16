@@ -15,7 +15,7 @@
 
 Name:       %{repo}-io
 Version:    1.4.1
-Release:    3%{?dist}
+Release:    4%{?dist}
 Summary:    Automates deployment of containerized applications
 License:    ASL 2.0
 URL:        http://www.docker.com
@@ -310,7 +310,15 @@ done
 install -dp %{buildroot}%{_sysconfdir}/docker/
 
 %check
-[ ! -e /run/docker.sock ] || make test
+[ ! -e /run/docker.sock ] || {
+    mkdir test_dir
+    pushd test_dir
+    git clone https://%{import_path}
+    pushd docker
+    make test
+    popd
+    popd
+}
 
 %pre
 getent group docker > /dev/null || %{_sbindir}/groupadd -r docker
@@ -393,6 +401,9 @@ fi
 %{_datadir}/zsh/site-functions/_docker
 
 %changelog
+* Fri Jan 16 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-4
+- run tests inside docker repo in check (doesn't affect koji - not built)
+
 * Thu Jan 15 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-3
 - set DOCKER_CERT_PATH outside of sysconfig file
 
