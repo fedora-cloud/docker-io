@@ -34,20 +34,20 @@ Patch0:     %{repo}-cert-path.patch
 BuildRequires:  glibc-static
 BuildRequires:  golang >= 1.3.3
 # for gorilla/mux and kr/pty https://github.com/dotcloud/docker/pull/5950
-BuildRequires:  golang(github.com/gorilla/mux) >= 0-0.13
-BuildRequires:  golang(github.com/kr/pty) >= 0-0.19
-BuildRequires:  golang(github.com/godbus/dbus)
+#BuildRequires:  golang(github.com/gorilla/mux) >= 0-0.13
+#BuildRequires:  golang(github.com/kr/pty) >= 0-0.19
+#BuildRequires:  golang(github.com/godbus/dbus)
 # for coreos/go-systemd https://github.com/dotcloud/docker/pull/5981
-BuildRequires:  golang(github.com/coreos/go-systemd) >= 2-1
-BuildRequires:  golang(code.google.com/p/go.net/websocket)
-BuildRequires:  golang(code.google.com/p/gosqlite/sqlite3)
+#BuildRequires:  golang(github.com/coreos/go-systemd) >= 2-1
+#BuildRequires:  golang(code.google.com/p/go.net/websocket)
+#BuildRequires:  golang(code.google.com/p/gosqlite/sqlite3)
 # Resolves: rhbz#1109039 use syndtr/gocapability >= 0-0.7
-BuildRequires:  golang(github.com/syndtr/gocapability/capability) >= 0-0.7
-#BuildRequires:  golang(github.com/docker/libcontainer) >= 1.2.0-3
-BuildRequires:  golang(github.com/tchap/go-patricia/patricia)
-BuildRequires:  golang(github.com/docker/libtrust) >= 0-0.2
-BuildRequires:  golang(github.com/docker/libtrust/trustgraph) >= 0-0.2
-BuildRequires:  golang(github.com/Sirupsen/logrus) >= 0.6.0
+#BuildRequires:  golang(github.com/syndtr/gocapability/capability) >= 0-0.7
+##BuildRequires:  golang(github.com/docker/libcontainer) >= 1.2.0-3
+#BuildRequires:  golang(github.com/tchap/go-patricia/patricia)
+#BuildRequires:  golang(github.com/docker/libtrust) >= 0-0.2
+#BuildRequires:  golang(github.com/docker/libtrust/trustgraph) >= 0-0.2
+#BuildRequires:  golang(github.com/Sirupsen/logrus) >= 0.6.0
 BuildRequires:  go-md2man
 BuildRequires:  device-mapper-devel
 BuildRequires:  btrfs-progs-devel
@@ -227,7 +227,6 @@ This package installs %{summary}.
 
 %prep
 %setup -qn %{repo}-%{version}
-rm -rf vendor/src/github.com/{coreos,docker/libtrust,godbus,gorilla,kr,Sirupsen,syndtr,tchap}
 %patch0 -p1
 cp %{SOURCE5} .
 
@@ -390,8 +389,9 @@ exit 0
 %{_datadir}/zsh/site-functions/_docker
 
 %changelog
-* Fri Jan 16 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-6
-- run tests inside a docker repo (doesn't affect koji builds - not built)
+* Fri Jan 22 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-6
+- run tests inside a docker repo
+- use vendored deps itself
 
 * Tue Jan 13 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-5
 - Resolves: rhbz#1169593 patch to set DOCKER_CERT_PATH regardless of config file
