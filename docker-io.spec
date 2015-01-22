@@ -52,6 +52,7 @@ BuildRequires:  go-md2man
 BuildRequires:  device-mapper-devel
 BuildRequires:  btrfs-progs-devel
 BuildRequires:  pkgconfig(systemd)
+BuildRequires:  sqlite-devel
 # Use appropriate NVR for systemd-units to ensure SocketUser and SocketGroup are available
 %if 0%{?fedora} >= 21
 Requires:   systemd >= 214
