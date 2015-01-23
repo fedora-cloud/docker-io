@@ -17,7 +17,7 @@
 
 Name:       %{repo}-io
 Version:    1.4.1
-Release:    7%{?dist}
+Release:    8%{?dist}
 Summary:    Automates deployment of containerized applications
 License:    ASL 2.0
 URL:        http://www.docker.com
@@ -388,6 +388,9 @@ exit 0
 %{_datadir}/zsh/site-functions/_docker
 
 %changelog
+* Fri Jan 23 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-8
+- Resolves:rhbz#1185423 - MountFlags=slave in unitfile
+
 * Fri Jan 16 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-7
 - docker group no longer used or created
 - no socket activation
