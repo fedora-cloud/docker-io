@@ -39,7 +39,7 @@ BuildRequires:  golang(github.com/gorilla/mux) >= 0-0.13
 BuildRequires:  golang(github.com/kr/pty) >= 0-0.19
 BuildRequires:  golang(github.com/godbus/dbus)
 # for coreos/go-systemd https://github.com/dotcloud/docker/pull/5981
-BuildRequires:  golang(github.com/coreos/go-systemd) >= 2-1
+BuildRequires:  golang(github.com/coreos/go-systemd/activation) >= 2-1
 BuildRequires:  golang(code.google.com/p/go.net/websocket)
 BuildRequires:  golang(code.google.com/p/gosqlite/sqlite3)
 # Resolves: rhbz#1109039 use syndtr/gocapability >= 0-0.7
@@ -392,6 +392,7 @@ exit 0
 %changelog
 * Fri Jan 23 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-8
 - Resolves:rhbz#1185423 - MountFlags=slave in unitfile
+- use golang(github.com/coreos/go-systemd/activation)
 
 * Fri Jan 16 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-7
 - docker group no longer used or created
