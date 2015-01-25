@@ -9,7 +9,8 @@
 %global project         docker
 %global repo            %{project}
 
-%global import_path %{provider}.%{provider_tld}/%{project}/%{repo}
+%global import_path     %{provider}.%{provider_tld}/%{project}/%{repo}
+
 %global commit      5bc2ff8a36e9a768e8b479de4fe3ea9c9daf4121
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
@@ -17,49 +18,28 @@
 
 Name:       %{repo}-io
 Version:    1.4.1
-Release:    8%{?dist}
+Release:    9.git%{shortcommit}%{?dist}
 Summary:    Automates deployment of containerized applications
 License:    ASL 2.0
 URL:        http://www.docker.com
-# only x86_64 for now: https://github.com/docker/docker/issues/136
 ExclusiveArch:  x86_64
-Source0:    https://%{import_path}/archive/v%{version}.tar.gz
-#Source0:    https://%{import_path}/archive/%{commit}/%{repo}-%{shortcommit}.tar.gz
+Source0:    https://%{import_path}/archive/%{commit}/%{repo}-%{shortcommit}.tar.gz
 Source1:    %{repo}.service
 Source2:    %{repo}.sysconfig
 Source3:    %{repo}-storage.sysconfig
 Source4:    %{repo}-logrotate.sh
 Source5:    README.%{repo}-logrotate
 Source6:    %{repo}-network.sysconfig
-Patch0:     %{repo}-cert-path.patch
 BuildRequires:  glibc-static
 BuildRequires:  golang >= 1.3.3
-# for gorilla/mux and kr/pty https://github.com/dotcloud/docker/pull/5950
-BuildRequires:  golang(github.com/gorilla/mux) >= 0-0.13
-BuildRequires:  golang(github.com/kr/pty) >= 0-0.19
-BuildRequires:  golang(github.com/godbus/dbus)
-# for coreos/go-systemd https://github.com/dotcloud/docker/pull/5981
-BuildRequires:  golang(github.com/coreos/go-systemd/activation) >= 2-1
-BuildRequires:  golang(code.google.com/p/go.net/websocket)
-BuildRequires:  golang(code.google.com/p/gosqlite/sqlite3)
-# Resolves: rhbz#1109039 use syndtr/gocapability >= 0-0.7
-BuildRequires:  golang(github.com/syndtr/gocapability/capability) >= 0-0.7
-#BuildRequires:  golang(github.com/docker/libcontainer) >= 1.2.0-3
-BuildRequires:  golang(github.com/tchap/go-patricia/patricia)
-BuildRequires:  golang(github.com/docker/libtrust) >= 0-0.2
-BuildRequires:  golang(github.com/docker/libtrust/trustgraph) >= 0-0.2
-BuildRequires:  golang(github.com/Sirupsen/logrus) >= 0.6.0
 BuildRequires:  go-md2man
 BuildRequires:  device-mapper-devel
 BuildRequires:  btrfs-progs-devel
+BuildRequires:  sqlite-devel
 BuildRequires:  pkgconfig(systemd)
-# Use appropriate NVR for systemd-units to ensure SocketUser and SocketGroup are available
 %if 0%{?fedora} >= 21
-Requires:   systemd >= 214
 # Resolves: rhbz#1165615
 Requires:   device-mapper-libs >= 1.02.90-1
-%else
-Requires:   systemd >= 208-20
 %endif
 
 # Resolves: rhbz#1045220
@@ -228,9 +208,7 @@ Provides:   %{repo}-zsh-completion = %{version}-%{release}
 This package installs %{summary}.
 
 %prep
-%setup -qn %{repo}-%{version}
-rm -rf vendor/src/github.com/{coreos,docker/libtrust,godbus,gorilla,kr,Sirupsen,syndtr,tchap}
-%patch0 -p1
+%setup -qn %{repo}-%{commit}
 cp %{SOURCE5} .
 
 %build
@@ -250,11 +228,11 @@ cp contrib/syntax/vim/README.md README-vim-syntax.md
 %install
 # install binary
 install -d %{buildroot}%{_bindir}
-install -p -m 755 bundles/%{version}/dynbinary/docker-%{version} %{buildroot}%{_bindir}/docker
+install -p -m 755 bundles/%{version}-dev/dynbinary/docker-%{version}-dev %{buildroot}%{_bindir}/docker
 
 # install dockerinit
 install -d %{buildroot}%{_libexecdir}/docker
-install -p -m 755 bundles/%{version}/dynbinary/dockerinit-%{version} %{buildroot}%{_libexecdir}/docker/dockerinit
+install -p -m 755 bundles/%{version}-dev/dynbinary/dockerinit-%{version}-dev %{buildroot}%{_libexecdir}/docker/dockerinit
 
 # install manpages
 install -d %{buildroot}%{_mandir}/man1
@@ -390,6 +368,9 @@ exit 0
 %{_datadir}/zsh/site-functions/_docker
 
 %changelog
+* Sun Jan 25 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-9
+- use vendored sources (not built)
+
 * Fri Jan 23 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-8
 - Resolves:rhbz#1185423 - MountFlags=slave in unitfile
 - use golang(github.com/coreos/go-systemd/activation)
