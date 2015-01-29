@@ -17,7 +17,7 @@
 
 Name:       %{repo}-io
 Version:    1.4.1
-Release:    6%{?dist}
+Release:    8%{?dist}
 Summary:    Automates deployment of containerized applications
 License:    ASL 2.0
 URL:        http://www.docker.com
@@ -33,33 +33,14 @@ Source6:    %{repo}-network.sysconfig
 Patch0:     %{repo}-cert-path.patch
 BuildRequires:  glibc-static
 BuildRequires:  golang >= 1.3.3
-# for gorilla/mux and kr/pty https://github.com/dotcloud/docker/pull/5950
-#BuildRequires:  golang(github.com/gorilla/mux) >= 0-0.13
-#BuildRequires:  golang(github.com/kr/pty) >= 0-0.19
-#BuildRequires:  golang(github.com/godbus/dbus)
-# for coreos/go-systemd https://github.com/dotcloud/docker/pull/5981
-#BuildRequires:  golang(github.com/coreos/go-systemd) >= 2-1
-#BuildRequires:  golang(code.google.com/p/go.net/websocket)
-#BuildRequires:  golang(code.google.com/p/gosqlite/sqlite3)
-# Resolves: rhbz#1109039 use syndtr/gocapability >= 0-0.7
-#BuildRequires:  golang(github.com/syndtr/gocapability/capability) >= 0-0.7
-##BuildRequires:  golang(github.com/docker/libcontainer) >= 1.2.0-3
-#BuildRequires:  golang(github.com/tchap/go-patricia/patricia)
-#BuildRequires:  golang(github.com/docker/libtrust) >= 0-0.2
-#BuildRequires:  golang(github.com/docker/libtrust/trustgraph) >= 0-0.2
-#BuildRequires:  golang(github.com/Sirupsen/logrus) >= 0.6.0
 BuildRequires:  go-md2man
 BuildRequires:  device-mapper-devel
 BuildRequires:  btrfs-progs-devel
 BuildRequires:  pkgconfig(systemd)
 BuildRequires:  sqlite-devel
-# Use appropriate NVR for systemd-units to ensure SocketUser and SocketGroup are available
 %if 0%{?fedora} >= 21
-Requires:   systemd >= 214
 # Resolves: rhbz#1165615
 Requires:   device-mapper-libs >= 1.02.90-1
-%else
-Requires:   systemd >= 208-20
 %endif
 
 # Resolves: rhbz#1045220
@@ -294,7 +275,6 @@ install -d %{buildroot}%{_sharedstatedir}/%{repo}
 # install systemd/init scripts
 install -d %{buildroot}%{_unitdir}
 install -p -m 644 %{SOURCE1} %{buildroot}%{_unitdir}
-install -p -m 644 contrib/init/systemd/%{repo}.socket %{buildroot}%{_unitdir}
 
 # for additional args
 install -d %{buildroot}%{_sysconfdir}/sysconfig/
@@ -333,7 +313,7 @@ install -dp %{buildroot}%{_sysconfdir}/%{repo}
 }
 
 %pre
-getent group docker > /dev/null || %{_sbindir}/groupadd -r docker
+getent passwd dockerroot > /dev/null || %{_sbindir}/useradd -r -d %{_sharedstatedir}/docker -s /sbin/nologin -c "Docker User" dockerroot
 exit 0
 
 %post
@@ -356,7 +336,6 @@ exit 0
 %{_bindir}/docker
 %{_libexecdir}/docker
 %{_unitdir}/docker.service
-%{_unitdir}/docker.socket
 %{_datadir}/bash-completion/completions/docker
 %dir %{_sharedstatedir}/docker
 %{_sysconfdir}/udev/rules.d/80-docker.rules
@@ -390,9 +369,17 @@ exit 0
 %{_datadir}/zsh/site-functions/_docker
 
 %changelog
-* Fri Jan 22 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-6
-- run tests inside a docker repo
-- use vendored deps itself
+* Fri Jan 23 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-8
+- Resolves:rhbz#1185423 - MountFlags=slave in unitfile
+
+* Fri Jan 16 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-7
+- docker group no longer used or created
+- no socket activation
+- config file updates to include info about docker_transition_unconfined
+boolean
+
+* Fri Jan 16 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-6
+- run tests inside a docker repo (doesn't affect koji builds - not built)
 
 * Tue Jan 13 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-5
 - Resolves: rhbz#1169593 patch to set DOCKER_CERT_PATH regardless of config file
