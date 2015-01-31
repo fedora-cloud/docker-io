@@ -18,7 +18,7 @@
 
 Name:       %{repo}-io
 Version:	1.4.1
-Release:    13.git%{shortcommit}%{?dist}
+Release:    15.git%{shortcommit}%{?dist}
 Summary:    Automates deployment of containerized applications
 License:    ASL 2.0
 URL:        http://www.docker.com
@@ -368,6 +368,12 @@ exit 0
 %{_datadir}/zsh/site-functions/_docker
 
 %changelog
+* Sat Jan 31 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-15.gitd400ac7
+- daily rebuild - Sat Jan 31 05:08:46 UTC 2015
+
+* Sat Jan 31 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-14.gitd400ac7
+- daily rebuild - Sat Jan 31 05:07:37 UTC 2015
+
 * Thu Jan 29 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-13.gitd400ac7
 - daily rebuild - Thu Jan 29 14:13:04 UTC 2015
 
