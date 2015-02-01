@@ -11,14 +11,14 @@
 
 %global import_path     %{provider}.%{provider_tld}/%{project}/%{repo}
 
-%global commit		d400ac756cae9c937089f9f20bcc75826e99ea67
+%global commit		01864d3281aa2596fecf2cdfb30c804a86e72aab
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %global tar_import_path code.google.com/p/go/src/pkg/archive/tar
 
 Name:       %{repo}-io
 Version:	1.4.1
-Release:    15.git%{shortcommit}%{?dist}
+Release:    16.git%{shortcommit}%{?dist}
 Summary:    Automates deployment of containerized applications
 License:    ASL 2.0
 URL:        http://www.docker.com
@@ -368,6 +368,9 @@ exit 0
 %{_datadir}/zsh/site-functions/_docker
 
 %changelog
+* Sun Feb 01 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-16.git01864d3
+- daily rebuild - Sun Feb  1 00:00:57 UTC 2015
+
 * Sat Jan 31 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-15.gitd400ac7
 - daily rebuild - Sat Jan 31 05:08:46 UTC 2015
 
