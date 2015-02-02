@@ -18,11 +18,11 @@
 
 Name:       %{repo}-io
 Version:	1.4.1
-Release:    17.git%{shortcommit}%{?dist}
+Release:    18.git%{shortcommit}%{?dist}
 Summary:    Automates deployment of containerized applications
 License:    ASL 2.0
 URL:        http://www.docker.com
-ExclusiveArch:  x86_64
+ExclusiveArch:  x86_64 %{arm}
 Source0:    https://%{import_path}/archive/%{commit}/%{repo}-%{shortcommit}.tar.gz
 Source1:    %{repo}.service
 Source2:    %{repo}.sysconfig
@@ -368,6 +368,9 @@ exit 0
 %{_datadir}/zsh/site-functions/_docker
 
 %changelog
+* Mon Feb 02 2015 Dennis Gilmore <dennis@ausil.us> 1.4.1-18.git9273040
+- enable building on %%{arm}
+
 * Mon Feb 02 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-17.git9273040
 - daily rebuild - Mon Feb  2 00:08:17 UTC 2015
 
