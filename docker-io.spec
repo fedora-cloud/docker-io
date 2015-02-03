@@ -17,7 +17,7 @@
 
 Name:       %{repo}-io
 Version:    1.4.1
-Release:    8%{?dist}
+Release:    9%{?dist}
 Summary:    Automates deployment of containerized applications
 License:    ASL 2.0
 URL:        http://www.docker.com
@@ -240,7 +240,7 @@ export DOCKER_GITCOMMIT="%{shortcommit}/%{version}"
 export DOCKER_BUILDTAGS='selinux'
 export GOPATH=$(pwd)/_build:$(pwd)/vendor:%{gopath}
 
-hack/make.sh dynbinary
+DEBUG=1 hack/make.sh dynbinary
 docs/man/md2man-all.sh
 cp contrib/syntax/vim/LICENSE LICENSE-vim-syntax
 cp contrib/syntax/vim/README.md README-vim-syntax.md
@@ -388,6 +388,11 @@ exit 0
 %{_datadir}/zsh/site-functions/_docker
 
 %changelog
+* Tue Feb 03 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-9
+- Resolves: rhbz#1184266 - enable debugging
+- enable creation of core dumps
+- set no limit on core dump size
+
 * Fri Jan 23 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-8
 - Resolves:rhbz#1185423 - MountFlags=slave in unitfile
 - use golang(github.com/coreos/go-systemd/activation)
