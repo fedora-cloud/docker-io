@@ -16,3 +16,6 @@ DOCKER_CERT_PATH=/etc/docker
 # Controls the /etc/cron.daily/docker-logrotate cron job status.
 # To disable, uncomment the line below.
 # LOGROTATE=false
+
+# Allow creation of core dumps
+GOTRACEBACK=crash
