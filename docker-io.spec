@@ -11,14 +11,14 @@
 
 %global import_path     %{provider}.%{provider_tld}/%{project}/%{repo}
 
-%global commit		662dffee4fccbf6f7853605c8f558ec21ee668fe
+%global commit		165ea5c158cff3fc40d476ffe233a5ccc03e7d61
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %global tar_import_path code.google.com/p/go/src/pkg/archive/tar
 
 Name:       %{repo}-io
 Version:	1.4.1
-Release:    20.git%{shortcommit}%{?dist}
+Release:    22.git%{shortcommit}%{?dist}
 Summary:    Automates deployment of containerized applications
 License:    ASL 2.0
 URL:        http://www.docker.com
@@ -368,6 +368,12 @@ exit 0
 %{_datadir}/zsh/site-functions/_docker
 
 %changelog
+* Wed Feb 04 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-22.git165ea5c
+- daily rebuild - Wed Feb  4 03:10:41 UTC 2015
+
+* Wed Feb 04 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-21.git165ea5c
+- daily rebuild - Wed Feb  4 03:09:20 UTC 2015
+
 * Tue Feb 03 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-20.git662dffe
 - Resolves: rhbz#1184266 - enable debugging
 - enable creation of core dumps
