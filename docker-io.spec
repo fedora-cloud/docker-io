@@ -390,7 +390,7 @@ exit 0
 %changelog
 * Tue Feb 03 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-9
 - Resolves: rhbz#1184266 - enable debugging
-- enable creation of core dumps
+- Resolves: rhbz#1190748 - enable creation of core dumps
 - set no limit on core dump size
 
 * Fri Jan 23 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-8
