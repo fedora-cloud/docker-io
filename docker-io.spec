@@ -385,7 +385,7 @@ exit 0
 
 * Tue Feb 03 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-20.git662dffe
 - Resolves: rhbz#1184266 - enable debugging
-- enable creation of core dumps
+- Resolves: rhbz#1190748 - enable core dumps with no size limit
 
 * Tue Feb 03 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-19.git662dffe
 - daily rebuild - Tue Feb  3 04:56:36 UTC 2015
