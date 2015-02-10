@@ -11,14 +11,14 @@
 
 %global import_path     %{provider}.%{provider_tld}/%{project}/%{repo}
 
-%global commit		c03d6f57b6956f305a9afcbdc530a15bbe729fce
+%global commit		76baa351c07d7fe847d14fafbcb5a3ba97519a1a
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %global tar_import_path code.google.com/p/go/src/pkg/archive/tar
 
 Name:       %{repo}-io
 Version:	1.4.1
-Release:    25.git%{shortcommit}%{?dist}
+Release:    27.git%{shortcommit}%{?dist}
 Summary:    Automates deployment of containerized applications
 License:    ASL 2.0
 URL:        http://www.docker.com
@@ -368,6 +368,12 @@ exit 0
 %{_datadir}/zsh/site-functions/_docker
 
 %changelog
+* Tue Feb 10 2015 lsm5@riseup.net - 1.4.1-27.git76baa35
+- daily rebuild - Tue Feb 10 01:19:10 CET 2015
+
+* Mon Feb 09 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-26.gitc03d6f5
+- add config variable for insecure registry
+
 * Sat Feb 07 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-25.gitc03d6f5
 - daily rebuild - Sat Feb  7 02:53:34 UTC 2015
 
