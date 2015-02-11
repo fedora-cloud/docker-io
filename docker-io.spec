@@ -10,14 +10,14 @@
 %global repo            %{project}
 
 %global import_path %{provider}.%{provider_tld}/%{project}/%{repo}
-%global commit      5bc2ff8a36e9a768e8b479de4fe3ea9c9daf4121
+%global commit      a8a31eff10544860d2188dddabdee4d727545796
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %global tar_import_path code.google.com/p/go/src/pkg/archive/tar
 
 Name:       %{repo}-io
-Version:    1.4.1
-Release:    9%{?dist}
+Version:    1.5.0
+Release:    1%{?dist}
 Summary:    Automates deployment of containerized applications
 License:    ASL 2.0
 URL:        http://www.docker.com
@@ -52,13 +52,13 @@ BuildRequires:  go-md2man
 BuildRequires:  device-mapper-devel
 BuildRequires:  btrfs-progs-devel
 BuildRequires:  pkgconfig(systemd)
+Requires(post): systemd
+Requires(preun): systemd
+Requires(postun): systemd
 # Use appropriate NVR for systemd-units to ensure SocketUser and SocketGroup are available
 %if 0%{?fedora} >= 21
-Requires:   systemd >= 214
 # Resolves: rhbz#1165615
 Requires:   device-mapper-libs >= 1.02.90-1
-%else
-Requires:   systemd >= 208-20
 %endif
 
 # Resolves: rhbz#1045220
@@ -166,6 +166,7 @@ Provides:   golang(%{import_path}/pkg/parsers/operatingsystem) = %{version}-%{re
 Provides:   golang(%{import_path}/pkg/pools) = %{version}-%{release}
 Provides:   golang(%{import_path}/pkg/promise) = %{version}-%{release}
 Provides:   golang(%{import_path}/pkg/proxy) = %{version}-%{release}
+Provides:   golang(%{import_path}/pkg/proxy) = %{version}-%{release}
 Provides:   golang(%{import_path}/pkg/reexec) = %{version}-%{release}
 Provides:   golang(%{import_path}/pkg/signal) = %{version}-%{release}
 Provides:   golang(%{import_path}/pkg/stdcopy) = %{version}-%{release}
@@ -180,6 +181,7 @@ Provides:   golang(%{import_path}/pkg/testutils) = %{version}-%{release}
 Provides:   golang(%{import_path}/pkg/timeutils) = %{version}-%{release}
 Provides:   golang(%{import_path}/pkg/truncindex) = %{version}-%{release}
 Provides:   golang(%{import_path}/pkg/units) = %{version}-%{release}
+Provides:   golang(%{import_path}/pkg/urlutil) = %{version}-%{release}
 Provides:   golang(%{import_path}/pkg/version) = %{version}-%{release}
 
 %description pkg-devel
@@ -227,7 +229,7 @@ This package installs %{summary}.
 
 %prep
 %setup -qn %{repo}-%{version}
-rm -rf vendor/src/github.com/{coreos,docker/libtrust,godbus,gorilla,kr,Sirupsen,syndtr,tchap}
+#rm -rf vendor/src/github.com/{coreos,docker/libtrust,godbus,gorilla,kr,Sirupsen,syndtr,tchap}
 %patch0 -p1
 cp %{SOURCE5} .
 
@@ -388,6 +390,10 @@ exit 0
 %{_datadir}/zsh/site-functions/_docker
 
 %changelog
+* Tue Feb 10 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.5.0-1
+- Resolves: rhbz#1191438 - update to v1.5.0
+- add env var for insecure-registry
+
 * Tue Feb 03 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-9
 - Resolves: rhbz#1184266 - enable debugging
 - Resolves: rhbz#1190748 - enable creation of core dumps
