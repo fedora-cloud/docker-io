@@ -11,14 +11,14 @@
 
 %global import_path     %{provider}.%{provider_tld}/%{project}/%{repo}
 
-%global commit		76baa351c07d7fe847d14fafbcb5a3ba97519a1a
+%global commit		54b59c2b2f440df0a513a37d7709fc5b0c88773f
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %global tar_import_path code.google.com/p/go/src/pkg/archive/tar
 
 Name:       %{repo}-io
-Version:	1.4.1
-Release:    27.git%{shortcommit}%{?dist}
+Version:	1.5.0
+Release:	1.git%{shortcommit}%{?dist}
 Summary:    Automates deployment of containerized applications
 License:    ASL 2.0
 URL:        http://www.docker.com
@@ -368,6 +368,9 @@ exit 0
 %{_datadir}/zsh/site-functions/_docker
 
 %changelog
+* Wed Feb 11 2015 lsm5@riseup.net - 1.5.0-1
+- New version: 1.5.0, built commit#54b59c2
+
 * Tue Feb 10 2015 lsm5@riseup.net - 1.4.1-27.git76baa35
 - daily rebuild - Tue Feb 10 01:19:10 CET 2015
 
