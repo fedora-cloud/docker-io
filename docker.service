@@ -8,7 +8,11 @@ Type=notify
 EnvironmentFile=-/etc/sysconfig/docker
 EnvironmentFile=-/etc/sysconfig/docker-storage
 EnvironmentFile=-/etc/sysconfig/docker-network
-ExecStart=/usr/bin/docker -d $OPTIONS $DOCKER_STORAGE_OPTIONS $DOCKER_NETWORK_OPTIONS
+ExecStart=/usr/bin/docker -d \
+          $OPTIONS \
+          $DOCKER_STORAGE_OPTIONS \
+          $DOCKER_NETWORK_OPTIONS \
+          $INSECURE_REGISTRY
 LimitNOFILE=1048576
 LimitNPROC=1048576
 LimitCORE=infinity
