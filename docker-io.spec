@@ -11,14 +11,14 @@
 
 %global import_path     %{provider}.%{provider_tld}/%{project}/%{repo}
 
-%global commit		54b59c2b2f440df0a513a37d7709fc5b0c88773f
+%global commit		802802b7812b7c73aefec4e922cad82f8dcddd4c
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %global tar_import_path code.google.com/p/go/src/pkg/archive/tar
 
 Name:       %{repo}-io
 Version:	1.5.0
-Release:	2.git%{shortcommit}%{?dist}
+Release:	3.git%{shortcommit}%{?dist}
 Summary:    Automates deployment of containerized applications
 License:    ASL 2.0
 URL:        http://www.docker.com
@@ -268,6 +268,9 @@ exit 0
 %{_datadir}/zsh/site-functions/_docker
 
 %changelog
+* Thu Feb 12 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.5.0-3.git802802b
+- built commit#802802b
+
 * Wed Feb 11 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.5.0-2.git54b59c2
 - provide golang paths only upto the repo's root dir
 - merge pkg-devel into devel
