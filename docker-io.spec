@@ -18,7 +18,7 @@
 
 Name:       %{repo}-io
 Version:	1.5.0
-Release:	6.git%{shortcommit}%{?dist}
+Release:	7.git%{shortcommit}%{?dist}
 Summary:    Automates deployment of containerized applications
 License:    ASL 2.0
 URL:        http://www.docker.com
@@ -268,6 +268,9 @@ exit 0
 %{_datadir}/zsh/site-functions/_docker
 
 %changelog
+* Tue Feb 17 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.5.0-7.git2243e32
+- built commit#2243e32
+
 * Tue Feb 17 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.5.0-6.git2243e32
 - built commit#2243e32
 
