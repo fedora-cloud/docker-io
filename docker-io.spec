@@ -11,14 +11,14 @@
 
 %global import_path     %{provider}.%{provider_tld}/%{project}/%{repo}
 
-%global commit		2243e32cbbf1c9809c262a7376d34ca43a7a36dc
+%global commit		09b785f3bed812736fe7526535088ca73c1fa10d
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %global tar_import_path code.google.com/p/go/src/pkg/archive/tar
 
 Name:       %{repo}-io
 Version:	1.5.0
-Release:	8.git%{shortcommit}%{?dist}
+Release:	9.git%{shortcommit}%{?dist}
 Summary:    Automates deployment of containerized applications
 License:    ASL 2.0
 URL:        http://www.docker.com
@@ -357,6 +357,9 @@ exit 0
 %{_datadir}/zsh/site-functions/_docker
 
 %changelog
+* Wed Feb 18 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.5.0-9.git09b785f
+- built commit#09b785f
+
 * Tue Feb 17 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.5.0-8.git2243e32
 - re-add detailed provides in -devel package
 NOTE: (only providing the root path doesn't help in building packages like
