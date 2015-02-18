@@ -10,14 +10,14 @@
 %global repo            %{project}
 
 %global import_path %{provider}.%{provider_tld}/%{project}/%{repo}
-%global commit      5bc2ff8a36e9a768e8b479de4fe3ea9c9daf4121
+%global commit      a8a31eff10544860d2188dddabdee4d727545796
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %global tar_import_path code.google.com/p/go/src/pkg/archive/tar
 
 Name:       %{repo}-io
-Version:    1.4.1
-Release:    9%{?dist}
+Version:    1.5.0
+Release:    1%{?dist}
 Summary:    Automates deployment of containerized applications
 License:    ASL 2.0
 URL:        http://www.docker.com
@@ -30,7 +30,6 @@ Source3:    %{repo}-storage.sysconfig
 Source4:    %{repo}-logrotate.sh
 Source5:    README.%{repo}-logrotate
 Source6:    %{repo}-network.sysconfig
-Patch0:     %{repo}-cert-path.patch
 BuildRequires:  glibc-static
 BuildRequires:  golang >= 1.3.3
 BuildRequires:  go-md2man
@@ -66,110 +65,106 @@ servers, OpenStack clusters, public instances, or combinations of the above.
 
 %package devel
 BuildRequires:  golang >= 1.2.1-3
-Requires:   golang >= 1.2.1-3
-Requires:   %{name}-pkg-devel
-Provides:   %{repo}-devel
-Summary:    A golang registry for global request variables (source libraries)
-Provides:   golang(%{import_path}) = %{version}-%{release}
-Provides:   golang(%{import_path}/api) = %{version}-%{release}
-Provides:   golang(%{import_path}/api/client) = %{version}-%{release}
-Provides:   golang(%{import_path}/api/server) = %{version}-%{release}
-Provides:   golang(%{import_path}/builder) = %{version}-%{release}
-Provides:   golang(%{import_path}/builder/parser) = %{version}-%{release}
-Provides:   golang(%{import_path}/builder/parser/dumper) = %{version}-%{release}
-Provides:   golang(%{import_path}/builtins) = %{version}-%{release}
-Provides:   golang(%{import_path}/contrib/docker-device-tool) = %{version}-%{release}
-Provides:   golang(%{import_path}/contrib/host-integration) = %{version}-%{release}
-Provides:   golang(%{import_path}/daemon) = %{version}-%{release}
-Provides:   golang(%{import_path}/daemon/execdriver) = %{version}-%{release}
-Provides:   golang(%{import_path}/daemon/execdriver/execdrivers) = %{version}-%{release}
-Provides:   golang(%{import_path}/daemon/execdriver/lxc) = %{version}-%{release}
-Provides:   golang(%{import_path}/daemon/execdriver/native) = %{version}-%{release}
-Provides:   golang(%{import_path}/daemon/execdriver/native/template) = %{version}-%{release}
-Provides:   golang(%{import_path}/daemon/graphdriver) = %{version}-%{release}
-Provides:   golang(%{import_path}/daemon/graphdriver/aufs) = %{version}-%{release}
-Provides:   golang(%{import_path}/daemon/graphdriver/btrfs) = %{version}-%{release}
-Provides:   golang(%{import_path}/daemon/graphdriver/devmapper) = %{version}-%{release}
-Provides:   golang(%{import_path}/daemon/graphdriver/graphtest) = %{version}-%{release}
-Provides:   golang(%{import_path}/daemon/graphdriver/vfs) = %{version}-%{release}
-Provides:   golang(%{import_path}/daemon/networkdriver) = %{version}-%{release}
-Provides:   golang(%{import_path}/daemon/networkdriver/bridge) = %{version}-%{release}
-Provides:   golang(%{import_path}/daemon/networkdriver/ipallocator) = %{version}-%{release}
-Provides:   golang(%{import_path}/daemon/networkdriver/portallocator) = %{version}-%{release}
-Provides:   golang(%{import_path}/daemon/networkdriver/portmapper) = %{version}-%{release}
-Provides:   golang(%{import_path}/docker) = %{version}-%{release}
-Provides:   golang(%{import_path}/dockerinit) = %{version}-%{release}
-Provides:   golang(%{import_path}/dockerversion) = %{version}-%{release}
-Provides:   golang(%{import_path}/engine) = %{version}-%{release}
-Provides:   golang(%{import_path}/events) = %{version}-%{release}
-Provides:   golang(%{import_path}/graph) = %{version}-%{release}
-Provides:   golang(%{import_path}/image) = %{version}-%{release}
-Provides:   golang(%{import_path}/links) = %{version}-%{release}
-Provides:   golang(%{import_path}/nat) = %{version}-%{release}
-Provides:   golang(%{import_path}/opts) = %{version}-%{release}
-Provides:   golang(%{import_path}/registry) = %{version}-%{release}
-Provides:   golang(%{import_path}/runconfig) = %{version}-%{release}
-Provides:   golang(%{import_path}/trust) = %{version}-%{release}
-Provides:   golang(%{import_path}/utils) = %{version}-%{release}
-Provides:   golang(%{import_path}/volumes) = %{version}-%{release}
-Provides:   golang(%{import_path}/vendor/src/%{tar_import_path}) = %{version}-%{release}
+Requires: golang >= 1.2.1-3
+Provides: %{repo}-devel
+Provides: %{name}-pkg-devel
+Provides: %{repo}-pkg-devel
+Summary:  A golang registry for global request variables (source libraries)
+Provides: golang(%{import_path}) = %{version}-%{release}
+Provides: golang(%{import_path}/builder) = %{version}-%{release}
+Provides: golang(%{import_path}/builder/parser) = %{version}-%{release}
+Provides: golang(%{import_path}/builder/parser/dumper) = %{version}-%{release}
+Provides: golang(%{import_path}/builder/command) = %{version}-%{release}
+Provides: golang(%{import_path}/nat) = %{version}-%{release}
+Provides: golang(%{import_path}/dockerversion) = %{version}-%{release}
+Provides: golang(%{import_path}/utils) = %{version}-%{release}
+Provides: golang(%{import_path}/integration-cli) = %{version}-%{release}
+Provides: golang(%{import_path}/trust) = %{version}-%{release}
+Provides: golang(%{import_path}/events) = %{version}-%{release}
+Provides: golang(%{import_path}/volumes) = %{version}-%{release}
+Provides: golang(%{import_path}/dockerinit) = %{version}-%{release}
+Provides: golang(%{import_path}/engine) = %{version}-%{release}
+Provides: golang(%{import_path}/registry) = %{version}-%{release}
+Provides: golang(%{import_path}/registry/v2) = %{version}-%{release}
+Provides: golang(%{import_path}/api) = %{version}-%{release}
+Provides: golang(%{import_path}/api/client) = %{version}-%{release}
+Provides: golang(%{import_path}/api/stats) = %{version}-%{release}
+Provides: golang(%{import_path}/api/server) = %{version}-%{release}
+Provides: golang(%{import_path}/opts) = %{version}-%{release}
+Provides: golang(%{import_path}/builtins) = %{version}-%{release}
+Provides: golang(%{import_path}/runconfig) = %{version}-%{release}
+Provides: golang(%{import_path}/docker) = %{version}-%{release}
+Provides: golang(%{import_path}/contrib/docker-device-tool) = %{version}-%{release}
+Provides: golang(%{import_path}/contrib/host-integration) = %{version}-%{release}
+Provides: golang(%{import_path}/daemon) = %{version}-%{release}
+Provides: golang(%{import_path}/daemon/graphdriver) = %{version}-%{release}
+Provides: golang(%{import_path}/daemon/graphdriver/devmapper) = %{version}-%{release}
+Provides: golang(%{import_path}/daemon/graphdriver/aufs) = %{version}-%{release}
+Provides: golang(%{import_path}/daemon/graphdriver/overlay) = %{version}-%{release}
+Provides: golang(%{import_path}/daemon/graphdriver/vfs) = %{version}-%{release}
+Provides: golang(%{import_path}/daemon/graphdriver/btrfs) = %{version}-%{release}
+Provides: golang(%{import_path}/daemon/graphdriver/graphtest) = %{version}-%{release}
+Provides: golang(%{import_path}/daemon/networkdriver) = %{version}-%{release}
+Provides: golang(%{import_path}/daemon/networkdriver/ipallocator) = %{version}-%{release}
+Provides: golang(%{import_path}/daemon/networkdriver/portmapper) = %{version}-%{release}
+Provides: golang(%{import_path}/daemon/networkdriver/bridge) = %{version}-%{release}
+Provides: golang(%{import_path}/daemon/networkdriver/portallocator) = %{version}-%{release}
+Provides: golang(%{import_path}/daemon/execdriver) = %{version}-%{release}
+Provides: golang(%{import_path}/daemon/execdriver/execdrivers) = %{version}-%{release}
+Provides: golang(%{import_path}/daemon/execdriver/lxc) = %{version}-%{release}
+Provides: golang(%{import_path}/daemon/execdriver/native) = %{version}-%{release}
+Provides: golang(%{import_path}/daemon/execdriver/native/template) = %{version}-%{release}
+Provides: golang(%{import_path}/pkg/devicemapper) = %{version}-%{release}
+Provides: golang(%{import_path}/pkg/units) = %{version}-%{release}
+Provides: golang(%{import_path}/pkg/chrootarchive) = %{version}-%{release}
+Provides: golang(%{import_path}/pkg/mount) = %{version}-%{release}
+Provides: golang(%{import_path}/pkg/systemd) = %{version}-%{release}
+Provides: golang(%{import_path}/pkg/parsers) = %{version}-%{release}
+Provides: golang(%{import_path}/pkg/parsers/kernel) = %{version}-%{release}
+Provides: golang(%{import_path}/pkg/parsers/operatingsystem) = %{version}-%{release}
+Provides: golang(%{import_path}/pkg/parsers/filters) = %{version}-%{release}
+Provides: golang(%{import_path}/pkg/broadcastwriter) = %{version}-%{release}
+Provides: golang(%{import_path}/pkg/stdcopy) = %{version}-%{release}
+Provides: golang(%{import_path}/pkg/proxy) = %{version}-%{release}
+Provides: golang(%{import_path}/pkg/promise) = %{version}-%{release}
+Provides: golang(%{import_path}/pkg/pools) = %{version}-%{release}
+Provides: golang(%{import_path}/pkg/system) = %{version}-%{release}
+Provides: golang(%{import_path}/pkg/fileutils) = %{version}-%{release}
+Provides: golang(%{import_path}/pkg/mflag) = %{version}-%{release}
+Provides: golang(%{import_path}/pkg/mflag/example) = %{version}-%{release}
+Provides: golang(%{import_path}/pkg/timeutils) = %{version}-%{release}
+Provides: golang(%{import_path}/pkg/ioutils) = %{version}-%{release}
+Provides: golang(%{import_path}/pkg/pubsub) = %{version}-%{release}
+Provides: golang(%{import_path}/pkg/signal) = %{version}-%{release}
+Provides: golang(%{import_path}/pkg/listenbuffer) = %{version}-%{release}
+Provides: golang(%{import_path}/pkg/version) = %{version}-%{release}
+Provides: golang(%{import_path}/pkg/httputils) = %{version}-%{release}
+Provides: golang(%{import_path}/pkg/urlutil) = %{version}-%{release}
+Provides: golang(%{import_path}/pkg/sysinfo) = %{version}-%{release}
+Provides: golang(%{import_path}/pkg/archive) = %{version}-%{release}
+Provides: golang(%{import_path}/pkg/iptables) = %{version}-%{release}
+Provides: golang(%{import_path}/pkg/tailfile) = %{version}-%{release}
+Provides: golang(%{import_path}/pkg/graphdb) = %{version}-%{release}
+Provides: golang(%{import_path}/pkg/tarsum) = %{version}-%{release}
+Provides: golang(%{import_path}/pkg/namesgenerator) = %{version}-%{release}
+Provides: golang(%{import_path}/pkg/jsonlog) = %{version}-%{release}
+Provides: golang(%{import_path}/pkg/testutils) = %{version}-%{release}
+Provides: golang(%{import_path}/pkg/truncindex) = %{version}-%{release}
+Provides: golang(%{import_path}/pkg/homedir) = %{version}-%{release}
+Provides: golang(%{import_path}/pkg/symlink) = %{version}-%{release}
+Provides: golang(%{import_path}/pkg/networkfs/resolvconf) = %{version}-%{release}
+Provides: golang(%{import_path}/pkg/networkfs/etchosts) = %{version}-%{release}
+Provides: golang(%{import_path}/pkg/term) = %{version}-%{release}
+Provides: golang(%{import_path}/pkg/reexec) = %{version}-%{release}
+Provides: golang(%{import_path}/integration) = %{version}-%{release}
+Provides: golang(%{import_path}/links) = %{version}-%{release}
+Provides: golang(%{import_path}/image) = %{version}-%{release}
+Provides: golang(%{import_path}/graph) = %{version}-%{release}
 
 %description devel
 %{summary}
 
 This package provides the source libraries for docker.
-
-%package pkg-devel
-BuildRequires:  golang >= 1.2.1-3
-Requires:   golang >= 1.2.1-3
-Provides:   %{repo}-pkg-devel = %{version}-%{release}
-Summary:    A golang registry for global request variables (source libraries)
-Provides:   golang(%{import_path}/pkg/archive) = %{version}-%{release}
-Provides:   golang(%{import_path}/pkg/broadcastwriter) = %{version}-%{release}
-Provides:   golang(%{import_path}/pkg/chrootarchive) = %{version}-%{release}
-Provides:   golang(%{import_path}/pkg/devicemapper) = %{version}-%{release}
-Provides:   golang(%{import_path}/pkg/fileutils) = %{version}-%{release}
-Provides:   golang(%{import_path}/pkg/graphdb) = %{version}-%{release}
-Provides:   golang(%{import_path}/pkg/httputils) = %{version}-%{release}
-Provides:   golang(%{import_path}/pkg/ioutils) = %{version}-%{release}
-Provides:   golang(%{import_path}/pkg/iptables) = %{version}-%{release}
-Provides:   golang(%{import_path}/pkg/jsonlog) = %{version}-%{release}
-Provides:   golang(%{import_path}/pkg/listenbuffer) = %{version}-%{release}
-Provides:   golang(%{import_path}/pkg/mflag) = %{version}-%{release}
-Provides:   golang(%{import_path}/pkg/mflag/example) = %{version}-%{release}
-Provides:   golang(%{import_path}/pkg/mount) = %{version}-%{release}
-Provides:   golang(%{import_path}/pkg/namesgenerator) = %{version}-%{release}
-Provides:   golang(%{import_path}/pkg/networkfs/etchosts) = %{version}-%{release}
-Provides:   golang(%{import_path}/pkg/networkfs/resolvconf) = %{version}-%{release}
-Provides:   golang(%{import_path}/pkg/parsers) = %{version}-%{release}
-Provides:   golang(%{import_path}/pkg/parsers/filters) = %{version}-%{release}
-Provides:   golang(%{import_path}/pkg/parsers/kernel) = %{version}-%{release}
-Provides:   golang(%{import_path}/pkg/parsers/operatingsystem) = %{version}-%{release}
-Provides:   golang(%{import_path}/pkg/pools) = %{version}-%{release}
-Provides:   golang(%{import_path}/pkg/promise) = %{version}-%{release}
-Provides:   golang(%{import_path}/pkg/proxy) = %{version}-%{release}
-Provides:   golang(%{import_path}/pkg/reexec) = %{version}-%{release}
-Provides:   golang(%{import_path}/pkg/signal) = %{version}-%{release}
-Provides:   golang(%{import_path}/pkg/stdcopy) = %{version}-%{release}
-Provides:   golang(%{import_path}/pkg/symlink) = %{version}-%{release}
-Provides:   golang(%{import_path}/pkg/sysinfo) = %{version}-%{release}
-Provides:   golang(%{import_path}/pkg/system) = %{version}-%{release}
-Provides:   golang(%{import_path}/pkg/systemd) = %{version}-%{release}
-Provides:   golang(%{import_path}/pkg/tailfile) = %{version}-%{release}
-Provides:   golang(%{import_path}/pkg/tarsum) = %{version}-%{release}
-Provides:   golang(%{import_path}/pkg/term) = %{version}-%{release}
-Provides:   golang(%{import_path}/pkg/testutils) = %{version}-%{release}
-Provides:   golang(%{import_path}/pkg/timeutils) = %{version}-%{release}
-Provides:   golang(%{import_path}/pkg/truncindex) = %{version}-%{release}
-Provides:   golang(%{import_path}/pkg/units) = %{version}-%{release}
-Provides:   golang(%{import_path}/pkg/version) = %{version}-%{release}
-
-%description pkg-devel
-%{summary}
-
-These source libraries are provided by docker, but are independent of docker
-specific logic.
-The import paths of import_path/pkg/...
 
 %package fish-completion
 Summary:    fish completion files for docker
@@ -209,7 +204,6 @@ This package installs %{summary}.
 
 %prep
 %setup -qn %{repo}-%{version}
-%patch0 -p1
 cp %{SOURCE5} .
 
 %build
@@ -346,12 +340,6 @@ exit 0
 %dir %{gopath}/src/%{provider}.%{provider_tld}/%{project}
 %{gopath}/src/%{import_path}
 
-%files pkg-devel
-%doc AUTHORS CHANGELOG.md CONTRIBUTING.md LICENSE MAINTAINERS NOTICE README.md 
-%dir %{gopath}/src/%{provider}.%{provider_tld}/%{project}
-%dir %{gopath}/src/%{import_path}
-%{gopath}/src/%{import_path}/pkg
-
 %files fish-completion
 %dir %{_datadir}/fish/vendor_completions.d/
 %{_datadir}/fish/vendor_completions.d/docker.fish
@@ -369,6 +357,10 @@ exit 0
 %{_datadir}/zsh/site-functions/_docker
 
 %changelog
+* Wed Feb 18 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.5.0-1
+- Resolves: rhbz#1191438 - update to v1.5.0
+- add env var for insecure-registry to /etc/sysconfig/docker
+
 * Tue Feb 03 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.4.1-9
 - Resolves: rhbz#1184266 - enable debugging
 - enable creation of core dumps
