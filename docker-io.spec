@@ -42,6 +42,11 @@ BuildRequires:  pkgconfig(systemd)
 Requires:   device-mapper-libs >= 1.02.90-1
 %endif
 
+# RE: rhbz#1195804 - ensure min NVR for selinux-policy
+%if 0%{?fedora} >= 23
+Requires:   selinux-policy >= 3.13.1-114
+%endif
+
 # Resolves: rhbz#1045220
 Requires:   xz
 Provides:   lxc-docker = %{version}-%{release}
@@ -358,6 +363,7 @@ exit 0
 %changelog
 * Wed Feb 25 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.5.0-11.git09b785f
 - remove add-X-flag.patch
+- require selinux-policy >= 3.13.1-114 for fedora >= 23 (RE: rhbz#1195804)
 
 * Mon Feb 23 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.5.0-10.git09b785f
 - Resolves: rhbz#1195328 - solve build failures by adding -X flag back
