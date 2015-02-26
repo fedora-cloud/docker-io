@@ -11,14 +11,14 @@
 
 %global import_path     %{provider}.%{provider_tld}/%{project}/%{repo}
 
-%global commit		09b785f3bed812736fe7526535088ca73c1fa10d
+%global commit		7e2328b76e041bb7a1acb3e20dbea0c379f7f024
 %global shortcommit %(c=%{commit}; echo ${c:0:7})
 
 %global tar_import_path code.google.com/p/go/src/pkg/archive/tar
 
 Name:       %{repo}-io
 Version:	1.5.0
-Release:	11.git%{shortcommit}%{?dist}
+Release:	12.git%{shortcommit}%{?dist}
 Summary:    Automates deployment of containerized applications
 License:    ASL 2.0
 URL:        http://www.docker.com
@@ -362,6 +362,9 @@ exit 0
 %{_datadir}/zsh/site-functions/_docker
 
 %changelog
+* Thu Feb 26 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.5.0-12.git7e2328b
+- built commit#7e2328b
+
 * Wed Feb 25 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.5.0-11.git09b785f
 - remove add-X-flag.patch
 - require selinux-policy >= 3.13.1-114 for fedora >= 23 (RE: rhbz#1195804)
