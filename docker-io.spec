@@ -71,9 +71,10 @@ servers, OpenStack clusters, public instances, or combinations of the above.
 %package devel
 BuildRequires:  golang >= 1.2.1-3
 Requires: golang >= 1.2.1-3
-Provides: %{repo}-devel
-Provides: %{name}-pkg-devel
-Provides: %{repo}-pkg-devel
+Provides: %{repo}-devel = %{version}-%{release}
+Provides: %{name}-pkg-devel = %{version}-%{release}
+Provides: %{repo}-pkg-devel = %{version}-%{release}
+Provides: golang(%{import_path}/vendor/src/%{tar_import_path}) = %{version}-%{release}
 Summary:  A golang registry for global request variables (source libraries)
 Provides: golang(%{import_path}) = %{version}-%{release}
 Provides: golang(%{import_path}/builder) = %{version}-%{release}
@@ -284,17 +285,17 @@ install -p -m 644 %{SOURCE3} %{buildroot}%{_sysconfdir}/sysconfig/docker-storage
 install -d -p %{buildroot}%{gopath}/src/%{import_path}
 rm -rf pkg/symlink/testdata
 
-for dir in api builder builtins contrib/docker-device-tool \
-        contrib/host-integration daemon docker dockerinit \
-        engine events graph \
-        image links nat opts pkg registry runconfig \
-        trust utils volumes
-do
-    cp -rpav $dir %{buildroot}%{gopath}/src/%{import_path}/
-done
-
+# install tar_import_path to devel package
 install -d -p %{buildroot}%{gopath}/src/%{import_path}/vendor/src/%{tar_import_path}
 cp -rpav vendor/src/%{tar_import_path}/* %{buildroot}%{gopath}/src/%{import_path}/vendor/src/%{tar_import_path}
+
+# remove dirs that won't be installed in devel
+rm -rf vendor docs _build bundles contrib/init hack project
+
+# install sources to devel
+for dir in */ ; do
+    cp -rpav $dir %{buildroot}/%{gopath}/src/%{import_path}/
+done
 
 # install docker config directory
 install -dp %{buildroot}%{_sysconfdir}/%{repo}
