@@ -18,7 +18,7 @@
 
 Name:       %{repo}-io
 Version:	1.5.0
-Release:	10.git%{shortcommit}%{?dist}
+Release:	11.git%{shortcommit}%{?dist}
 Summary:    Automates deployment of containerized applications
 License:    ASL 2.0
 URL:        http://www.docker.com
@@ -30,7 +30,6 @@ Source3:    %{repo}-storage.sysconfig
 Source4:    %{repo}-logrotate.sh
 Source5:    README.%{repo}-logrotate
 Source6:    %{repo}-network.sysconfig
-Patch0:     add-X-flag.patch
 BuildRequires:  glibc-static
 BuildRequires:  golang >= 1.3.3
 BuildRequires:  go-md2man
@@ -205,7 +204,6 @@ This package installs %{summary}.
 %prep
 %setup -qn %{repo}-%{commit}
 cp %{SOURCE5} .
-%patch0 -p1
 
 %build
 # set up temporary build gopath, and put our directory there
@@ -358,6 +356,9 @@ exit 0
 %{_datadir}/zsh/site-functions/_docker
 
 %changelog
+* Wed Feb 25 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.5.0-11.git09b785f
+- remove add-X-flag.patch
+
 * Mon Feb 23 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.5.0-10.git09b785f
 - Resolves: rhbz#1195328 - solve build failures by adding -X flag back
 also see (https://github.com/docker/docker/issues/9207#issuecomment-75578730)
