@@ -208,7 +208,7 @@ Provides:   %{repo}-zsh-completion = %{version}-%{release}
 This package installs %{summary}.
 
 %prep
-%setup -qn %{repo}-%{commit}
+%setup -q -n %{repo}-%{commit}
 cp %{SOURCE5} .
 
 %build
