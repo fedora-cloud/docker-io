@@ -228,11 +228,14 @@ cp contrib/syntax/vim/README.md README-vim-syntax.md
 %install
 # install binary
 install -d %{buildroot}%{_bindir}
-install -p -m 755 bundles/%{version}-dev/dynbinary/docker-%{version}-dev %{buildroot}%{_bindir}/docker
-
-# install dockerinit
 install -d %{buildroot}%{_libexecdir}/docker
-install -p -m 755 bundles/%{version}-dev/dynbinary/dockerinit-%{version}-dev %{buildroot}%{_libexecdir}/docker/dockerinit
+
+# Grab the first thing from -dev
+for x in bundles/*-dev; do \
+  install -p -m 755 $x/dynbinary/docker-*-dev %{buildroot}%{_bindir}/docker
+  install -p -m 755 $x/dynbinary/dockerinit-*-dev %{buildroot}%{_libexecdir}/docker/dockerinit
+  break
+done
 
 # install manpages
 install -d %{buildroot}%{_mandir}/man1
