@@ -23,7 +23,8 @@ Summary:    Automates deployment of containerized applications
 License:    ASL 2.0
 URL:        http://www.docker.com
 ExclusiveArch:  x86_64 %{arm}
-Source0:    https://%{import_path}/archive/%{commit}/%{repo}-%{shortcommit}.tar.gz
+#Source0:    https://%{import_path}/archive/%{commit}/%{repo}-%{shortcommit}.tar.gz
+Source0:    https://github.com/lsm5/docker/%{commit}/%{repo}-%{shortcommit}.tar.gz
 Source1:    %{repo}.service
 Source2:    %{repo}.sysconfig
 Source3:    %{repo}-storage.sysconfig
