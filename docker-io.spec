@@ -218,7 +218,7 @@ mkdir -p ./_build/src/github.com/docker
 ln -s $(pwd) ./_build/src/%{import_path}
 
 export DOCKER_GITCOMMIT="%{shortcommit}/%{version}"
-export DOCKER_BUILDTAGS="selinux"
+export DOCKER_BUILDTAGS="selinux btrfs_noversion"
 export GOPATH=$(pwd)/_build:$(pwd)/vendor:%{gopath}
 
 DEBUG=1 project/make.sh dynbinary
