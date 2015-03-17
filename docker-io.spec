@@ -223,7 +223,6 @@ Release: 21.git%{ds_shortcommit}%{?dist}
 Conflicts: selinux-policy 
 BuildRequires: selinux-policy
 BuildRequires: selinux-policy-devel
-Requires: policycoreutils
 Requires: %{repo} >= %{version}-%{release}
 Requires(post): selinux-policy >= %{selinux_policyver}
 Requires(post): selinux-policy-targeted >= %{selinux_policyver}
