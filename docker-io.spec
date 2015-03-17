@@ -3,54 +3,80 @@
 
 # docker builds in a checksum of dockerinit into docker,
 # so stripping the binaries breaks docker
-%global debug_package   %{nil}
-%global provider        github
-%global provider_tld    com
-%global project         docker
-%global repo            %{project}
+%global debug_package %{nil}
+%global provider github
+%global provider_tld com
+%global project docker
+%global repo %{project}
 
-%global import_path     %{provider}.%{provider_tld}/%{project}/%{repo}
+%global import_path %{provider}.%{provider_tld}/%{project}/%{repo}
 
-%global commit		5ebfacda4747fb0b2473841dff9b9b771b3bcb53
-%global shortcommit %(c=%{commit}; echo ${c:0:7})
+# docker stuff (prefix with d_)
+%global d_commit 5ebfacda4747fb0b2473841dff9b9b771b3bcb53
+%global d_shortcommit %(c=%{d_commit}; echo ${c:0:7})
 
 %global tar_import_path code.google.com/p/go/src/pkg/archive/tar
 
-Name:       %{repo}-io
-Version:	1.5.0
-Release:	20.git%{shortcommit}%{?dist}
-Summary:    Automates deployment of containerized applications
-License:    ASL 2.0
-URL:        http://www.docker.com
-ExclusiveArch:  x86_64 %{arm}
-#Source0:    https://%{import_path}/archive/%{commit}/%{repo}-%{shortcommit}.tar.gz
-Source0:    https://github.com/lsm5/docker/archive/%{commit}/%{repo}-%{shortcommit}.tar.gz
-Source1:    %{repo}.service
-Source2:    %{repo}.sysconfig
-Source3:    %{repo}-storage.sysconfig
-Source4:    %{repo}-logrotate.sh
-Source5:    README.%{repo}-logrotate
-Source6:    %{repo}-network.sysconfig
-BuildRequires:  glibc-static
-BuildRequires:  golang >= 1.3.3
-BuildRequires:  go-md2man
-BuildRequires:  device-mapper-devel
-BuildRequires:  btrfs-progs-devel
-BuildRequires:  sqlite-devel
-BuildRequires:  pkgconfig(systemd)
+# docker-selinux stuff (prefix with ds_ for version/release etc.)
+# Some bits borrowed from the openstack-selinux package
+%global ds_version 0
+%global ds_commit 4421e0d80866b4b03f6a16c5b6bfabdf4c8bfa7c
+%global ds_shortcommit %(c=%{ds_commit}; echo ${c:0:7})
+%global selinuxtype targeted
+%global moduletype services
+%global modulenames %{repo}
+
+# Usage: _format var format
+# Expand 'modulenames' into various formats as needed
+# Format must contain '$x' somewhere to do anything useful
+%global _format() export %1=""; for x in %{modulenames}; do %1+=%2; %1+=" "; done;
+
+# Relabel files
+%global relabel_files() \
+    /sbin/restorecon -R %{_bindir}/docker %{_localstatedir}/run/docker.sock %{_localstatedir}/run/docker.pid %{_sharedstatedir}/docker %{_sysconfdir}/docker %{_localstatedir}/log/docker %{_localstatedir}/log/lxc %{_localstatedir}/lock/lxc %{_usr}/lib/systemd/system/docker.service /root/.docker &> /dev/null || : \
+
+
+# Version of SELinux we were using
+%global selinux_policyver 3.13.1-119
+
+Name: %{repo}-io
+Version: 1.5.0
+Release: 21.git%{d_shortcommit}%{?dist}
+Summary: Automates deployment of containerized applications
+License: ASL 2.0
+URL: http://www.docker.com
+ExclusiveArch: x86_64 %{arm}
+#Source0: https://%{import_path}/archive/%{commit}/%{repo}-%{shortcommit}.tar.gz
+Source0: https://github.com/lsm5/%{repo}/archive/%{d_commit}/%{repo}-%{d_shortcommit}.tar.gz
+Source1: %{repo}.service
+Source2: %{repo}.sysconfig
+Source3: %{repo}-storage.sysconfig
+Source4: %{repo}-logrotate.sh
+Source5: README.%{repo}-logrotate
+Source6: %{repo}-network.sysconfig
+Source7: https://github.com/wrabcak/%{repo}-selinux/archive/%{ds_commit}/%{repo}-selinux-%{ds_shortcommit}.tar.gz
+BuildRequires: glibc-static
+BuildRequires: golang >= 1.3.3
+BuildRequires: go-md2man
+BuildRequires: device-mapper-devel
+BuildRequires: btrfs-progs-devel
+BuildRequires: sqlite-devel
+BuildRequires: pkgconfig(systemd)
 %if 0%{?fedora} >= 21
 # Resolves: rhbz#1165615
-Requires:   device-mapper-libs >= 1.02.90-1
+Requires: device-mapper-libs >= 1.02.90-1
 %endif
 
 # RE: rhbz#1195804 - ensure min NVR for selinux-policy
 %if 0%{?fedora} >= 23
-Requires:   selinux-policy >= 3.13.1-114
+Requires: selinux-policy >= 3.13.1-114
 %endif
 
 # Resolves: rhbz#1045220
-Requires:   xz
-Provides:   lxc-docker = %{version}-%{release}
+Requires: xz
+Provides: lxc-%{repo} = %{version}-%{release}
+
+Requires: %{repo}-selinux >= %{ds_version}-%{release}
 
 # permitted by https://fedorahosted.org/fpc/ticket/341#comment:7
 # In F22, the whole package should be renamed to be just "docker" and
@@ -70,7 +96,7 @@ and tests on a laptop will run at scale, in production*, on VMs, bare-metal
 servers, OpenStack clusters, public instances, or combinations of the above.
 
 %package devel
-BuildRequires:  golang >= 1.2.1-3
+BuildRequires: golang >= 1.2.1-3
 Requires: golang >= 1.2.1-3
 Provides: %{repo}-devel = %{version}-%{release}
 Provides: %{name}-pkg-devel = %{version}-%{release}
@@ -173,51 +199,71 @@ Provides: golang(%{import_path}/graph) = %{version}-%{release}
 This package provides the source libraries for docker.
 
 %package fish-completion
-Summary:    fish completion files for docker
-Requires:   %{name} = %{version}-%{release}
-Requires:   fish
-Provides:   %{repo}-fish-completion = %{version}-%{release}
+Summary: fish completion files for docker
+Requires: %{name} = %{version}-%{release}
+Requires: fish
+Provides: %{repo}-fish-completion = %{version}-%{release}
 
 %description fish-completion
 This package installs %{summary}.
 
 %package logrotate
-Summary:    cron job to run logrotate on docker containers
-Requires:   %{name} = %{version}-%{release}
-Provides:   %{repo}-logrotate = %{version}-%{release}
+Summary: cron job to run logrotate on docker containers
+Requires: %{name} = %{version}-%{release}
+Provides: %{repo}-logrotate = %{version}-%{release}
 
 %description logrotate
 This package installs %{summary}. logrotate is assumed to be installed on
 containers for this to work, failures are silently ignored.
 
+%package selinux
+Summary: SELinux policies for Docker
+Version: %{ds_version}
+Release: 21.git%{ds_shortcommit}%{?dist}
+BuildRequires: selinux-policy
+BuildRequires: selinux-policy-devel
+Requires: %{repo} >= %{version}-%{release}
+Requires(post): selinux-policy-base >= %{selinux_policyver}
+Requires(post): selinux-policy-targeted >= %{selinux_policyver}
+Requires(post): policycoreutils
+Requires(post): policycoreutils-python
+Requires(post): libselinux-utils
+Provides: %{name}-selinux
+
+%description selinux
+SELinux policy modules for use with %{repo}.
+
 %package vim
-Summary:    vim syntax highlighting files for docker
-Requires:   %{name} = %{version}-%{release}
-Requires:   vim
-Provides:   %{repo}-vim = %{version}-%{release}
+Summary: vim syntax highlighting files for docker
+Requires: %{name} = %{version}-%{release}
+Requires: vim
+Provides: %{repo}-vim = %{version}-%{release}
 
 %description vim
 This package installs %{summary}.
 
 %package zsh-completion
-Summary:    zsh completion files for docker
-Requires:   %{name} = %{version}-%{release}
-Requires:   zsh
-Provides:   %{repo}-zsh-completion = %{version}-%{release}
+Summary: zsh completion files for docker
+Requires: %{name} = %{version}-%{release}
+Requires: zsh
+Provides: %{repo}-zsh-completion = %{version}-%{release}
 
 %description zsh-completion
 This package installs %{summary}.
 
 %prep
-%setup -q -n %{repo}-%{commit}
+%setup -q -n %{repo}-%{d_commit}
 cp %{SOURCE5} .
+
+# unpack docker-selinux
+tar zxf %{SOURCE7}
 
 %build
 # set up temporary build gopath, and put our directory there
 mkdir -p ./_build/src/github.com/docker
 ln -s $(pwd) ./_build/src/%{import_path}
 
-export DOCKER_GITCOMMIT="%{shortcommit}/%{version}"
+export DOCKER_GITCOMMIT="%{d_shortcommit}/%{version}"
 export DOCKER_BUILDTAGS="selinux btrfs_noversion"
 export GOPATH=$(pwd)/_build:$(pwd)/vendor:%{gopath}
 
@@ -225,6 +271,11 @@ DEBUG=1 hack/make.sh dynbinary
 docs/man/md2man-all.sh
 cp contrib/syntax/vim/LICENSE LICENSE-vim-syntax
 cp contrib/syntax/vim/README.md README-vim-syntax.md
+
+# build docker-selinux
+pushd %{repo}-selinux-%{ds_commit}
+make SHARE=%{_datadir} TARGETS=%{modulenames}
+popd
 
 %install
 # install binary
@@ -285,6 +336,16 @@ install -p -m 644 %{SOURCE2} %{buildroot}%{_sysconfdir}/sysconfig/docker
 install -p -m 644 %{SOURCE6} %{buildroot}%{_sysconfdir}/sysconfig/docker-network
 install -p -m 644 %{SOURCE3} %{buildroot}%{_sysconfdir}/sysconfig/docker-storage
 
+# install SELinux interfaces
+%_format INTERFACES $x.if
+install -d %{buildroot}%{_datadir}/selinux/devel/include/%{moduletype}
+install -p -m 644 %{repo}-selinux-%{ds_commit}/$INTERFACES %{buildroot}%{_datadir}/selinux/devel/include/%{moduletype}
+
+# install policy modules
+%_format MODULES $x.pp.bz2
+install -d %{buildroot}%{_datadir}/selinux/packages
+install -m 0644 %{repo}-selinux-%{ds_commit}/$MODULES %{buildroot}%{_datadir}/selinux/packages
+
 # sources
 install -d -p %{buildroot}%{gopath}/src/%{import_path}
 rm -rf pkg/symlink/testdata
@@ -295,6 +356,9 @@ cp -rpav vendor/src/%{tar_import_path}/* %{buildroot}%{gopath}/src/%{import_path
 
 # remove dirs that won't be installed in devel
 rm -rf vendor docs _build bundles contrib/init hack project
+
+# remove docker-selinux rpm spec file
+rm -rf %{repo}-selinux-%{ds_commit}/%{repo}-selinux.spec
 
 # install sources to devel
 for dir in */ ; do
@@ -322,11 +386,28 @@ exit 0
 %post
 %systemd_post docker
 
+%post selinux
+# Install all modules in a single transaction
+%_format MODULES %{_datadir}/selinux/packages/$x.pp.bz2
+%{_sbindir}/semodule -n -s %{selinuxtype} -i $MODULES
+if %{_sbindir}/selinuxenabled ; then
+%{_sbindir}/load_policy
+%relabel_files
+
 %preun
 %systemd_preun docker
 
 %postun
 %systemd_postun_with_restart docker
+
+%postun selinux
+if [ $1 -eq 0 ]; then
+%{_sbindir}/semodule -n -r %{modulenames} &> /dev/null || :
+if %{_sbindir}/selinuxenabled ; then
+%{_sbindir}/load_policy
+%relabel_files
+fi
+fi
 
 %files
 %doc AUTHORS CHANGELOG.md CONTRIBUTING.md LICENSE MAINTAINERS NOTICE README.md 
@@ -357,6 +438,10 @@ exit 0
 %doc README.%{repo}-logrotate
 %{_sysconfdir}/cron.daily/%{repo}-logrotate
 
+%files selinux
+%doc %{repo}-selinux-%{ds_commit}/README.md
+%{_datadir}/selinux/*
+
 %files vim
 %{_datadir}/vim/vimfiles/doc/dockerfile.txt
 %{_datadir}/vim/vimfiles/ftdetect/dockerfile.vim
@@ -366,6 +451,10 @@ exit 0
 %{_datadir}/zsh/site-functions/_docker
 
 %changelog
+* Fri Mar 20 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.5.0-21.git5ebfacd
+- selinux specific rpm code from Lukas Vrabec <lvrabec@redhat.com>
+- use spaces instead of tabs
+
 * Tue Mar 17 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.5.0-20.git5ebfacd
 - built commit#5ebfacd
 
