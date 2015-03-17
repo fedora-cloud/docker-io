@@ -31,8 +31,13 @@
 # Format must contain '$x' somewhere to do anything useful
 %global _format() export %1=""; for x in %{modulenames}; do %1+=%2; %1+=" "; done;
 
+# Relabel files
+%global relabel_files() \
+    /sbin/restorecon -R %{_bindir}/docker %{_localstatedir}/run/docker.sock %{_localstatedir}/run/docker.pid %{_sharedstatedir}/docker %{_sysconfdir}/docker %{_localstatedir}/log/docker %{_localstatedir}/log/lxc %{_localstatedir}/lock/lxc %{_usr}/lib/systemd/system/docker.service /root/.docker &> /dev/null || : \
+
+
 # Version of SELinux we were using
-%global selinux_policyver 3.13.1-118
+%global selinux_policyver 3.13.1-119
 
 Name: %{repo}-io
 Version: 1.5.0
@@ -219,12 +224,12 @@ Conflicts: selinux-policy
 BuildRequires: selinux-policy
 BuildRequires: selinux-policy-devel
 Requires: policycoreutils
-Requires: libselinux-utils
 Requires: %{repo} >= %{version}-%{release}
 Requires(post): selinux-policy >= %{selinux_policyver}
 Requires(post): selinux-policy-targeted >= %{selinux_policyver}
 Requires(post): policycoreutils
 Requires(post): policycoreutils-python
+Requires(post): libselinux-utils
 
 %description selinux
 SELinux policy modules for use with %{repo}.
