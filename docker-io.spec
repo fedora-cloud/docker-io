@@ -390,7 +390,7 @@ exit 0
 
 %postun selinux
 if [ $1 -eq 0 ]; then
-%{_sbindir}/semodule -n -r %{modulename} &> /dev/null || :
+%{_sbindir}/semodule -n -r %{modulenames} &> /dev/null || :
 if %{_sbindir}/selinuxenabled ; then
 %{_sbindir}/load_policy
 %relabel_files
