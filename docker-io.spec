@@ -17,10 +17,10 @@
 
 %global tar_import_path code.google.com/p/go/src/pkg/archive/tar
 
-# docker-selinux stuff (prefix with ds_)
+# docker-selinux stuff (prefix with ds_ for version/release etc.)
 # Some bits borrowed from the openstack-selinux package
 %global ds_version 0
-%global ds_commit 8bf0e81d37d001740c23e815d7c790ba8e87b7d8
+%global ds_commit 85aba86256bfbcce8a4e3efa6f0906b44a08b1cb
 %global ds_shortcommit %(c=%{ds_commit}; echo ${c:0:7})
 %global selinuxtype targeted
 %global moduletype services
@@ -47,7 +47,7 @@ License: ASL 2.0
 URL: http://www.docker.com
 ExclusiveArch: x86_64 %{arm}
 #Source0: https://%{import_path}/archive/%{commit}/%{repo}-%{shortcommit}.tar.gz
-Source0: https://github.com/lsm5/%{repo}/archive/%{commit}/%{repo}-%{d_shortcommit}.tar.gz
+Source0: https://github.com/lsm5/%{repo}/archive/%{d_commit}/%{repo}-%{d_shortcommit}.tar.gz
 Source1: %{repo}.service
 Source2: %{repo}.sysconfig
 Source3: %{repo}-storage.sysconfig
@@ -336,7 +336,12 @@ install -p -m 644 %{SOURCE2} %{buildroot}%{_sysconfdir}/sysconfig/docker
 install -p -m 644 %{SOURCE6} %{buildroot}%{_sysconfdir}/sysconfig/docker-network
 install -p -m 644 %{SOURCE3} %{buildroot}%{_sysconfdir}/sysconfig/docker-storage
 
-# install selinux policy
+# install SELinux interfaces
+%_format INTERFACES $x.if
+install -d %{buildroot}%{_datadir}/selinux/devel/include/%{moduletype}
+install -p -m 644 $INTERFACES %{buildroot}%{_datadir}/selinux/devel/include/%{moduletype}
+
+# install policy modules
 %_format MODULES $x.pp.bz2
 install -d %{buildroot}%{_datadir}/selinux/packages
 install -m 0644 %{repo}-selinux-%{ds_commit}/$MODULES %{buildroot}%{_datadir}/selinux/packages
@@ -382,6 +387,9 @@ exit 0
 # Install all modules in a single transaction
 %_format MODULES %{_datadir}/selinux/packages/$x.pp.bz2
 %{_sbindir}/semodule -n -s %{selinuxtype} -i $MODULES
+if %{_sbindir}/selinuxenabled ; then
+%{_sbindir}/load_policy
+%relabel_files
 
 %preun
 %systemd_preun docker
@@ -440,7 +448,7 @@ fi
 %{_datadir}/zsh/site-functions/_docker
 
 %changelog
-* Tue Mar 17 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.5.0-21.git5ebfacd
+* Thu Mar 19 2015 Lokesh Mandvekar <lsm5@fedoraproject.org> - 1.5.0-21.git5ebfacd
 - selinux specific rpm code from Lukas Vrabec <lvrabec@redhat.com>
 - use spaces instead of tabs
 
