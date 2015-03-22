@@ -19,7 +19,6 @@
 
 # docker-selinux stuff (prefix with ds_ for version/release etc.)
 # Some bits borrowed from the openstack-selinux package
-%global ds_version 0
 %global ds_commit 4421e0d80866b4b03f6a16c5b6bfabdf4c8bfa7c
 %global ds_shortcommit %(c=%{ds_commit}; echo ${c:0:7})
 %global selinuxtype targeted
@@ -218,7 +217,6 @@ containers for this to work, failures are silently ignored.
 
 %package selinux
 Summary: SELinux policies for Docker
-Version: %{ds_version}
 Release: 21.git%{ds_shortcommit}%{?dist}
 BuildRequires: selinux-policy
 BuildRequires: selinux-policy-devel
